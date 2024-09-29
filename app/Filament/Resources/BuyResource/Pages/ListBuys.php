@@ -15,7 +15,10 @@ class ListBuys extends ListRecords
     {
         return [
             Actions\CreateAction::make()
-            ->label('ادخال فاتورة جديدة'),
+
+
+             ->label('ادخال فاتورة جديدة'),
         ];
     }
+
 }

@@ -8,6 +8,8 @@ use App\Filament\Resources\BuyResource\Pages;
 use App\Filament\Resources\BuyResource\RelationManagers;
 
 use App\Models\Buy;
+use App\Models\Cost;
+use App\Models\Costtype;
 use App\Models\Item;
 use App\Models\Item_type;
 use App\Models\Sell_tran;
@@ -40,9 +42,7 @@ class BuyResource extends Resource
 
     protected static ?string $navigationIcon = 'heroicon-o-rectangle-stack';
 
-    public function add_rec(){
-        return true;
-    }
+
     public static function form(Form $form): Form
     {
         return $form
@@ -162,13 +162,20 @@ class BuyResource extends Resource
                                  ->default('0')
                                  ->id('pay'),
                              TextInput::make('baky')
-
                                  ->label('المتبقي')
                                  ->columnSpan(2)
                                  ->readOnly()
                                  ->default('0'),
-                         ])->columns(6)->columnSpan('full'),
+                             TextInput::make('cost')
+                                 ->label('تكاليف اضافية')
+                                 ->columnSpan(2)
+                                 ->readOnly()
+                                 ->default('0'),
+                         ])->columns(8)->columnSpan('full'),
                         Forms\Components\Textarea::make('notes')
+                            ->live()
+
+                            ->extraAttributes(['x-on:change' => 'myfun'])
                             ->label('ملاحظات')
                             ->columnSpan('full'),
                         Hidden::make('user_id')
@@ -194,6 +201,7 @@ class BuyResource extends Resource
                          ])
                          ->schema([
                              Select::make('item_id')
+
                                  ->required()
                                  ->searchable()
                                  ->options(Item::all()->pluck('name','id'))
@@ -276,16 +284,19 @@ class BuyResource extends Resource
                                      return Item::create($data)->getKey();
                                  }),
                              TextInput::make('q')
+
+                                 ->extraInputAttributes(['tabindex' => 1])
+                                 ->id('q')
                                  ->columnSpan(1)
                                  ->required(),
                              TextInput::make('p')
-                                 ->extraAttributes( [
-                                     'wire:keydown.enter' => '../add_rec'
-                                 ])
+                                 ->extraInputAttributes(['tabindex' => 2])
+
+                                 ->id('p')
                                  ->columnSpan(1)
                                  ->required() ,
                          ])
-                         ->live(onBlur: true)
+                         ->live()
                          ->afterStateUpdated(function ($state,Forms\Set $set,Get $get){
                              $total=0;
                              foreach ($state as $item){
@@ -312,7 +323,87 @@ class BuyResource extends Resource
                              return $data;
                          })
                  ])
-                 ->columnSpan(6)
+                 ->columnSpan(6),
+                Section::make()
+                    ->schema([
+                        TableRepeater::make('Cost')
+                            ->hiddenLabel()
+
+                            ->relationship()
+                            ->headers([
+                                Header::make('نوع التكلفة')
+                                    ->width('50%'),
+                                Header::make('المبلغ')
+                                    ->width('30%'),
+
+
+                            ])
+                            ->schema([
+                                Select::make('costtype_id')
+
+                                    ->required()
+                                    ->searchable()
+                                    ->options(Costtype::all()->pluck('name','id'))
+                                    ->disableOptionWhen(function ($value, $state, Get $get) {
+                                        return collect($get('../*.costtype_id'))
+                                            ->reject(fn($id) => $id == $state)
+                                            ->filter()
+                                            ->contains($value);
+                                    })
+                                    ->createOptionForm([
+                                        Section::make('ادخال نوع تكلفة')
+                                            ->schema([
+                                                TextInput::make('id')
+                                                    ->hidden(fn(string $operation)=>$operation=='create')
+                                                    ->disabled()
+                                                    ->label('الرقم الألي'),
+                                                TextInput::make('name')
+                                                    ->label('البيان')
+                                                    ->autocomplete(false)
+                                                    ->required()
+                                                    ->live()
+                                                    ->unique(ignoreRecord: true)
+                                                    ->validationMessages([
+                                                        'unique' => ' :attribute مخزون مسبقا ',
+                                                    ])
+                                                    ->columnSpan(2),
+                                            ])
+                                            ->columns(3)
+                                    ])
+                                    ->createOptionUsing(function (array $data): int {
+                                        return Costtype::create($data)->getKey();
+                                    }),
+                                TextInput::make('val')
+
+                                    ->extraInputAttributes(['tabindex' => 1])
+                                    ->columnSpan(1)
+                                    ->required(),
+
+                            ])
+                            ->live()
+                            ->afterStateUpdated(function ($state,Forms\Set $set,Get $get){
+                                $cost=0;
+                                foreach ($state as $item){
+                                    if ($item['val'] )
+                                        $cost +=$item['val'];
+                                }
+                                $set('cost',$cost);
+
+
+                            })
+                            ->columnSpan('full')
+                            ->defaultItems(0)
+                            ->addActionLabel('اضافة تكلفة')
+                            ->addable(function ($state){
+                                $flag=true;
+                                foreach ($state as $item) {
+                                    if (!$item['costtype_id'] || !$item['val'] ) {$flag=false; break;}
+                                }
+                                return $flag;
+                            })
+
+                    ])
+                ->columnSpan(6),
             ])->columns(12);
     }
 
@@ -341,6 +432,8 @@ class BuyResource extends Resource
                     ->label('المدفوع'),
                 TextColumn::make('baky')
                     ->label('الباقي'),
+
+
                 TextColumn::make('notes')
                     ->label('ملاحظات'),
             ])

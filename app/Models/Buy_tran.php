@@ -19,7 +19,12 @@ class Buy_tran extends Model
   public function Tar_buy(){
     return $this->belongsTo(Tar_buy::class);
   }
+    protected $appends = ['sub_tot'];
 
+    public function getSubTotAttribute()
+    {
+        return $this->p*$this->q;
+    }
   public function __construct(array $attributes = [])
   {
     parent::__construct($attributes);

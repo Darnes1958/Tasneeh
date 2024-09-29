@@ -14,6 +14,12 @@ class Buy extends Model
     'details' => 'json',
   ];
 
+    protected $appends = ['baky'];
+
+    public function getBakyAttribute()
+    {
+        return $this->tot-$this->pay;
+    }
   public function Supplier(){
     return $this->belongsTo(Supplier::class);
   }
@@ -26,6 +32,9 @@ class Buy extends Model
 
   public function Buy_tran(){
     return $this->hasMany(Buy_tran::class);
+  }
+  public function Cost(){
+      return $this->hasMany(Cost::class);
   }
   public function Tar_Buy(){
     return $this->hasMany(Tar_buy::class);

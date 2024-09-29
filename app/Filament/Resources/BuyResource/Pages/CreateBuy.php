@@ -13,6 +13,13 @@ class CreateBuy extends CreateRecord
     protected ?string $heading='';
     protected function getCreateFormAction(): Action
     {
-        return parent::getCreateFormAction()->extraAttributes(['type' => 'button', 'wire:click' => 'create']);
+        return parent::getCreateFormAction()
+
+            ->extraAttributes(['type' => 'button', 'wire:click' => 'create']);
     }
+    protected function getRedirectUrl(): string
+    {
+        return static::getResource()::getUrl('index');
+    }
+    protected static bool $canCreateAnother = false;
 }
