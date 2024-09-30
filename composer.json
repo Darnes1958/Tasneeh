@@ -19,7 +19,7 @@
         "nunomaduro/collision": "^8.0",
         "phpunit/phpunit": "^11.0.1",
         "bezhansalleh/filament-language-switch": "^3.0",
-        "filament/filament": "^3.2.0"
+        "filament/filament": "3.2.0-stable"
     },
     "autoload": {
         "psr-4": {
