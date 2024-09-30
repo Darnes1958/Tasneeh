@@ -63,6 +63,8 @@ return array(
     'App\\Models\\Acc' => $baseDir . '/app/Models/Acc.php',
     'App\\Models\\Buy' => $baseDir . '/app/Models/Buy.php',
     'App\\Models\\Buy_tran' => $baseDir . '/app/Models/Buy_tran.php',
+    'App\\Models\\Cost' => $baseDir . '/app/Models/Cost.php',
+    'App\\Models\\Costtype' => $baseDir . '/app/Models/Costtype.php',
     'App\\Models\\Customer' => $baseDir . '/app/Models/Customer.php',
     'App\\Models\\Item' => $baseDir . '/app/Models/Item.php',
     'App\\Models\\Item_type' => $baseDir . '/app/Models/Item_type.php',
