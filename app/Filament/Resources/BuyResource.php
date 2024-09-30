@@ -175,13 +175,11 @@ class BuyResource extends Resource
                          ])->columns(8)->columnSpan('full'),
                         Forms\Components\Textarea::make('notes')
                             ->live()
-
                             ->extraAttributes(['x-on:change' => 'myfun'])
                             ->label('ملاحظات')
                             ->columnSpan('full'),
                         Hidden::make('user_id')
                          ->default(Auth::id()),
-
                     ])
                     ->columns(6)
                     ->columnSpan(6),
@@ -198,7 +196,6 @@ class BuyResource extends Resource
                                  ->width('20%'),
                              Header::make('السعر')
                                  ->width('20%'),
-
                          ])
                          ->schema([
                              Select::make('item_id')
@@ -334,8 +331,6 @@ class BuyResource extends Resource
                                      / ($item->stock+$data['quant']);
                                  $pc=( ($item->price_cost*$item->stock) + ($data['quant']*$data['price_cost']) )
                                      / ($item->stock+$data['quant']);
-
-
                                  $item->price_cost=$pc;
                                  $item->price_buy=$p;
                                  $item->stock += $data['quant'];
@@ -364,7 +359,6 @@ class BuyResource extends Resource
                     ->schema([
                         TableRepeater::make('Cost')
                             ->hiddenLabel()
-
                             ->relationship()
                             ->headers([
                                 Header::make('نوع التكلفة')
@@ -374,7 +368,6 @@ class BuyResource extends Resource
                             ])
                             ->schema([
                                 Select::make('costtype_id')
-
                                     ->required()
                                     ->searchable()
                                     ->options(Costtype::all()->pluck('name','id'))
@@ -408,11 +401,9 @@ class BuyResource extends Resource
                                         return Costtype::create($data)->getKey();
                                     }),
                                 TextInput::make('val')
-
                                     ->extraInputAttributes(['tabindex' => 1])
                                     ->columnSpan(1)
                                     ->required(),
-
                             ])
                             ->live()
                             ->afterStateUpdated(function ($state,Forms\Set $set,Get $get){
@@ -422,8 +413,6 @@ class BuyResource extends Resource
                                         $cost +=$item['val'];
                                 }
                                 $set('cost',$cost);
-
-
                             })
                             ->columnSpan('full')
                             ->defaultItems(0)
@@ -438,8 +427,7 @@ class BuyResource extends Resource
 
                     ])
                 ->columnSpan(6),
-            ])->columns(12)
-             ;
+            ])->columns(12);
     }
 
     public static function table(Table $table): Table
