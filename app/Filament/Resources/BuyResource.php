@@ -12,6 +12,7 @@ use App\Models\Cost;
 use App\Models\Costtype;
 use App\Models\Item;
 use App\Models\Item_type;
+use App\Models\Place_stock;
 use App\Models\Sell_tran;
 
 use App\Models\Unit;
@@ -163,8 +164,8 @@ class BuyResource extends Resource
                                  ->id('pay'),
                              TextInput::make('baky')
                                  ->label('المتبقي')
+                                 ->disabled()
                                  ->columnSpan(2)
-                                 ->readOnly()
                                  ->default('0'),
                              TextInput::make('cost')
                                  ->label('تكاليف اضافية')
@@ -201,7 +202,6 @@ class BuyResource extends Resource
                          ])
                          ->schema([
                              Select::make('item_id')
-
                                  ->required()
                                  ->searchable()
                                  ->options(Item::all()->pluck('name','id'))
@@ -283,25 +283,30 @@ class BuyResource extends Resource
                                  ->createOptionUsing(function (array $data): int {
                                      return Item::create($data)->getKey();
                                  }),
-                             TextInput::make('q')
-
+                             TextInput::make('quant')
                                  ->extraInputAttributes(['tabindex' => 1])
-                                 ->id('q')
+                                 ->id('quant')
                                  ->columnSpan(1)
                                  ->required(),
-                             TextInput::make('p')
+                             TextInput::make('price_input')
                                  ->extraInputAttributes(['tabindex' => 2])
-
-                                 ->id('p')
+                                 ->afterStateUpdated(function ($state,Forms\Set $set){
+                                     $set(('price_cost'),$state);
+                                 })
+                                 ->id('price_input')
                                  ->columnSpan(1)
                                  ->required() ,
+                             Hidden::make('price_cost'),
                          ])
                          ->live()
                          ->afterStateUpdated(function ($state,Forms\Set $set,Get $get){
                              $total=0;
                              foreach ($state as $item){
-                                 if ($item['p'] && $item['q'])
-                                 $total +=$item['p']*$item['q'];
+                                 if ($item['price_input'] && $item['quant']) {
+                                     $total +=$item['price_input']*$item['quant'];
+
+                                 }
+
                              }
                              $set('tot',$total);
                              $set('baky',$total-$get('pay'));
@@ -313,18 +318,49 @@ class BuyResource extends Resource
                          ->addable(function ($state){
                              $flag=true;
                              foreach ($state as $item) {
-                                 if (!$item['item_id'] || !$item['p'] || !$item['q']) {$flag=false; break;}
+                                 if (!$item['item_id'] || !$item['price_input'] || !$item['quant']) {$flag=false; break;}
                              }
                              return $flag;
                          })
-                         ->mutateRelationshipDataBeforeCreateUsing(function (array $data): array {
+                         ->mutateRelationshipDataBeforeCreateUsing(function (array $data,Get $get,$operation): array {
                              $data['user_id'] = auth()->id();
+                             if ($get('cost')!=0) {
+                                 $ratio=($data['quant']*$data['price_input'])/$get('tot')*100;
+                                 $data['price_cost']=(($ratio/100*$get('cost'))/$data['quant'])+$data['price_input'];
+                             }
+                             if ($operation=='create') {
+                                 $item=Item::find($data['item_id']);
+                                 $p=( ($item->price_buy*$item->stock) + ($data['quant']*$data['price_input']) )
+                                     / ($item->stock+$data['quant']);
+                                 $pc=( ($item->price_cost*$item->stock) + ($data['quant']*$data['price_cost']) )
+                                     / ($item->stock+$data['quant']);
 
+
+                                 $item->price_cost=$pc;
+                                 $item->price_buy=$p;
+                                 $item->stock += $data['quant'];
+                                 $item->save();
+                                 $place=Place_stock::where('item_id',$data['item_id'])
+                                     ->where('place_id',$get('place_id'))->first();
+                                 if ($place) {
+                                     $place->stock+= $data['quant'];
+                                     $place->save();
+                                 } else {
+                                     Place_stock::insert([
+                                         'item_id'=>$data['item_id'],
+                                         'place_id'=>$get('place_id'),
+                                         'stock'=>$data['quant'],
+                                     ]);
+                                 }
+                             }
                              return $data;
                          })
                  ])
                  ->columnSpan(6),
                 Section::make()
+                    ->heading('تكاليف اضافية')
+                    ->collapsed()
+                    ->collapsible()
                     ->schema([
                         TableRepeater::make('Cost')
                             ->hiddenLabel()
@@ -335,8 +371,6 @@ class BuyResource extends Resource
                                     ->width('50%'),
                                 Header::make('المبلغ')
                                     ->width('30%'),
-
-
                             ])
                             ->schema([
                                 Select::make('costtype_id')
@@ -404,7 +438,8 @@ class BuyResource extends Resource
 
                     ])
                 ->columnSpan(6),
-            ])->columns(12);
+            ])->columns(12)
+             ;
     }
 
     public static function table(Table $table): Table
@@ -432,8 +467,8 @@ class BuyResource extends Resource
                     ->label('المدفوع'),
                 TextColumn::make('baky')
                     ->label('الباقي'),
-
-
+                TextColumn::make('cost')
+                    ->label('تكلفة اضافية'),
                 TextColumn::make('notes')
                     ->label('ملاحظات'),
             ])
