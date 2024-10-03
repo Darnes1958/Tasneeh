@@ -104,6 +104,9 @@ class BuyResource extends Resource
                         Select::make('price_type_id')
                             ->default(1)
                             ->prefix('طريقة الدفع')
+                            ->disabled(function ($operation){
+                                return $operation=='edit';
+                            })
                             ->hiddenLabel()
                             ->columnSpan(2)
                             ->live()
@@ -113,6 +116,9 @@ class BuyResource extends Resource
                             ->id('price_type_id'),
                         Select::make('place_id')
                             ->default(1)
+                            ->disabled(function ($operation){
+                                return $operation=='edit';
+                            })
                             ->prefix('مكان التخزين')
                             ->hiddenLabel()
                             ->relationship('Place','name')
@@ -325,7 +331,7 @@ class BuyResource extends Resource
                                  $ratio=($data['quant']*$data['price_input'])/$get('tot')*100;
                                  $data['price_cost']=(($ratio/100*$get('cost'))/$data['quant'])+$data['price_input'];
                              }
-                             if ($operation=='create') {
+
                                  $item=Item::find($data['item_id']);
                                  $p=( ($item->price_buy*$item->stock) + ($data['quant']*$data['price_input']) )
                                      / ($item->stock+$data['quant']);
@@ -347,7 +353,8 @@ class BuyResource extends Resource
                                          'stock'=>$data['quant'],
                                      ]);
                                  }
-                             }
+
+
                              return $data;
                          })
                  ])
