@@ -15,12 +15,7 @@ class EditBuy extends EditRecord
 {
     protected static string $resource = BuyResource::class;
     protected ?string $heading='تعديل فاتورة شراء';
-    protected function getHeaderActions(): array
-    {
-        return [
-            Actions\DeleteAction::make(),
-        ];
-    }
+
     protected function getRedirectUrl(): string
     {
         return static::getResource()::getUrl('index');
@@ -45,19 +40,37 @@ class EditBuy extends EditRecord
               }
         }
         foreach ($last as $item){
-            Item::find($item->item_id)
-                ->update(['stock'=>$item->stock-$item->quant]);
-            Place_stock::where('place_id',$this->data['place_id'])
-                ->where('item_id',$item->item_id)
-                ->update(['stock'=>$item->stock-$item->quant]);
+
+            $res=Item::find($item->item_id);
+            $res->stock-=$item->quant;
+            $res->save();
+
+            $res=Place_stock::where('place_id',$this->data['place_id'])
+                ->where('item_id',$item->item_id)->first();
+            $res->stock-=$item->quant;
+            $res->save();
 
         }
+
         foreach ($cuurent as $key => $tran) {
             if ($this->data['cost']!=0) {
                 $ratio=($tran['quant']*$tran['price_input'])/$this->data['tot']*100;
                 $tran['price_cost']=(($ratio/100*$this->data['cost'])/$tran['quant'])+$tran['price_input'];
             }
+
             $item=Item::find($tran['item_id']);
+            if ($item->stock==0) {
+                $p=$tran['price_input'];
+                $pc=$tran['price_cost'];
+            } else {
+                $p=( ($item->price_buy*$item->stock) + ($tran['quant']*$tran['price_input']) )
+                    / ($item->stock+$tran['quant']);
+                $pc=( ($item->price_cost*$item->stock) + ($tran['quant']*$tran['price_cost']) )
+                    / ($item->stock+$tran['quant']);
+            }
+
+            $item->price_cost=$pc;
+            $item->price_buy=$p;
 
             $item->stock += $tran['quant'];
             $item->save();
@@ -75,8 +88,6 @@ class EditBuy extends EditRecord
             }
 
         }
-
-
 
     }
 

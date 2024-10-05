@@ -28,6 +28,7 @@ class BuyTran extends BaseWidget
                     ->label('رقم الصنف')
                     ->sortable(),
                 TextColumn::make('Item.name')
+                    ->color('primary')
                     ->label('اسم الصنف'),
                 TextColumn::make('quant')
                     ->label('الكمية')
@@ -49,7 +50,14 @@ class BuyTran extends BaseWidget
                     )
                     ->sortable(),
                 TextColumn::make('sub_input')
-                    ->label('المجموع')
+                    ->label('مجموع الشراء')
+                    ->numeric(
+                        decimalPlaces: 2,
+                        decimalSeparator: '.',
+                        thousandsSeparator: ',',
+                    ),
+                TextColumn::make('sub_cost')
+                    ->label('مجموع التكلفة')
                     ->numeric(
                         decimalPlaces: 2,
                         decimalSeparator: '.',

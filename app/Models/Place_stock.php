@@ -16,7 +16,17 @@ class Place_stock extends Model
   public function Item(){
     return $this->belongsTo(Item::class);
   }
+    protected $with = ['Item'];
+    protected $appends = ['sub_input','sub_cost'];
 
+    public function getSubInputAttribute()
+    {
+        return $this->stock*$this->Item->price_buy;
+    }
+    public function getSubCostAttribute()
+    {
+        return $this->stock*$this->Item->price_cost;
+    }
   public function __construct(array $attributes = [])
   {
     parent::__construct($attributes);

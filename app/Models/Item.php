@@ -12,7 +12,7 @@ class Item extends Model
 
 
 
-    public function Place_stock(){
+    public function placeStocks(){
       return $this->hasMany(Place_stock::class);
     }
   public function Price_buy(){
@@ -28,7 +28,7 @@ class Item extends Model
     public function S_quant(){
         return $this->belongsTo(S_quant::class);
     }
-    public function Unita(){
+    public function Unit(){
         return $this->belongsTo(Unit::class);
     }
 

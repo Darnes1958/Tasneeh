@@ -368,7 +368,7 @@ class RecsuppResource extends Resource
                 $sub=Recsupp::where('buy_id',$record->buy_id)->whereIn('rec_who',[4,5])->sum('val');
               $buy=Buy::find($record->buy_id);
               $buy->pay=$sub-$sum;
-              $buy->baky=$buy->tot-$sub+$sum;
+
               $buy->save();
 
             }
@@ -376,9 +376,7 @@ class RecsuppResource extends Resource
           }),
       ])
       ->bulkActions([
-        Tables\Actions\BulkActionGroup::make([
-          Tables\Actions\DeleteBulkAction::make(),
-        ]),
+        //
       ]);
   }
 

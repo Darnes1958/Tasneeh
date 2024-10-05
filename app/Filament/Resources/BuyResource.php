@@ -19,6 +19,7 @@ use App\Models\Unit;
 use Awcodes\TableRepeater\Components\TableRepeater;
 use Awcodes\TableRepeater\Header;
 
+use Filament\Actions\StaticAction;
 use Filament\Forms;
 use Filament\Forms\Components\DatePicker;
 use Filament\Forms\Components\Hidden;
@@ -28,12 +29,17 @@ use Filament\Forms\Components\Select;
 use Filament\Forms\Components\TextInput;
 use Filament\Forms\Form;
 use Filament\Forms\Get;
+use Filament\Notifications\Notification;
 use Filament\Resources\Resource;
+use Filament\Support\Enums\IconSize;
 use Filament\Tables;
+use Filament\Tables\Actions\Action;
 use Filament\Tables\Columns\TextColumn;
 use Filament\Tables\Table;
 use Hamcrest\Core\Set;
+use Illuminate\Contracts\View\View;
 use Illuminate\Database\Eloquent\Builder;
+use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\SoftDeletingScope;
 use Illuminate\Support\Facades\Auth;
 
@@ -150,40 +156,23 @@ class BuyResource extends Resource
                                     ])->columns(2)
                             ])
                             ->id('place_id'),
-                        Section::make()
-                         ->schema([
-                             TextInput::make('tot')
-                                 ->label('إجمالي الفاتورة')
-                                 ->columnSpan(2)
-                                 ->default(0)
-                                 ->readOnly(),
-                             TextInput::make('pay')
-                                 ->label('المدفوع')
-                                 ->minValue(0)
-                                 ->columnSpan(2)
-                                 ->afterStateUpdated(function ($state,Get $get,Forms\Set $set){
-                                     if (!$state) $set('pay', 0);
-                                     $set('baky', $get('tot')-$get('pay'));
-                                 })
-                                 ->live(onBlur: true)
-                                 ->default('0')
-                                 ->id('pay'),
-                             TextInput::make('baky')
-                                 ->label('المتبقي')
-                                 ->disabled()
-                                 ->columnSpan(2)
-                                 ->default('0'),
-                             TextInput::make('cost')
-                                 ->label('تكاليف اضافية')
-                                 ->columnSpan(2)
-                                 ->readOnly()
-                                 ->default('0'),
-                         ])->columns(8)->columnSpan('full'),
-                        Forms\Components\Textarea::make('notes')
+
+                        TextInput::make('notes')
                             ->live()
                             ->extraAttributes(['x-on:change' => 'myfun'])
-                            ->label('ملاحظات')
+                            ->prefix('ملاحظات')
+                            ->hiddenLabel()
                             ->columnSpan('full'),
+                        TextInput::make('tot')
+                            ->label('إجمالي الفاتورة')
+                            ->columnSpan(2)
+                            ->default(0)
+                            ->readOnly(),
+                        TextInput::make('cost')
+                            ->label('تكاليف اضافية')
+                            ->columnSpan(2)
+                            ->readOnly()
+                            ->default('0'),
                         Hidden::make('user_id')
                          ->default(Auth::id()),
                     ])
@@ -347,7 +336,7 @@ class BuyResource extends Resource
                                      $place->stock+= $data['quant'];
                                      $place->save();
                                  } else {
-                                     Place_stock::insert([
+                                     Place_stock::create([
                                          'item_id'=>$data['item_id'],
                                          'place_id'=>$get('place_id'),
                                          'stock'=>$data['quant'],
@@ -471,13 +460,71 @@ class BuyResource extends Resource
                 //
             ])
             ->actions([
-                Tables\Actions\EditAction::make(),
-            ])
-            ->bulkActions([
-                Tables\Actions\BulkActionGroup::make([
-                    Tables\Actions\DeleteBulkAction::make(),
-                ]),
+                Tables\Actions\EditAction::make()
+                ->iconSize(IconSize::Small)
+                ->iconButton(),
+                Action::make('del')
+                 ->icon('heroicon-o-trash')
+                 ->modalHeading('الغاء الفاتورة')
+                 ->iconSize(IconSize::Small)
+                 ->requiresConfirmation()
+                 ->color('danger')
+                 ->iconButton()
+                 ->action(function (Model $record){
+                     $minus=false;
+                     foreach ($record->Buy_tran as $item){
+                         if ($item->quant>Place_stock::where('item_id',$item->item_id)
+                                 ->where('place_id',$record->place_id)->first()->stock){
+                             Notification::make()->warning()->title('يوجد صنف او اصناف لا يمكن الغاءها لانها ستصبح بالسالب')
+                                 ->body('يجب مراجعة الكميات')
+                                 ->persistent()
+                                 ->send();
+                             break;
+                             $minus=true;
+                         }
+                     }
+                     if ($minus) return;
+
+                     foreach ($record->Buy_tran as $tran) {
+                         $place=Place_stock::where('item_id',$tran->item_id)
+                             ->where('place_id',$record->place_id)->first();
+                         $place->stock-=$tran->quant;
+                         $place->save();
+                         $item=Item::find($tran->item_id);
+                         $item->stock-=$tran->quant;
+                         $item->save();
+                     }
+                      $record->delete();
+                 }),
+                Action::make('buytran')
+                    ->iconButton()
+                    ->iconSize(IconSize::Small)
+                    ->icon('heroicon-o-list-bullet')
+                    ->color('success')
+                    ->modalHeading(false)
+                    ->modalSubmitAction(false)
+                    ->modalCancelAction(fn (StaticAction $action) => $action->label('عودة'))
+                    ->modalContent(fn (Buy $record): View => view(
+                        'view-buy-tran-widget',
+                        ['buy_id' => $record->id],
+                    )),
+                Action::make('the_cost')
+                    ->iconButton()
+                    ->iconSize(IconSize::Small)
+                    ->icon('heroicon-o-document-currency-dollar')
+                    ->color('info')
+                    ->visible(fn ($record): bool => $record->cost>0)
+                    ->modalHeading(false)
+                    ->modalSubmitAction(false)
+                    ->modalCancelAction(fn (StaticAction $action) => $action->label('عودة'))
+                    ->modalContent(fn (Buy $record): View => view(
+                        'view-cost-widget',
+                        ['buy_id' => $record->id],
+                    )),
+
+
             ]);
+
     }
 
     public static function getRelations(): array

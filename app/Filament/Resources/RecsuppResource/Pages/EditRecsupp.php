@@ -37,7 +37,7 @@ class EditRecsupp extends EditRecord
                 ->sum('val');
             $buy=Buy::find($this->buy_to_save);
             $buy->pay=$exp-$imp;
-            $buy->baky=$buy->tot-$buy->pay;
+
             $buy->save();
         }
     }
@@ -45,7 +45,7 @@ class EditRecsupp extends EditRecord
     protected function getHeaderActions(): array
     {
         return [
-            Actions\DeleteAction::make()->visible(Auth::user()->can('الغاء ايصالات موردين')),
+            //
         ];
     }
 }
