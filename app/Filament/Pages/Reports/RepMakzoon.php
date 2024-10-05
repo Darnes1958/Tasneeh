@@ -5,6 +5,8 @@ namespace App\Filament\Pages\Reports;
 use App\Models\Item;
 use App\Models\Place_stock;
 use App\Models\Setting;
+use App\Models\views\Rep_makzoone;
+use Faker\Core\Uuid;
 use Filament\Pages\Page;
 use Filament\Tables\Columns\Summarizers\Sum;
 use Filament\Tables\Columns\Summarizers\Summarizer;
@@ -12,6 +14,7 @@ use Filament\Tables\Columns\TextColumn;
 use Filament\Tables\Concerns\InteractsWithTable;
 use Filament\Tables\Contracts\HasTable;
 use Filament\Tables\Table;
+use Illuminate\Database\Eloquent\Model;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\DB;
 use PhpParser\Builder;
@@ -32,6 +35,10 @@ class RepMakzoon extends Page implements HasTable
     {
         return Auth::user()->hasRole('admin');
     }
+    public function getTableRecordKey(Model $record): string
+    {
+        return Uuid::class;
+    }
 
 
     public array $data_list= [
@@ -44,12 +51,13 @@ class RepMakzoon extends Page implements HasTable
     public function table(Table $table): Table
     {
         return $table
-            ->query(function (Place_stock $place_stock){
-                $place_stock=Place_stock::query();
+            ->query(function (){
+                $place_stock=Rep_makzoone::query();
                 return $place_stock;
             })
+            ->defaultSort('item_id')
             ->columns([
-                TextColumn::make('Place.name')
+                TextColumn::make('placeName')
                     ->sortable()
                     ->searchable()
                     ->label('المكان'),
@@ -57,36 +65,27 @@ class RepMakzoon extends Page implements HasTable
                     ->sortable()
                     ->searchable()
                     ->label('رقم الصنف'),
-                TextColumn::make('Item.name')
+                TextColumn::make('itemName')
                     ->sortable()
                     ->searchable()
                     ->label('اسم الصنف'),
-                TextColumn::make('Item.stock')
+                TextColumn::make('itemStock')
                     ->label('الرصيد الكلي'),
-                TextColumn::make('stock')
+                TextColumn::make('placeStock')
                     ->label('رصيد المكان'),
-                TextColumn::make('Item.price_buy')
-                    ->numeric(
-                        decimalPlaces: 2,
-                        decimalSeparator: '.',
-                        thousandsSeparator: ',',
-                    )
-                    ->label('سعر الشراء'),
-                TextColumn::make('Item.price_cost')
+                TextColumn::make('price_cost')
                     ->numeric(
                         decimalPlaces: 2,
                         decimalSeparator: '.',
                         thousandsSeparator: ',',
                     )
                     ->label('سعر المتوسط'),
-                TextColumn::make('sub_input')
-                    ->numeric(
+                TextColumn::make('sub_cost')
+                    ->summarize(Sum::make()->numeric(
                         decimalPlaces: 2,
                         decimalSeparator: '.',
                         thousandsSeparator: ',',
-                    )
-                    ->label('اجمالي الشراء'),
-                TextColumn::make('sub_cost')
+                    ))
                     ->numeric(
                         decimalPlaces: 2,
                         decimalSeparator: '.',

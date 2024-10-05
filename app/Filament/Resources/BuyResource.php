@@ -49,7 +49,7 @@ class BuyResource extends Resource
 
     protected static ?string $navigationIcon = 'heroicon-o-rectangle-stack';
 
-
+    protected static ?string $navigationLabel='فاتورة مشتريات';
     public static function form(Form $form): Form
     {
         return $form
