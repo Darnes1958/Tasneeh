@@ -36,7 +36,7 @@ use Filament\Tables;
 use Filament\Tables\Actions\Action;
 use Filament\Tables\Columns\TextColumn;
 use Filament\Tables\Table;
-use Hamcrest\Core\Set;
+
 use Illuminate\Contracts\View\View;
 use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Database\Eloquent\Model;
@@ -188,9 +188,11 @@ class BuyResource extends Resource
                              Header::make('رقم الصنف')
                                  ->width('50%'),
                              Header::make('الكمية')
+                                 ->width('15%'),
+                             Header::make('الاجمالي')
                                  ->width('20%'),
                              Header::make('السعر')
-                                 ->width('20%'),
+                                 ->width('15%'),
                          ])
                          ->schema([
                              Select::make('item_id')
@@ -277,15 +279,18 @@ class BuyResource extends Resource
                                  }),
                              TextInput::make('quant')
                                  ->extraInputAttributes(['tabindex' => 1])
-                                 ->id('quant')
                                  ->columnSpan(1)
                                  ->required(),
-                             TextInput::make('price_input')
+                             TextInput::make('sub_sub')
                                  ->extraInputAttributes(['tabindex' => 2])
-                                 ->afterStateUpdated(function ($state,Forms\Set $set){
-                                     $set(('price_cost'),$state);
+                                 ->afterStateUpdated(function ($state,Forms\Set $set,Get $get){
+                                     $set('price_input',$state/$get('quant'));
+                                     $set($state/$get('quant'));
                                  })
-                                 ->id('price_input')
+                                 ->columnSpan(1)
+                                 ->required(),
+
+                             TextInput::make('price_input')
                                  ->columnSpan(1)
                                  ->required() ,
                              Hidden::make('price_cost'),
@@ -294,14 +299,14 @@ class BuyResource extends Resource
                          ->afterStateUpdated(function ($state,Forms\Set $set,Get $get){
                              $total=0;
                              foreach ($state as $item){
-                                 if ($item['price_input'] && $item['quant']) {
-                                     $total +=$item['price_input']*$item['quant'];
+                                 if ($item['sub_sub'] && $item['quant']) {
+                                     $total +=$item['sub_sub'];
 
                                  }
 
                              }
                              $set('tot',$total);
-                             $set('baky',$total-$get('pay'));
+
 
                          })
                          ->columnSpan('full')
@@ -310,7 +315,7 @@ class BuyResource extends Resource
                          ->addable(function ($state){
                              $flag=true;
                              foreach ($state as $item) {
-                                 if (!$item['item_id'] || !$item['price_input'] || !$item['quant']) {$flag=false; break;}
+                                 if (!$item['item_id'] || !$item['sub_sub'] || !$item['quant']) {$flag=false; break;}
                              }
                              return $flag;
                          })
@@ -449,8 +454,6 @@ class BuyResource extends Resource
                     ->label('اجمالي الفاتورة'),
                 TextColumn::make('pay')
                     ->label('المدفوع'),
-                TextColumn::make('baky')
-                    ->label('الباقي'),
                 TextColumn::make('cost')
                     ->label('تكلفة اضافية'),
                 TextColumn::make('notes')
