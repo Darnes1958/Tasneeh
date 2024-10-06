@@ -278,19 +278,22 @@ class BuyResource extends Resource
                                      return Item::create($data)->getKey();
                                  }),
                              TextInput::make('quant')
+                                 ->live(onBlur: true)
                                  ->extraInputAttributes(['tabindex' => 1])
                                  ->columnSpan(1)
                                  ->required(),
                              TextInput::make('sub_sub')
+                                 ->live(onBlur: true)
                                  ->extraInputAttributes(['tabindex' => 2])
                                  ->afterStateUpdated(function ($state,Forms\Set $set,Get $get){
-                                     $set('price_input',$state/$get('quant'));
-                                     $set($state/$get('quant'));
+                                     $set('price_input',round($state/$get('quant'),3));
+                                     $set('price_cost',round($state/$get('quant'),3));
                                  })
                                  ->columnSpan(1)
                                  ->required(),
 
                              TextInput::make('price_input')
+                                 ->readOnly()
                                  ->columnSpan(1)
                                  ->required() ,
                              Hidden::make('price_cost'),
