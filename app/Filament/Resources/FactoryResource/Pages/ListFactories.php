@@ -9,11 +9,13 @@ use Filament\Resources\Pages\ListRecords;
 class ListFactories extends ListRecords
 {
     protected static string $resource = FactoryResource::class;
+    protected ?string $heading=' ';
 
     protected function getHeaderActions(): array
     {
         return [
-            Actions\CreateAction::make(),
+            Actions\CreateAction::make()
+            ->label('ادخال تصنيع'),
         ];
     }
 }

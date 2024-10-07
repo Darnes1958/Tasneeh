@@ -6,6 +6,7 @@ use App\Filament\Resources\ProductResource\Pages;
 use App\Filament\Resources\ProductResource\RelationManagers;
 use App\Models\Product;
 use Filament\Forms;
+use Filament\Forms\Components\FileUpload;
 use Filament\Forms\Components\Section;
 use Filament\Forms\Components\Select;
 use Filament\Forms\Components\TextInput;
@@ -13,6 +14,7 @@ use Filament\Forms\Components\Textarea;
 use Filament\Forms\Form;
 use Filament\Resources\Resource;
 use Filament\Tables;
+use Filament\Tables\Columns\ImageColumn;
 use Filament\Tables\Columns\TextColumn;
 use Filament\Tables\Table;
 use Illuminate\Database\Eloquent\Builder;
@@ -63,6 +65,9 @@ class ProductResource extends Resource
                     ]),
                 Textarea::make('description')
                     ->label('الوصف (اختياري)'),
+                FileUpload::make('image')
+                    ->directory('productImages')
+                    ->label('صورة'),
             ]);
     }
 
@@ -87,6 +92,9 @@ class ProductResource extends Resource
                     ->label('الوصف')
                     ->sortable()
                     ->searchable(),
+                ImageColumn::make('image')
+                    ->placeholder('الصورة')
+                    ->label('')
             ])
             ->filters([
                 //

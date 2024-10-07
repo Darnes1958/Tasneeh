@@ -16,7 +16,7 @@ return new class extends Migration
             $table->foreignIdFor(\App\Models\Factory::class);
             $table->foreignIdFor(\App\Models\Item::class);
             $table->decimal('quant',8,2);
-            $table->bigInteger('user_id');
+
             $table->timestamps();
         });
     }

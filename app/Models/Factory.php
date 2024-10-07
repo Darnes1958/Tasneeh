@@ -14,6 +14,10 @@ class Factory extends Model
     {
         return $this->belongsTo(Product::class);
     }
+    public function Place()
+    {
+        return $this->belongsTo(Place::class);
+    }
     public function Tran(){
         return $this->hasMany(Tran::class);
     }

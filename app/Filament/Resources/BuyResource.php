@@ -309,8 +309,6 @@ class BuyResource extends Resource
 
                              }
                              $set('tot',$total);
-
-
                          })
                          ->columnSpan('full')
                          ->defaultItems(0)
@@ -430,7 +428,7 @@ class BuyResource extends Resource
                             })
 
                     ])
-                ->columnSpan(6),
+                    ->columnSpan(6),
             ])->columns(12);
     }
 
