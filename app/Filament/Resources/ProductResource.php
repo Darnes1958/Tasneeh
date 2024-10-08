@@ -4,6 +4,7 @@ namespace App\Filament\Resources;
 
 use App\Filament\Resources\ProductResource\Pages;
 use App\Filament\Resources\ProductResource\RelationManagers;
+use App\Models\Factory;
 use App\Models\Product;
 use Filament\Forms;
 use Filament\Forms\Components\FileUpload;
@@ -18,15 +19,18 @@ use Filament\Tables\Columns\ImageColumn;
 use Filament\Tables\Columns\TextColumn;
 use Filament\Tables\Table;
 use Illuminate\Database\Eloquent\Builder;
+use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\SoftDeletingScope;
 
 class ProductResource extends Resource
 {
     protected static ?string $model = Product::class;
 
-    protected static ?string $navigationIcon = 'heroicon-o-rectangle-stack';
+    protected static ?string $navigationIcon = 'heroicon-o-square-3-stack-3d';
     protected static ?string $label='منتجات';
-    protected static ?string $pluralLabel='منتج';
+    protected static ?int $navigationSort=2;
+    protected static ?string $navigationGroup='مخازن و أصناف';
+    protected static ?string $pluralLabel='منتجات';
 
     public static function form(Form $form): Form
     {
@@ -68,6 +72,8 @@ class ProductResource extends Resource
                 FileUpload::make('image')
                     ->directory('productImages')
                     ->label('صورة'),
+                Forms\Components\Hidden::make('user_id')
+                    ->default(auth()->id()),
             ]);
     }
 
@@ -92,21 +98,39 @@ class ProductResource extends Resource
                     ->label('الوصف')
                     ->sortable()
                     ->searchable(),
+                TextColumn::make('price')
+                    ->label('السعر')
+                    ->sortable()
+                    ->searchable(),
+                TextColumn::make('cost')
+                    ->label('التكلفة')
+                    ->sortable()
+                    ->searchable(),
+                TextColumn::make('stock')
+                    ->label('الرصيد')
+                    ->sortable()
+                    ->searchable(),
                 ImageColumn::make('image')
                     ->placeholder('الصورة')
-                    ->label('')
+                    ->label(''),
+
             ])
             ->filters([
                 //
             ])
             ->actions([
-                Tables\Actions\EditAction::make(),
+                Tables\Actions\EditAction::make()->iconButton(),
+                Tables\Actions\DeleteAction::make()->iconButton()
+                 ->hidden(fn(Model $record): bool => Factory::where('product_id',$record->id)->exists()),
             ])
             ->bulkActions([
                 Tables\Actions\BulkActionGroup::make([
                     Tables\Actions\DeleteBulkAction::make(),
                 ]),
-            ]);
+            ])
+            ->checkIfRecordIsSelectableUsing(
+                fn (Model $record): bool => !Factory::where('product_id',$record->id)->exists(),
+            );
     }
 
     public static function getRelations(): array

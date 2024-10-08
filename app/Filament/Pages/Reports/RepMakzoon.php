@@ -26,9 +26,9 @@ class RepMakzoon extends Page implements HasTable
     protected static ?string $navigationIcon = 'heroicon-o-document-text';
 
     protected static string $view = 'filament.pages.reports.rep-makzoon';
-    protected static ?string $navigationLabel='تقرير عن المخزون';
+    protected static ?string $navigationLabel='تقرير عن مخزون الاصناف';
     protected static ?string $navigationGroup='مخازن و أصناف';
-    protected static ?int $navigationSort=6;
+    protected static ?int $navigationSort=3;
     protected ?string $heading="";
 
     public static function shouldRegisterNavigation(): bool

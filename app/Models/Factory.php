@@ -2,6 +2,7 @@
 
 namespace App\Models;
 
+use App\Enums\Status;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Support\Facades\Auth;
@@ -10,11 +11,18 @@ class Factory extends Model
 {
     protected $connection = 'other';
 
-    protected $appends = ['price_tot'];
+    protected $casts = [
+        'status' => Status::class,
+    ];
+    protected $appends = ['price_tot','cost_one'];
 
     public function getPriceTotAttribute()
     {
         return $this->price*$this->quantity;
+    }
+    public function getCostOneAttribute()
+    {
+        return $this->cost / $this->quantity;
     }
 
     public function Product()

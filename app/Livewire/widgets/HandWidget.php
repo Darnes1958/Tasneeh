@@ -36,7 +36,7 @@ class HandWidget extends BaseWidget
                         decimalPlaces: 2,
                         decimalSeparator: '.',
                         thousandsSeparator: ',',
-                    )->suffix(new HtmlString('<label class="text-primary-600">&nbsp;&nbsp;اجمالي تكلفة التشغيل</label>')))
+                    )->suffix(new HtmlString('<label class="text-primary-600">&nbsp;&nbsp;اجمالي عمل اليد</label>')))
                     ->label('المبلغ')
                     ->sortable(),
             ]);

@@ -6,11 +6,14 @@ use App\Filament\Resources\FactoryResource\Pages;
 use App\Filament\Resources\FactoryResource\RelationManagers;
 use App\Models\Buy;
 use App\Models\Factory;
+use App\Models\Hall;
+use App\Models\Hall_stock;
 use App\Models\Item;
 use App\Models\Item_type;
 use App\Models\Man;
 use App\Models\Place;
 use App\Models\Place_stock;
+use App\Models\Product;
 use App\Models\Unit;
 use Awcodes\TableRepeater\Header;
 use Filament\Actions\StaticAction;
@@ -21,6 +24,7 @@ use Filament\Forms\Get;
 use Filament\Notifications\Notification;
 use Filament\Resources\Resource;
 use Filament\Support\Enums\IconSize;
+use Filament\Support\Enums\MaxWidth;
 use Filament\Tables;
 use Filament\Tables\Actions\Action;
 use Filament\Tables\Table;
@@ -42,7 +46,8 @@ class FactoryResource extends Resource
 {
     protected static ?string $model = Factory::class;
 
-    protected static ?string $navigationIcon = 'heroicon-o-rectangle-stack';
+    protected static ?string $navigationIcon = 'heroicon-o-wrench-screwdriver';
+    protected static ?string $navigationLabel='تصنيع وانتاج';
 
 
     public static function form(Form $form): Form
@@ -104,7 +109,7 @@ class FactoryResource extends Resource
                     ->columnSpan(6),
                 Section::make()
                    ->schema([
-                       TableRepeater::make('TranWidget')
+                       TableRepeater::make('Tran')
                            ->hiddenLabel()
                            ->required()
                            ->relationship()
@@ -257,18 +262,101 @@ class FactoryResource extends Resource
     {
         return $table
             ->columns([
-                TextColumn::make('id')
+                TextColumn::make('status')
                  ->searchable()
                  ->sortable()
-                 ->label('الرقم الألي'),
+                 ->action(
+                     Action::make('ready')
+                         ->fillForm(fn(Factory $record): array => [
+                             'ready_date' => now(),
+                         ])
+                         ->form([
+                             DatePicker::make('ready_date')
+                                 ->label('تاريخ انتهاء العمل')
+                                 ->required(),
+                             Select::make('hall_id')
+                                 ->label('مكان التخزين')
+                                 ->options(Hall::all()->pluck('name','id'))
+                                 ->searchable()
+                                 ->preload()
+                                 ->createOptionForm([
+                                     Section::make('ادخال صالة عرض')
+                                         ->schema([
+                                             TextInput::make('name')
+                                                 ->label('الاسم')
+                                                 ->autocomplete(false)
+                                                 ->required()
+                                                 ->live()
+                                                 ->unique(ignoreRecord: true)
+                                                 ->validationMessages([
+                                                     'unique' => ' :attribute مخزون مسبقا ',
+                                                 ])
+                                                 ->columnSpan(2),
+                                             Select::make('hall_type')
+                                              ->label('النوع')
+                                              ->default('صالة')
+                                              ->required()
+                                              ->options([
+                                                  'صالة' => 'صالة عرض',
+                                                  'مخزن' => 'مخزن',
+                                              ])
+                                         ])
+                                         ->columns(4)
+                                 ])
+                                 ->createOptionUsing(function (array $data): int {
+                                     return Hall::create($data)->getKey();
+                                 })
+                                 ->required()
+                         ])
+                         ->visible(fn(Model $record): bool =>$record->status->value=='manufacturing')
+                         ->modalCancelActionLabel('عودة')
+                         ->modalSubmitActionLabel('تحزين')
+                         ->modalWidth(MaxWidth::Medium)
+                         ->modalHeading('تعديل العنوان')
+                         ->action(function (Factory $record,array $data){
+                             $hall=Hall_stock::where('product_id',$record->product_id)
+                                 ->where('hall_id',$data['hall_id'])->first();
+                             if ($hall) {$hall->stock += $record->quantity;}
+                             else
+                             Hall_stock::create([
+                                 'product_id'=>$record->product_id,
+                                 'hall_id'=>$data['hall_id'],
+                                 'stock'=>$record->quantity,
+                             ]);
+
+                             $record->ready_date=$data['ready_date'];
+                             $record->status='ready';
+                             $record->save();
+
+                             $prod=Product::find($record->product_id);
+                             $p=( ($prod->cost*$prod->stock) + ($record->cost) )
+                                 / ($prod->stock+$record->quantity);
+                             $prod->cost=$p;
+                             $prod->stock +=$record->quantity;
+                             $prod->price=$record->price;
+
+                             $prod->save();
+                         })
+                 )
+                 ->label('الحالة'),
                 TextColumn::make('Product.name')
+                    ->description(function (Model $record) {
+                        return $record->Product->description;
+                    })
                     ->searchable()
                     ->sortable()
                     ->label('اسم المنتج'),
+                Tables\Columns\ImageColumn::make('Product.image')
+                 ->circular()
+                 ->label(''),
                 TextColumn::make('process_date')
                     ->searchable()
                     ->sortable()
                     ->label('تاريخ بدء التصنيع'),
+                TextColumn::make('ready_date')
+                    ->searchable()
+                    ->sortable()
+                    ->label('تاريخ الانتاج'),
                 TextColumn::make('quantity')
                     ->searchable()
                     ->sortable()
