@@ -4,6 +4,7 @@ namespace App\Filament\Resources;
 
 use App\Filament\Resources\FactoryResource\Pages;
 use App\Filament\Resources\FactoryResource\RelationManagers;
+use App\Models\Buy;
 use App\Models\Factory;
 use App\Models\Item;
 use App\Models\Item_type;
@@ -12,6 +13,7 @@ use App\Models\Place;
 use App\Models\Place_stock;
 use App\Models\Unit;
 use Awcodes\TableRepeater\Header;
+use Filament\Actions\StaticAction;
 use Filament\Forms;
 use Filament\Forms\Components\Hidden;
 use Filament\Forms\Form;
@@ -25,6 +27,7 @@ use Filament\Tables\Table;
 use Filament\Forms\Components\Select;
 use Filament\Forms\Components\TextInput;
 use Filament\Forms\Components\DatePicker;
+use Illuminate\Contracts\View\View;
 use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\SoftDeletingScope;
@@ -32,6 +35,7 @@ use Filament\Forms\Components\Section;
 use Awcodes\TableRepeater\Components\TableRepeater;
 use Illuminate\Support\Facades\Auth;
 use Filament\Tables\Columns\TextColumn;
+use Filament\Tables\Columns\Summarizers\Sum;
 
 
 class FactoryResource extends Resource
@@ -100,7 +104,7 @@ class FactoryResource extends Resource
                     ->columnSpan(6),
                 Section::make()
                    ->schema([
-                       TableRepeater::make('Tran')
+                       TableRepeater::make('TranWidget')
                            ->hiddenLabel()
                            ->required()
                            ->relationship()
@@ -256,42 +260,72 @@ class FactoryResource extends Resource
                 TextColumn::make('id')
                  ->searchable()
                  ->sortable()
-                 ->label(''),
+                 ->label('الرقم الألي'),
                 TextColumn::make('Product.name')
                     ->searchable()
                     ->sortable()
-                    ->label(''),
+                    ->label('اسم المنتج'),
                 TextColumn::make('process_date')
                     ->searchable()
                     ->sortable()
-                    ->label(''),
+                    ->label('تاريخ بدء التصنيع'),
                 TextColumn::make('quantity')
                     ->searchable()
                     ->sortable()
-                    ->label(''),
+                    ->label('العدد'),
                 TextColumn::make('tot')
+                    ->summarize(Sum::make()->label('')->numeric(
+                        decimalPlaces: 2,
+                        decimalSeparator: '.',
+                        thousandsSeparator: ',',
+                    ))
                     ->searchable()
                     ->sortable()
-                    ->label('tot'),
+                    ->label('اجمالي المواد'),
 
                 TextColumn::make('handwork')
+                    ->summarize(Sum::make()->label('')->numeric(
+                        decimalPlaces: 2,
+                        decimalSeparator: '.',
+                        thousandsSeparator: ',',
+                    ))
                     ->searchable()
                     ->sortable()
-                    ->label(''),
+                    ->label('عمل اليد'),
                 TextColumn::make('cost')
+                    ->summarize(Sum::make()->label('')->numeric(
+                        decimalPlaces: 2,
+                        decimalSeparator: '.',
+                        thousandsSeparator: ',',
+                    ))
                     ->searchable()
                     ->sortable()
-                    ->label(''),
+                    ->label('اجمالي التكلفة'),
                 TextColumn::make('price')
+                    ->summarize(Sum::make()->label('')->numeric(
+                        decimalPlaces: 2,
+                        decimalSeparator: '.',
+                        thousandsSeparator: ',',
+                    ))
                     ->searchable()
                     ->sortable()
-                    ->label(''),
+                    ->label('سعر المنتج'),
+                TextColumn::make('price_tot')
+                    ->summarize(Tables\Columns\Summarizers\Summarizer::make()
+                        ->using(function (Table $table) {
+                            return $table->getRecords()->sum('price_tot');
+                        })
+                    )
+                    ->searchable()
+                    ->sortable()
+                    ->label('اجمالي السعر'),
             ])
             ->filters([
                 //
             ])
             ->actions([
-                Tables\Actions\EditAction::make(),
+                Tables\Actions\EditAction::make()
+                ->iconButton(),
                 Action::make('del')
                     ->icon('heroicon-o-trash')
                     ->modalHeading('الغاء التصنيع')
@@ -312,11 +346,30 @@ class FactoryResource extends Resource
                         }
                         $record->delete();
                     }),
-            ])
-            ->bulkActions([
-                Tables\Actions\BulkActionGroup::make([
-                    Tables\Actions\DeleteBulkAction::make(),
-                ]),
+                Action::make('the_tran')
+                    ->iconButton()
+                    ->iconSize(IconSize::Small)
+                    ->icon('heroicon-m-list-bullet')
+                    ->color('success')
+                    ->modalHeading(false)
+                    ->modalSubmitAction(false)
+                    ->modalCancelAction(fn (StaticAction $action) => $action->label('عودة'))
+                    ->modalContent(fn (Factory $record): View => view(
+                        'view-tran-widget',
+                        ['factory_id' => $record->id],
+                    )),
+                Action::make('the_hand')
+                    ->iconButton()
+                    ->iconSize(IconSize::Small)
+                    ->icon('heroicon-o-document-currency-dollar')
+                    ->color('info')
+                    ->modalHeading(false)
+                    ->modalSubmitAction(false)
+                    ->modalCancelAction(fn (StaticAction $action) => $action->label('عودة'))
+                    ->modalContent(fn (Factory $record): View => view(
+                        'view-hand-widget',
+                        ['factory_id' => $record->id],
+                    )),
             ]);
     }
 

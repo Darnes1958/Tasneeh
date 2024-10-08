@@ -15,9 +15,16 @@ class Tran extends Model
         return $this->belongsTo(Factory::class);
     }
 
-    public function Product()
+    public function Item()
     {
-        return $this->belongsTo(Product::class);
+        return $this->belongsTo(Item::class);
+    }
+
+    protected $appends = ['sub_tot'];
+
+    public function getSubTotAttribute()
+    {
+        return $this->price*$this->quant;
     }
 
     public function __construct(array $attributes = [])

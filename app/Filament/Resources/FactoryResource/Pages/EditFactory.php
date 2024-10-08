@@ -20,7 +20,7 @@ class EditFactory extends EditRecord
     }
     protected function beforeSave(): void {
         $last=$this->getRecord()->tran;
-        $cuurent=$this->data['Tran'];
+        $cuurent=$this->data['TranWidget'];
         foreach ($last as $item){
             $last_quant=$item->quant;
             $current_quant=0;

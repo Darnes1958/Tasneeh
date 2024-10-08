@@ -10,6 +10,13 @@ class Factory extends Model
 {
     protected $connection = 'other';
 
+    protected $appends = ['price_tot'];
+
+    public function getPriceTotAttribute()
+    {
+        return $this->price*$this->quantity;
+    }
+
     public function Product()
     {
         return $this->belongsTo(Product::class);
