@@ -11,6 +11,8 @@ class CreateHallTran extends CreateRecord
 {
     protected static string $resource = HallTranResource::class;
     protected ?string $heading='نقل منتجات';
+    protected static bool $canCreateAnother = false;
+
     protected function getRedirectUrl(): string
     {
         return static::getResource()::getUrl('index');

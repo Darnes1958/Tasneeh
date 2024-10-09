@@ -14,11 +14,12 @@ use App\Models\Man;
 use App\Models\Place;
 use App\Models\Place_stock;
 use App\Models\Product;
-use App\Models\Unit;
+
 use Awcodes\TableRepeater\Header;
 use Filament\Actions\StaticAction;
 use Filament\Forms;
 use Filament\Forms\Components\Hidden;
+use Filament\Forms\Components\Textarea;
 use Filament\Forms\Form;
 use Filament\Forms\Get;
 use Filament\Notifications\Notification;
@@ -27,6 +28,8 @@ use Filament\Support\Enums\IconSize;
 use Filament\Support\Enums\MaxWidth;
 use Filament\Tables;
 use Filament\Tables\Actions\Action;
+use Filament\Tables\Enums\FiltersLayout;
+use Filament\Tables\Filters\SelectFilter;
 use Filament\Tables\Table;
 use Filament\Forms\Components\Select;
 use Filament\Forms\Components\TextInput;
@@ -191,9 +194,14 @@ class FactoryResource extends Resource
                           ->addActionLabel('اضافة مشغل')
                           ->headers([
                               Header::make('الاسم')
-                                  ->width('75%'),
+                                  ->width('40%'),
+                              Header::make('بتاريخ')
+                                  ->width('20%'),
                               Header::make('المبلغ')
-                                  ->width('25%'),
+                                  ->width('15%'),
+                              Header::make('ملاحظات')
+                                  ->width('20%'),
+
                           ])
                           ->live()
                           ->afterStateUpdated(function ($state,Forms\Set $set,Get $get){
@@ -244,11 +252,17 @@ class FactoryResource extends Resource
                                   ->createOptionUsing(function (array $data): int {
                                       return Man::create($data)->getKey();
                                   }),
+                              DatePicker::make('val_date')
+                                ->default(now())
+                                ->columnSpan(1)
+                                ->required(),
                               TextInput::make('val')
                                   ->live(onBlur: true)
                                   ->extraInputAttributes(['tabindex' => 1])
                                   ->columnSpan(1)
                                   ->required(),
+                              Textarea::make('notes')
+                               ->columnSpan(2),
                               Hidden::make('user_id')
                               ->default(Auth::id())
                           ])
@@ -409,7 +423,7 @@ class FactoryResource extends Resource
                     ->label('اجمالي السعر'),
             ])
             ->filters([
-                //
+               //
             ])
             ->actions([
                 Tables\Actions\EditAction::make()

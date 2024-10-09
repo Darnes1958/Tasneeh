@@ -9,11 +9,14 @@ use Filament\Resources\Pages\ListRecords;
 class ListHallTrans extends ListRecords
 {
     protected static string $resource = HallTranResource::class;
+    protected ?string $heading='نقل منتجات';
 
     protected function getHeaderActions(): array
     {
         return [
-            Actions\CreateAction::make(),
+            Actions\CreateAction::make()
+                ->createAnother(false)
+                ->label('ادخال'),
         ];
     }
 }

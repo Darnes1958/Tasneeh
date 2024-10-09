@@ -2,6 +2,7 @@
 
 namespace App\Models;
 
+use App\Enums\PayWho;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Support\Facades\Auth;
@@ -18,6 +19,9 @@ class Hand extends Model
     {
         return $this->belongsTo(Man::class);
     }
+    protected $casts=[
+        'pay_who'=>PayWho::class,
+    ];
     public function __construct(array $attributes = [])
     {
         parent::__construct($attributes);

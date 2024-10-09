@@ -10,6 +10,7 @@ class EditHallTran extends EditRecord
 {
     protected static string $resource = HallTranResource::class;
 
+    protected ?string $heading='';
     protected function getHeaderActions(): array
     {
         return [
