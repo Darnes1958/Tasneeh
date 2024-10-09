@@ -10,4 +10,8 @@ class CreateFactory extends CreateRecord
 {
     protected static string $resource = FactoryResource::class;
     protected ?string $heading='';
+    protected function getRedirectUrl(): string
+    {
+        return static::getResource()::getUrl('index');
+    }
 }

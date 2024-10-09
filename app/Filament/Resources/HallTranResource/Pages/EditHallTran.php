@@ -16,4 +16,5 @@ class EditHallTran extends EditRecord
             Actions\DeleteAction::make(),
         ];
     }
+
 }

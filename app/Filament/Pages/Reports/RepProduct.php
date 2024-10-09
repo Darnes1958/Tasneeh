@@ -2,17 +2,26 @@
 
 namespace App\Filament\Pages\Reports;
 
+use App\Models\Customer;
+use App\Models\Hall;
 use App\Models\Hall_stock;
 use App\Models\Product;
 use App\Models\views\Rep_makzoone;
 use Faker\Core\Uuid;
+use Filament\Forms\Components\Checkbox;
+use Filament\Forms\Components\Select;
 use Filament\Pages\Page;
+use Filament\Support\Enums\MaxWidth;
 use Filament\Tables\Columns\ImageColumn;
 use Filament\Tables\Columns\Summarizers\Sum;
 use Filament\Tables\Columns\TextColumn;
 use Filament\Tables\Concerns\InteractsWithTable;
 use Filament\Tables\Contracts\HasTable;
+use Filament\Tables\Enums\FiltersLayout;
+use Filament\Tables\Filters\Filter;
+use Filament\Tables\Filters\SelectFilter;
 use Filament\Tables\Table;
+use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Support\Facades\Auth;
 
@@ -86,7 +95,42 @@ class RepProduct extends Page implements HasTable
                     ->circular()
                     ->label(''),
             ])
+            ->filters([
+                SelectFilter::make('hall_id')
+                    ->searchable()
+                    ->placeholder('كل اماكن التخزين')
+                    ->label('')
+                    ->options(Hall::all()->pluck('name','id'))
+                    ->preload(),
+                SelectFilter::make('product_id')
+                    ->searchable()
+                    ->placeholder('كل المنتجات')
+                    ->label('')
+                    ->options(Product::all()->pluck('name','id'))
+                    ->preload(),
+                Filter::make('anyfilter')
 
+                    ->form([
+                        Checkbox::make('showZero')
+
+                            ->label('اطهار الاصفار'),
+
+
+                    ])
+                    ->query(function (Builder $query, array $data): Builder {
+                        return $query
+                            ->when(
+                                ! $data['showZero'],
+                                fn (Builder $query, $date): Builder => $query->where('stock','!=',0),
+                            );
+
+                    })
+                    ,
+
+
+            ], layout: FiltersLayout::AboveContent)
+            ->filtersFormWidth(MaxWidth::SevenExtraLarge)
+            ->filtersFormColumns(4)
             ->striped();
     }
 }

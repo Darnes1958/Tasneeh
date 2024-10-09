@@ -10,14 +10,18 @@ use App\Models\HallTran;
 use App\Models\Place_stock;
 use Filament\Forms;
 use Filament\Forms\Form;
+use Filament\Notifications\Notification;
 use Filament\Resources\Resource;
 use Filament\Tables;
 use Filament\Tables\Table;
+use Hamcrest\Core\Set;
 use Illuminate\Database\Eloquent\Builder;
+use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\SoftDeletingScope;
 use Filament\Forms\Components\Select;
 use Filament\Forms\Components\Placeholder;
 use Filament\Forms\Components\Wizard;
+use Filament\Tables\Columns\TextColumn;
 
 class HallTranResource extends Resource
 {
@@ -107,12 +111,18 @@ class HallTranResource extends Resource
                            Forms\Components\TextInput::make('quant')
                                ->label('الكمية')
                                ->live(onBlur: true)
-                               ->maxValue(function (Forms\Get $get){
-                                   return Hall_stock::where('hall_id', $get('hall_id1'))
-                                       ->where('product_id',$get('product_id'))->first()->stock;
-                               })
+                               ->afterStateUpdated(function (Forms\Get $get,$state,Forms\Set $set){
+                                   if ($state> Hall_stock::where('hall_id', $get('hall_id1'))
+                                       ->where('product_id',$get('product_id'))->first()->stock){
+                                       Notification::make()
+                                           ->title('الرصيد لايسمح بهذه الكمية')
+                                           ->send();
+                                       $set('quant',0);
 
-                               ->required()
+                                   };
+                               })
+                               ->required(),
+                           Forms\Components\Hidden::make('user_id')->default(auth()->id()),
 
                        ])
                 ])
@@ -127,19 +137,54 @@ class HallTranResource extends Resource
     {
         return $table
             ->columns([
-                //
+                TextColumn::make('tran_date')
+                    ->label('التاريخ'),
+                TextColumn::make('Product.name')
+                    ->label('اسم المنتج'),
+                TextColumn::make('Hall1.name')
+                 ->label('مــــن'),
+                TextColumn::make('Hall2.name')
+                    ->label('إلــــي'),
+                TextColumn::make('quant')
+                    ->label('الكمية'),
+
             ])
             ->filters([
                 //
             ])
             ->actions([
-                Tables\Actions\EditAction::make(),
+                Tables\Actions\Action::make('del')
+                 ->icon('heroicon-o-trash')
+                 ->iconButton()
+                 ->hidden(function (Model $record){
+                  return   Hall_stock::where('product_id',$record->product_id)
+                         ->where('hall_id',$record->hall_id2)->first()->stock < $record->quant;
+                 })
+                ->requiresConfirmation()
+                ->modalHeading('الغاء النقل')
+                ->action(function (Model $record){
+                    $h=Hall_stock::where('hall_id', $record->hall_id2)
+                        ->where('product_id',$record->product_id)->first();
+                    $h->stock -= $record->quant;
+                    $h->save();
+                    $h=Hall_stock::where('hall_id', $record->hall_id1)
+                        ->where('product_id',$record->product_id)->first();
+                    $h->stock += $record->quant;
+                    $h->save();
+                    $record->delete();
+
+                }
+                )
             ])
             ->bulkActions([
                 Tables\Actions\BulkActionGroup::make([
                     Tables\Actions\DeleteBulkAction::make(),
                 ]),
-            ]);
+            ])
+            ->checkIfRecordIsSelectableUsing(
+                fn (Model $record): bool => Hall_stock::where('product_id',$record->product_id)
+                        ->where('hall_id',$record->hall_id2)->first()->stock >= $record->quant,
+            );
     }
 
     public static function getRelations(): array
