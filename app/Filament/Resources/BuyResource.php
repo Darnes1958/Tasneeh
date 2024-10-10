@@ -438,7 +438,6 @@ class BuyResource extends Resource
             ->columns([
                 TextColumn::make('id')
                     ->searchable()
-
                     ->sortable()
                     ->label('الرقم الالي'),
                 TextColumn::make('Supplier.name')

@@ -10,6 +10,10 @@ class Hall extends Model
 {
     protected $connection = 'other';
 
+    public function Sell()
+    {
+        return $this->hasMany(Sell::class);
+    }
     public function Hall_Stock()
     {
         return $this->hasMany(Hall_Stock::class);

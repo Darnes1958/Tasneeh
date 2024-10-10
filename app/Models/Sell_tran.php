@@ -10,11 +10,17 @@ class Sell_tran extends Model
 {
   protected $connection = 'other';
 
+    protected $appends = ['sub_tot'];
+
+    public function getSubTotAttribute()
+    {
+        return $this->p*$this->q;
+    }
   public function Sell(){
     return $this->belongsTo(Sell::class);
   }
-  public function Item(){
-    return $this->belongsTo(Item::class);
+  public function Product(){
+    return $this->belongsTo(Product::class);
   }
   public function Tar_sell(){
     return $this->belongsTo(Tar_sell::class);

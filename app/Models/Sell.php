@@ -13,16 +13,12 @@ class Sell extends Model
 {
   protected $connection = 'other';
 
-
-
   public function Customer(){
     return $this->belongsTo(Customer::class);
   }
-  public function Price_type(){
-    return $this->belongsTo(Price_type::class);
-  }
-  public function Place(){
-    return $this->belongsTo(Place::class);
+
+  public function Hall(){
+    return $this->belongsTo(Hall::class);
   }
 
   public function Sell_tran(){

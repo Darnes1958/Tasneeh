@@ -19,17 +19,13 @@ class Price_type extends Model
     'inc_dec' => IncDec::class,
   ];
 
-  public function Buy(){
-    return $this->hasMany(Buy::class);
-  }
-  public function Price_buy(){
-    return $this->hasMany(Price_buy::class);
-  }
-    public function Price_sell(){
-        return $this->hasMany(Price_sell::class);
-    }
+
+
     public function Receipt(){
         return $this->hasMany(Receipt::class);
+    }
+    public function Recsupp(){
+        return $this->hasMany(Recsupp::class);
     }
 
     public function __construct(array $attributes = [])
