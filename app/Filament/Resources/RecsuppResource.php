@@ -25,6 +25,7 @@ use Filament\Forms\Get;
 use Filament\Resources\Resource;
 use Filament\Support\Enums\FontWeight;
 use Filament\Tables;
+use Filament\Tables\Columns\Summarizers\Sum;
 use Filament\Tables\Columns\TextColumn;
 use Filament\Tables\Filters\SelectFilter;
 use Filament\Tables\Table;
@@ -300,6 +301,16 @@ class RecsuppResource extends Resource
           ->label('البيان')
           ->badge(),
         TextColumn::make('val')
+            ->summarize(Sum::make()->label('')->numeric(
+                decimalPlaces: 2,
+                decimalSeparator: '.',
+                thousandsSeparator: ',',
+            ))
+            ->numeric(
+                decimalPlaces: 2,
+                decimalSeparator: '.',
+                thousandsSeparator: ',',
+            )
           ->searchable()
           ->label('المبلغ'),
 

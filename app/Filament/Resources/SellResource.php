@@ -318,7 +318,17 @@ class SellResource extends Resource
                     )
                     ->label('المدفوع'),
                 TextColumn::make('baky')
+                    ->numeric(
+                        decimalPlaces: 2,
+                        decimalSeparator: '.',
+                        thousandsSeparator: ',',
+                    )
                     ->summarize(Tables\Columns\Summarizers\Summarizer::make()
+                        ->numeric(
+                            decimalPlaces: 2,
+                            decimalSeparator: '.',
+                            thousandsSeparator: ',',
+                        )
                         ->using(function (Table $table) {
                             return $table->getRecords()->sum('baky');
                         })

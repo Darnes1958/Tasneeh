@@ -14,7 +14,12 @@ class Receipt extends Model
 {
     protected $connection = 'other';
 
+    protected $appends = ['tot'];
 
+    public function getTotAttribute()
+    {
+        return $this->val+$this->differ;
+    }
     public function Sell(){
         return $this->belongsTo(Sell::class);
     }

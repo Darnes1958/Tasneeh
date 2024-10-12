@@ -11,8 +11,7 @@ enum RecWhoView: int implements HasLabel,HasColor,HasIcon
   case دفع = 2;
   case قبض_فاتورة = 3;
   case دفع_فاتورة = 4;
-  case دفـع_فاتورة = 5;
-  case قبـض_فاتورة = 6;
+
   case فاتورة_مبيعات = 7;
   case فاتورة_مشتريات = 8;
   case من_خزينة_الي_خزينة = 9;
