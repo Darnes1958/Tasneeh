@@ -2,6 +2,7 @@
 
 namespace App\Models;
 
+use App\Enums\PayType;
 use App\Enums\PayWho;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
@@ -19,8 +20,17 @@ class Hand extends Model
     {
         return $this->belongsTo(Man::class);
     }
+    public function Kazena()
+    {
+        return $this->belongsTo(Kazena::class);
+    }
+    public function Acc()
+    {
+        return $this->belongsTo(Acc::class);
+    }
     protected $casts=[
         'pay_who'=>PayWho::class,
+        'pay_type'=>PayType::class,
     ];
     public function __construct(array $attributes = [])
     {

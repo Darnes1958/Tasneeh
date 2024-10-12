@@ -13,6 +13,13 @@ class Sell extends Model
 {
   protected $connection = 'other';
 
+    protected $appends = ['baky'];
+
+    public function getBakyAttribute()
+    {
+        return $this->tot-$this->pay;
+    }
+
   public function Customer(){
     return $this->belongsTo(Customer::class);
   }

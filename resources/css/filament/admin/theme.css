@@ -1,4 +1,12 @@
 @import '/vendor/filament/filament/resources/css/theme.css';
 @import '/vendor/awcodes/filament-table-repeater/resources/css/plugin.css';
+.fi-ta-ctn .py-4 {
+    padding-top: .3rem !important;
+    padding-bottom: .3rem !important;
+}
+.fi-sidebar-nav-groups  {
+
+    @apply gap-y-2;
+}
 
 @config 'tailwind.config.js';

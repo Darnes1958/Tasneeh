@@ -12,9 +12,11 @@ use App\Models\Cost;
 use App\Models\Costtype;
 use App\Models\Item;
 use App\Models\Item_type;
+use App\Models\Place;
 use App\Models\Place_stock;
 use App\Models\Sell_tran;
 
+use App\Models\Supplier;
 use App\Models\Unit;
 use Awcodes\TableRepeater\Components\TableRepeater;
 use Awcodes\TableRepeater\Header;
@@ -34,6 +36,7 @@ use Filament\Resources\Resource;
 use Filament\Support\Enums\IconSize;
 use Filament\Tables;
 use Filament\Tables\Actions\Action;
+use Filament\Tables\Columns\Summarizers\Sum;
 use Filament\Tables\Columns\TextColumn;
 use Filament\Tables\Table;
 
@@ -56,22 +59,15 @@ class BuyResource extends Resource
             ->schema([
                 Section::make()
                     ->schema([
-                        DatePicker::make('order_date')
-                            ->id('order_date')
-                            ->default(now())
-                            ->autofocus()
-                            ->prefix('التاريخ')
-                            ->hiddenLabel()
-                            ->columnSpan(2)
-                            ->required(),
+
                         Select::make('supplier_id')
-                            ->default(1)
+                            ->default(Supplier::min('id'))
                             ->prefix('المورد')
                             ->hiddenLabel()
                             ->relationship('Supplier','name')
                             ->live()
                             ->required()
-                            ->columnSpan(4)
+                            ->columnSpan('full')
                             ->createOptionForm([
                                 Section::make('ادخال مورد جديد')
                                     ->schema([
@@ -103,34 +99,38 @@ class BuyResource extends Resource
                                             ->label('لبيانا'),
                                         Hidden::make('user_id')
                                             ->default(Auth::id()),
-
                                     ])->columns(2)
-                            ])
-                            ->id('supplier_id'),
-                        Select::make('price_type_id')
-                            ->default(1)
-                            ->prefix('طريقة الدفع')
-                            ->disabled(function ($operation){
-                                return $operation=='edit';
-                            })
-                            ->hiddenLabel()
+                            ]),
+                        DatePicker::make('order_date')
+                            ->id('order_date')
+                            ->default(now())
+                            ->autofocus()
+                            ->label('التاريخ')
                             ->columnSpan(2)
-                            ->live()
-                            ->default(1)
-                            ->relationship('Price_type','name')
-                            ->required()
-                            ->id('price_type_id'),
+                            ->required(),
+                        TextInput::make('tot')
+                            ->label('إجمالي الفاتورة')
+                            ->columnSpan(2)
+                            ->default(0)
+                            ->readOnly(),
+                        TextInput::make('cost')
+                            ->label('تكاليف اضافية')
+                            ->columnSpan(2)
+                            ->readOnly()
+                            ->default('0'),
+
                         Select::make('place_id')
-                            ->default(1)
+                            ->searchable()
+                            ->preload()
+                            ->default(fn()=>Place::min('id'))
                             ->disabled(function ($operation){
                                 return $operation=='edit';
                             })
-                            ->prefix('مكان التخزين')
-                            ->hiddenLabel()
+                            ->label('مكان التخزين')
                             ->relationship('Place','name')
                             ->live()
                             ->required()
-                            ->columnSpan(4)
+                            ->columnSpan('full')
                             ->createOptionForm([
                                 Section::make('ادخال مكان تخزين')
                                     ->schema([
@@ -138,9 +138,9 @@ class BuyResource extends Resource
                                             ->required()
                                             ->unique()
                                             ->label('الاسم'),
-                                        Radio::make('place_type')
-                                            ->inline()
-                                            ->options(PlaceType::class)
+                                        Hidden::make('place_type')
+                                            ->default(0)
+
                                     ])
                             ])
                             ->editOptionForm([
@@ -154,8 +154,7 @@ class BuyResource extends Resource
                                             ->inline()
                                             ->options(PlaceType::class)
                                     ])->columns(2)
-                            ])
-                            ->id('place_id'),
+                            ]),
 
                         TextInput::make('notes')
                             ->live()
@@ -163,21 +162,12 @@ class BuyResource extends Resource
                             ->prefix('ملاحظات')
                             ->hiddenLabel()
                             ->columnSpan('full'),
-                        TextInput::make('tot')
-                            ->label('إجمالي الفاتورة')
-                            ->columnSpan(2)
-                            ->default(0)
-                            ->readOnly(),
-                        TextInput::make('cost')
-                            ->label('تكاليف اضافية')
-                            ->columnSpan(2)
-                            ->readOnly()
-                            ->default('0'),
+
                         Hidden::make('user_id')
                          ->default(Auth::id()),
                     ])
                     ->columns(6)
-                    ->columnSpan(6),
+                    ->columnSpan(5),
                 Section::make()
                  ->schema([
                      TableRepeater::make('Buy_tran')
@@ -197,8 +187,10 @@ class BuyResource extends Resource
                          ->schema([
                              Select::make('item_id')
                                  ->required()
+                                 ->preload()
                                  ->searchable()
-                                 ->options(Item::all()->pluck('name','id'))
+                                 ->relationship('Item','name')
+                             //    ->options(Item::all()->pluck('name','id'))
                                  ->disableOptionWhen(function ($value, $state, Get $get) {
                                      return collect($get('../*.item_id'))
                                          ->reject(fn($id) => $id == $state)
@@ -208,10 +200,6 @@ class BuyResource extends Resource
                                  ->createOptionForm([
                                      Section::make('ادخال صنف')
                                          ->schema([
-                                             TextInput::make('id')
-                                                 ->hidden(fn(string $operation)=>$operation=='create')
-                                                 ->disabled()
-                                                 ->label('الرقم الألي'),
                                              TextInput::make('name')
                                                  ->label('اسم الصنف')
                                                  ->autocomplete(false)
@@ -222,10 +210,37 @@ class BuyResource extends Resource
                                                      'unique' => ' :attribute مخزون مسبقا ',
                                                  ])
                                                  ->columnSpan(2),
+                                             Select::make('item_type_id')
+                                                 ->label('التصنيف')
+                                                 ->relationship('Item_type','name')
+                                                 ->required()
+                                                 ->searchable()
+                                                 ->preload()
+                                                 ->columnSpan(2)
+                                                 ->createOptionForm([
+                                                     Section::make('ادخال تصنيف للأصناف')
+                                                         ->schema([
+                                                             TextInput::make('name')
+                                                                 ->required()
+                                                                 ->unique()
+                                                                 ->label('الاسم'),
+                                                         ])
+                                                 ])
+                                                 ->editOptionForm([
+                                                     Section::make('تعديل تصنيف للأصناف')
+                                                         ->schema([
+                                                             TextInput::make('name')
+                                                                 ->required()
+                                                                 ->unique(ignoreRecord: true)
+                                                                 ->label('الاسم'),
+                                                         ])
+                                                 ]),
                                              Select::make('unit_id')
                                                  ->label('الوحدة')
-                                                 ->options(Unit::all()->pluck('name','id'))
+                                                ->relationship('Unit','name')
                                                  ->required()
+                                                 ->searchable()
+                                                 ->preload()
                                                  ->columnSpan(2)
                                                  ->createOptionForm([
                                                      Section::make('ادخال وحدات ')
@@ -237,35 +252,19 @@ class BuyResource extends Resource
                                                                  ->label('الاسم'),
                                                          ])
                                                  ])
-                                                 ->createOptionUsing(function (array $data): int {
-                                                     return Unit::create($data)->getKey();
-                                                 }),
-                                             TextInput::make('count')
-                                                 ->label('العدد')
-                                                 ->required(),
-                                             TextInput::make('price_buy')
-                                                 ->label('سعر الشراء')
-                                                 ->required()
-                                                 ->id('price_buy'),
-
-                                             Select::make('item_type_id')
-                                                 ->label('التصنيف')
-                                                 ->options(Item_type::all()->pluck('name','id'))
-                                                 ->required()
-                                                 ->columnSpan(2)
-                                                 ->createOptionForm([
-                                                     Section::make('ادخال تصنيف للأصناف')
-
+                                                 ->editOptionForm([
+                                                     Section::make('تعديل وحدات ')
+                                                         ->description('ادخال وحدة (صندوق,دزينه,كيس .... الخ)')
                                                          ->schema([
                                                              TextInput::make('name')
                                                                  ->required()
-                                                                 ->unique()
+                                                                 ->unique(ignoreRecord: true)
                                                                  ->label('الاسم'),
                                                          ])
-                                                 ])
-                                                 ->createOptionUsing(function (array $data): int {
-                                                     return Item_type::create($data)->getKey();
-                                                 }),
+                                                 ]),
+                                             TextInput::make('count')
+                                                 ->label('العدد')
+                                                 ->required(),
                                              Hidden::make('price_cost')
                                                  ->default(0)
                                              ,
@@ -274,9 +273,83 @@ class BuyResource extends Resource
                                          ])
                                          ->columns(4)
                                  ])
-                                 ->createOptionUsing(function (array $data): int {
-                                     return Item::create($data)->getKey();
-                                 }),
+                                 ->editOptionForm([
+                                     Section::make('تعديل صنف')
+                                         ->schema([
+                                             TextInput::make('name')
+                                                 ->label('اسم الصنف')
+                                                 ->autocomplete(false)
+                                                 ->required()
+                                                 ->live()
+                                                 ->unique(ignoreRecord: true)
+                                                 ->validationMessages([
+                                                     'unique' => ' :attribute مخزون مسبقا ',
+                                                 ])
+                                                 ->columnSpan(2),
+                                             Select::make('item_type_id')
+                                                 ->label('التصنيف')
+                                                 ->relationship('Item_type','name')
+                                                 ->required()
+                                                 ->searchable()
+                                                 ->preload()
+                                                 ->columnSpan(2)
+                                                 ->createOptionForm([
+                                                     Section::make('ادخال تصنيف للأصناف')
+                                                         ->schema([
+                                                             TextInput::make('name')
+                                                                 ->required()
+                                                                 ->unique()
+                                                                 ->label('الاسم'),
+                                                         ])
+                                                 ])
+                                                 ->editOptionForm([
+                                                     Section::make('تعديل تصنيف للأصناف')
+                                                         ->schema([
+                                                             TextInput::make('name')
+                                                                 ->required()
+                                                                 ->unique(ignoreRecord: true)
+                                                                 ->label('الاسم'),
+                                                         ])
+                                                 ]),
+                                             Select::make('unit_id')
+                                                 ->label('الوحدة')
+                                                 ->relationship('Unit','name')
+                                                 ->required()
+                                                 ->searchable()
+                                                 ->preload()
+                                                 ->columnSpan(2)
+                                                 ->createOptionForm([
+                                                     Section::make('ادخال وحدات ')
+                                                         ->description('ادخال وحدة (صندوق,دزينه,كيس .... الخ)')
+                                                         ->schema([
+                                                             TextInput::make('name')
+                                                                 ->required()
+                                                                 ->unique()
+                                                                 ->label('الاسم'),
+                                                         ])
+                                                 ])
+                                                 ->editOptionForm([
+                                                     Section::make('تعديل وحدات ')
+                                                         ->description('ادخال وحدة (صندوق,دزينه,كيس .... الخ)')
+                                                         ->schema([
+                                                             TextInput::make('name')
+                                                                 ->required()
+                                                                 ->unique(ignoreRecord: true)
+                                                                 ->label('الاسم'),
+                                                         ])
+                                                 ]),
+                                             TextInput::make('count')
+                                                 ->label('العدد')
+                                                 ->required(),
+                                             Hidden::make('price_cost')
+                                                 ->default(0)
+                                             ,
+                                             Hidden::make('user_id')
+                                                 ->default(Auth::id()),
+                                         ])
+                                         ->columns(4)
+                                 ]),
+
                              TextInput::make('quant')
                                  ->live(onBlur: true)
                                  ->extraInputAttributes(['tabindex' => 1])
@@ -353,7 +426,7 @@ class BuyResource extends Resource
                              return $data;
                          })
                  ])
-                 ->columnSpan(6),
+                 ->columnSpan(7),
                 Section::make()
                     ->heading('تكاليف اضافية')
                     ->collapsed()
@@ -372,7 +445,8 @@ class BuyResource extends Resource
                                 Select::make('costtype_id')
                                     ->required()
                                     ->searchable()
-                                    ->options(Costtype::all()->pluck('name','id'))
+                                    ->relationship('Costtype','name')
+
                                     ->disableOptionWhen(function ($value, $state, Get $get) {
                                         return collect($get('../*.costtype_id'))
                                             ->reject(fn($id) => $id == $state)
@@ -382,16 +456,13 @@ class BuyResource extends Resource
                                     ->createOptionForm([
                                         Section::make('ادخال نوع تكلفة')
                                             ->schema([
-                                                TextInput::make('id')
-                                                    ->hidden(fn(string $operation)=>$operation=='create')
-                                                    ->disabled()
-                                                    ->label('الرقم الألي'),
+
                                                 TextInput::make('name')
                                                     ->label('البيان')
                                                     ->autocomplete(false)
                                                     ->required()
                                                     ->live()
-                                                    ->unique(ignoreRecord: true)
+                                                    ->unique()
                                                     ->validationMessages([
                                                         'unique' => ' :attribute مخزون مسبقا ',
                                                     ])
@@ -399,9 +470,24 @@ class BuyResource extends Resource
                                             ])
                                             ->columns(3)
                                     ])
-                                    ->createOptionUsing(function (array $data): int {
-                                        return Costtype::create($data)->getKey();
-                                    }),
+                                    ->editOptionForm([
+                                Section::make('تعديل نوع تكلفة')
+                                    ->schema([
+                                        TextInput::make('name')
+                                            ->label('البيان')
+                                            ->autocomplete(false)
+                                            ->required()
+                                            ->live()
+                                            ->unique(ignoreRecord: true)
+                                            ->validationMessages([
+                                                'unique' => ' :attribute مخزون مسبقا ',
+                                            ])
+                                            ->columnSpan(2),
+                                    ])
+                                    ->columns(3)
+                            ]),
+
+
                                 TextInput::make('val')
                                     ->extraInputAttributes(['tabindex' => 1])
                                     ->columnSpan(1)
@@ -428,7 +514,7 @@ class BuyResource extends Resource
                             })
 
                     ])
-                    ->columnSpan(6),
+                    ->columnSpan(5),
             ])->columns(12);
     }
 
@@ -449,12 +535,42 @@ class BuyResource extends Resource
                     ->sortable()
                     ->label('التاريخ'),
                 TextColumn::make('tot')
+                    ->summarize(Sum::make()->label('')->numeric(
+                        decimalPlaces: 2,
+                        decimalSeparator: '.',
+                        thousandsSeparator: ',',
+                    ))
+                    ->numeric(
+                        decimalPlaces: 2,
+                        decimalSeparator: '.',
+                        thousandsSeparator: ',',
+                    )
                     ->searchable()
                     ->sortable()
                     ->label('اجمالي الفاتورة'),
                 TextColumn::make('pay')
+                    ->summarize(Sum::make()->label('')->numeric(
+                        decimalPlaces: 2,
+                        decimalSeparator: '.',
+                        thousandsSeparator: ',',
+                    ))
+                    ->numeric(
+                        decimalPlaces: 2,
+                        decimalSeparator: '.',
+                        thousandsSeparator: ',',
+                    )
                     ->label('المدفوع'),
                 TextColumn::make('cost')
+                    ->summarize(Sum::make()->label('')->numeric(
+                        decimalPlaces: 2,
+                        decimalSeparator: '.',
+                        thousandsSeparator: ',',
+                    ))
+                    ->numeric(
+                        decimalPlaces: 2,
+                        decimalSeparator: '.',
+                        thousandsSeparator: ',',
+                    )
                     ->label('تكلفة اضافية'),
                 TextColumn::make('notes')
                     ->label('ملاحظات'),

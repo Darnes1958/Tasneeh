@@ -2,13 +2,18 @@
 
 namespace App\Filament\Resources;
 
+use App\Enums\PayType;
 use App\Enums\PayWho;
 use App\Filament\Resources\HandResource\Pages;
 use App\Filament\Resources\HandResource\RelationManagers;
+use App\Models\Acc;
 use App\Models\Factory;
 use App\Models\Hall_stock;
 use App\Models\Hand;
+use App\Models\Kazena;
 use App\Models\Man;
+use App\Models\Receipt;
+use App\Models\User;
 use Filament\Forms;
 use Filament\Forms\Components\Checkbox;
 use Filament\Forms\Components\DatePicker;
@@ -23,6 +28,7 @@ use Filament\Forms\Form;
 use Filament\Forms\Get;
 use Filament\Notifications\Notification;
 use Filament\Resources\Resource;
+use Filament\Support\Enums\FontWeight;
 use Filament\Support\Enums\MaxWidth;
 use Filament\Tables;
 use Filament\Tables\Columns\TextColumn;
@@ -37,6 +43,7 @@ use Illuminate\Database\Eloquent\SoftDeletingScope;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Blade;
 use Illuminate\Support\HtmlString;
+use Filament\Forms\Components\Radio;
 
 class HandResource extends Resource
 {
@@ -54,116 +61,200 @@ class HandResource extends Resource
             ->schema([
                 Section::make()
                  ->schema([
-                     Wizard::make([
-                         Wizard\Step::make('man')
-                             ->label('المشغل')
-                             ->schema([
-                                 Select::make('man_id')
-                                     ->columnSpan(4)
-                                     ->required()
-                                     ->afterStateUpdated(function ($livewire){
-                                         $livewire->dispatch('man-submitted');
-                                     })
-                                     ->live()
-                                     ->hiddenLabel()
-                                     ->preload()
-                                     ->searchable()
-                                     ->options(Man::all()->pluck('name','id'))
-                                     ->createOptionForm([
-                                         Section::make('ادخال مشغل')
-                                             ->schema([
-                                                 TextInput::make('name')
-                                                     ->label('الاسم')
-                                                     ->autocomplete(false)
-                                                     ->required()
-                                                     ->live()
-                                                     ->unique(ignoreRecord: true)
-                                                     ->validationMessages([
-                                                         'unique' => ' :attribute مخزون مسبقا ',
-                                                     ])
-                                                     ->columnSpan(2),
-                                             ])
-                                             ->columns(4)
-                                     ])
-                                     ->createOptionUsing(function (array $data): int {
-                                         return Man::create($data)->getKey();
-                                     }),
-                             ]),
-                         Wizard\Step::make('factory')
-                             ->label('المنتج')
-                             ->schema([
-                                 Select::make('factory_id')
-                                     ->columnSpan(4)
-                                     ->relationship('Factory','id',
-                                         modifyQueryUsing: fn (Builder $query,Forms\Get $get) =>
-                                         $query->whereIn('id',Hand::
-                                         where('id', $get('man_id'))->pluck('factory_id')))
-                                     ->getOptionLabelFromRecordUsing(fn (Model $record) => "{$record->id} {$record->Product->name} {$record->process_date} {$record->cost}")
-                                     ->searchable()
-                                     ->afterStateUpdated(function ($state,Forms\Set $set) {
-                                         if ($state) {$set('pay_who',0);}
-                                     })
-                                     ->preload()
-                                     ->afterStateUpdated(function ($livewire){
-                                         $livewire->dispatch('factory-submitted');
-                                     })
-                                     ->live()
-                                     ->label('المنتج'),
-                             ]),
-                         Wizard\Step::make('detail')
-                             ->label('البيان')
-                             ->schema([
-                                 Select::make('pay_who')
-                                     ->columnSpan(4)
-                                     ->label('البيان')
-                                     ->options(PayWho::class)
-                                     ->disableOptionWhen(function ( $value,Get $get){
-                                         if ($get('factory_id')){
-                                             return $value!=0;
-                                         } else return $value=='0';
-                                     }),
-                                 DatePicker::make('val_date')
-                                     ->columnSpan(2)
-                                     ->default(now())
-                                     ->label('التاريخ')
+                     Radio::make('pay_type')
+                         ->columnSpan('full')
+                         ->options(PayType::class)
+                         ->dehydrated(false)
+                         ->inline()
+                         ->inlineLabel(false)
+                         ->live()
+                         ->default(0)
+                         ->label('طريقة الدفع'),
+                     Select::make('man_id')
+                         ->label('المشغل')
+                         ->columnSpan(2)
+                         ->required()
+                         ->live()
 
-                                     ->required(),
-                                 TextInput::make('val')
-                                     ->columnSpan(2)
-                                     ->label('المبلغ')
-
-                                     ->required(),
-                                 Textarea::make('notes')
-                                     ->columnSpan('full')
-                                     ->label('ملاحظات')
-                                 ,
-                                 Hidden::make('user_id')
-                                     ->default(Auth::id())
-
-                             ]),
-
-                     ])
-                         ->extraAlpineAttributes([
-                             '@man-submitted.window' => "step='factory'",
-                             '@factory-submitted.window' => "step='detail'",
-
+                         ->preload()
+                         ->searchable()
+                         ->options(Man::all()->pluck('name','id'))
+                         ->createOptionForm([
+                             Section::make('ادخال مشغل')
+                                 ->schema([
+                                     TextInput::make('name')
+                                         ->label('الاسم')
+                                         ->autocomplete(false)
+                                         ->required()
+                                         ->live()
+                                         ->unique(ignoreRecord: true)
+                                         ->validationMessages([
+                                             'unique' => ' :attribute مخزون مسبقا ',
+                                         ])
+                                         ->columnSpan(2),
+                                 ])
+                                 ->columns(4)
                          ])
-                         ->submitAction(new HtmlString(Blade::render(<<<BLADE
-                        <x-filament::button
-                            type="submit"
-                            size="sm"
-                        >
-                            تخزين
-                        </x-filament::button>
-                    BLADE)))
-                         ->columnSpan(2),
+                         ->createOptionUsing(function (array $data): int {
+                             return Man::create($data)->getKey();
+                         }),
+                     Select::make('pay_who')
+                         ->required()
+                         ->columnSpan(2)
+                         ->label('البيان')
+                         ->options(PayWho::class)
+                         ->disableOptionWhen(function ( $value,Get $get){
+                             if ($get('factory_id')){
+                                 return $value!=0;
+                             } else return $value=='0';
+                         }),
+                     Select::make('acc_id')
+                         ->label('المصرف')
+                         ->columnSpan(2)
+                         ->relationship('Acc','name')
+                         ->searchable()
+                         ->required()
+                         ->live()
+                         ->preload()
+                         ->visible(fn(Get $get): bool =>($get('pay_type')==1 ))
+                         ->createOptionForm([
+                             Section::make('ادخال حساب مصرفي جديد')
+                                 ->schema([
+                                     TextInput::make('name')
+                                         ->label('اسم المصرف')
+                                         ->required()
+                                         ->autofocus()
+                                         ->columnSpan(2)
+                                         ->unique(ignoreRecord: true)
+                                         ->validationMessages([
+                                             'unique' => ' :attribute مخزون مسبقا ',
+                                         ])        ,
+                                     TextInput::make('acc')
+                                         ->label('رقم الحساب')
+                                         ->required()
+                                         ->unique(ignoreRecord: true)
+                                         ->validationMessages([
+                                             'unique' => ' :attribute مخزون مسبقا ',
+                                         ])  ,
+                                     TextInput::make('raseed')
+                                         ->label('رصيد بداية المدة')
+                                         ->numeric()
+                                         ->required()                          ,
+                                 ])
+                         ])
+                         ->editOptionForm([
+                             Section::make('تعديل بيانات مصرف')
+                                 ->schema([
+                                     TextInput::make('name')
+                                         ->label('اسم المصرف')
+                                         ->required()
+                                         ->autofocus()
+                                         ->columnSpan(2)
+                                         ->unique(ignoreRecord: true)
+                                         ->validationMessages([
+                                             'unique' => ' :attribute مخزون مسبقا ',
+                                         ])        ,
+                                     TextInput::make('acc')
+                                         ->label('رقم الحساب')
+                                         ->required()
+                                         ->unique(ignoreRecord: true)
+                                         ->validationMessages([
+                                             'unique' => ' :attribute مخزون مسبقا ',
+                                         ])  ,
+                                     TextInput::make('raseed')
+                                         ->label('رصيد بداية المدة')
+                                         ->numeric()
+                                         ->required()
 
-                    ])
+                                 ])->columns(2)
+                         ]),
+                     Select::make('kazena_id')
+                         ->label('الخزينة')
+                         ->columnSpan(2)
+                         ->relationship('Kazena','name')
+                         ->searchable()
+                         ->required()
+                         ->live()
+                         ->preload()
+                         ->default(function (){
+                             $res=Kazena::where('user_id',Auth::id())->first();
+                             if ($res) return $res->id;
+                             else return null;
+                         })
+                         ->visible(fn(Get $get): bool =>($get('pay_type')==0 ))
+                         ->createOptionForm([
+                             Section::make('ادخال حساب خزينة جديد')
+                                 ->schema([
+                                     TextInput::make('name')
+                                         ->label('اسم الخزينة')
+                                         ->required()
+                                         ->autofocus()
+                                         ->columnSpan(2)
+                                         ->unique(ignoreRecord: true)
+                                         ->validationMessages([
+                                             'unique' => ' :attribute مخزون مسبقا ',
+                                         ])        ,
+                                     Forms\Components\Select::make('user_id')
+                                         ->label('المستخدم')
+                                         ->searchable()
+                                         ->preload()
+                                         ->options(User::
+                                         where('company',Auth::user()->company)
+                                             ->where('id','!=',1)
+                                             ->pluck('name','id')),
+                                     TextInput::make('balance')
+                                         ->label('رصيد بداية المدة')
+                                         ->numeric()
+                                         ->required()                          ,
+                                 ])
+                         ])
+                         ->editOptionForm([
+                             Section::make('تعديل بيانات خزينة')
+                                 ->schema([
+                                     TextInput::make('name')
+                                         ->label('اسم الخزينة')
+                                         ->required()
+                                         ->autofocus()
+                                         ->columnSpan(2)
+                                         ->unique(ignoreRecord: true)
+                                         ->validationMessages([
+                                             'unique' => ' :attribute مخزون مسبقا ',
+                                         ])        ,
+                                     Forms\Components\Select::make('user_id')
+                                         ->label('المستخدم')
+                                         ->searchable()
+                                         ->preload()
+                                         ->options(User::
+                                         where('company',Auth::user()->company)
+                                             ->where('id','!=',1)
+                                             ->pluck('name','id')),
+                                     TextInput::make('raseed')
+                                         ->label('رصيد بداية المدة')
+                                         ->numeric()
+                                         ->required()
 
-                 ->columnSpan(2)
+                                 ])->columns(2)
+                         ]),
+                     DatePicker::make('val_date')
+
+                         ->default(now())
+                         ->label('التاريخ')
+                         ->required(),
+                     TextInput::make('val')
+
+                         ->label('المبلغ')
+                         ->required(),
+                     Textarea::make('notes')
+                         ->columnSpan('full')
+                         ->label('ملاحظات')
+                     ,
+                     Hidden::make('user_id')
+                         ->default(Auth::id())
+                 ])
+                 ->columns(4)
 
             ])
-            ->columns(4);
+            ;
     }
 
     public static function table(Table $table): Table
@@ -174,10 +265,6 @@ class HandResource extends Resource
             )
             ->columns([
                 TextColumn::make('Man.name')
-                    ->description(function ($record){
-                        if ($record->Factory)
-                         return $record->Factory->Product->name; else return '';
-                    })
                     ->searchable()
                     ->sortable()
                     ->label('الاسم'),
@@ -185,6 +272,24 @@ class HandResource extends Resource
                     ->searchable()
                     ->sortable()
                     ->label('التاريخ'),
+                TextColumn::make('pay_type')
+                    ->state(function(Model $record) {
+                        if ($record->kazena_id) return 'نقدا';
+                        if ($record->acc_id) return 'مصرفي';
+                    } )
+                    ->color(function(Model $record) {
+                        if ($record->kazena_id) return 'success';
+                        if ($record->acc_id) return 'primary';
+                    })
+                    ->badge()
+                    ->weight(FontWeight::ExtraBold)
+                    ->description(function ($record){
+                        $name=null;
+                        if ($record->acc_id) {$name=Acc::find($record->acc_id)->name;}
+                        if ($record->kazena_id) {$name=Kazena::find($record->kazena_id)->name;}
+                        return $name;
+                    })
+                    ->label('طريقة الدفع'),
                 TextColumn::make('mden')
                     ->state(function ($record){
                         if ($record->pay_who->value==1 || $record->pay_who->value==2){
@@ -212,6 +317,10 @@ class HandResource extends Resource
                     ->label('دائن'),
                 TextColumn::make('pay_who')
                     ->sortable()
+                    ->description(function ($record){
+                        if ($record->Factory)
+                            return $record->Factory->Product->name; else return '';
+                    })
                     ->label('البيان'),
                 TextColumn::make('notes')
                     ->sortable()

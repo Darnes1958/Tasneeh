@@ -18,6 +18,7 @@ use App\Models\Product;
 use Awcodes\TableRepeater\Header;
 use Filament\Actions\StaticAction;
 use Filament\Forms;
+use Filament\Forms\Components\FileUpload;
 use Filament\Forms\Components\Hidden;
 use Filament\Forms\Components\Textarea;
 use Filament\Forms\Form;
@@ -61,6 +62,86 @@ class FactoryResource extends Resource
                     ->schema([
                     Select::make('product_id')
                         ->relationship('Product', 'name')
+                        ->createOptionForm([
+                            TextInput::make('name')
+                                ->label('اسم المنتج')
+                                ->required()
+                                ->live()
+                                ->unique()
+                                ->validationMessages([
+                                    'unique' => ' :attribute مخزون مسبقا ',
+                                ]),
+                            Select::make('category_id')
+                                ->label('التصنيف')
+                                ->relationship('Category','name')
+                                ->required()
+                                ->createOptionForm([
+                                    Section::make('ادخال تصنيف منتجات')
+                                        ->description('ادخال تصنيف  (صالون , دولاب . طاولة .... الخ)')
+                                        ->schema([
+                                            TextInput::make('name')
+                                                ->required()
+                                                ->unique()
+                                                ->label('الاسم'),
+                                        ])
+                                ])
+                                ->editOptionForm([
+                                    Section::make('تعديل تصنيف ')
+                                        ->schema([
+                                            TextInput::make('name')
+                                                ->required()
+                                                ->unique(ignoreRecord: true)
+                                                ->label('الاسم'),
+                                        ])->columns(2)
+                                ]),
+                            Textarea::make('description')
+                                ->label('الوصف (اختياري)'),
+                            FileUpload::make('image')
+                                ->directory('productImages')
+                                ->label('صورة'),
+                            Forms\Components\Hidden::make('user_id')
+                                ->default(auth()->id()),
+                        ])
+                        ->editOptionForm([
+                            TextInput::make('name')
+                                ->label('اسم المنتج')
+                                ->required()
+                                ->live()
+                                ->unique(ignoreRecord: true)
+                                ->validationMessages([
+                                    'unique' => ' :attribute مخزون مسبقا ',
+                                ]),
+                            Select::make('category_id')
+                                ->label('التصنيف')
+                                ->relationship('Category','name')
+                                ->required()
+                                ->createOptionForm([
+                                    Section::make('ادخال تصنيف منتجات')
+                                        ->description('ادخال تصنيف  (صالون , دولاب . طاولة .... الخ)')
+                                        ->schema([
+                                            TextInput::make('name')
+                                                ->required()
+                                                ->unique()
+                                                ->label('الاسم'),
+                                        ])
+                                ])
+                                ->editOptionForm([
+                                    Section::make('تعديل تصنيف ')
+                                        ->schema([
+                                            TextInput::make('name')
+                                                ->required()
+                                                ->unique(ignoreRecord: true)
+                                                ->label('الاسم'),
+                                        ])->columns(2)
+                                ]),
+                            Textarea::make('description')
+                                ->label('الوصف (اختياري)'),
+                            FileUpload::make('image')
+                                ->directory('productImages')
+                                ->label('صورة'),
+                            Forms\Components\Hidden::make('user_id')
+                                ->default(auth()->id()),
+                        ])
                         ->searchable()
                         ->required()
                         ->preload()
@@ -119,11 +200,13 @@ class FactoryResource extends Resource
                            ->addActionLabel('اضافة صنف')
                            ->headers([
                                Header::make('رقم الصنف')
-                                   ->width('50%'),
+                                   ->width('40%'),
                                Header::make('الكمية')
-                                   ->width('25%'),
+                                   ->width('20%'),
+                               Header::make('الرصيد')
+                                   ->width('20%'),
                                Header::make('السعر')
-                                   ->width('25%'),
+                                   ->width('20%'),
                            ])
                            ->live()
                            ->afterStateUpdated(function ($state,Forms\Set $set,Get $get){
@@ -156,6 +239,8 @@ class FactoryResource extends Resource
                                    ->live()
                                    ->afterStateUpdated(function ($state,Forms\Set $set,Get $get){
                                        $set('price',Item::find($state)->price_cost);
+                                       $set('stock',Place_stock::where('place_id',$get('../../place_id'))
+                                           ->where('item_id',$state)->first()->stock);
                                    })
                                    ->disableOptionWhen(function ($value, $state, Get $get) {
                                        return collect($get('../*.item_id'))
@@ -166,11 +251,13 @@ class FactoryResource extends Resource
                                TextInput::make('quant')
                                    ->live(onBlur: true)
                                    ->extraInputAttributes(['tabindex' => 1])
-                                   ->columnSpan(1)
+
                                    ->required(),
+                               TextInput::make('stock')
+                                   ->dehydrated(false),
+
                                TextInput::make('price')
                                    ->readOnly()
-                                   ->columnSpan(1)
                                    ->required(),
                            ])
                            ->mutateRelationshipDataBeforeCreateUsing(function (array $data,Get $get,$operation): array {
@@ -189,18 +276,16 @@ class FactoryResource extends Resource
                   ->schema([
                       TableRepeater::make('Hand')
                           ->hiddenLabel()
-                          ->required()
                           ->relationship()
                           ->addActionLabel('اضافة مشغل')
                           ->headers([
                               Header::make('الاسم')
-                                  ->width('40%'),
+                                  ->width('50%'),
                               Header::make('بتاريخ')
-                                  ->width('20%'),
+                                  ->width('30%'),
                               Header::make('المبلغ')
-                                  ->width('15%'),
-                              Header::make('ملاحظات')
                                   ->width('20%'),
+
 
                           ])
                           ->live()
@@ -225,14 +310,31 @@ class FactoryResource extends Resource
                           ->schema([
                               Select::make('man_id')
                                   ->required()
+                                  ->preload()
                                   ->searchable()
-                                  ->options(Man::all()->pluck('name','id'))
+                                  ->relationship('Man','name')
                                   ->disableOptionWhen(function ($value, $state, Get $get) {
                                       return collect($get('../*.man_id'))
                                           ->reject(fn($id) => $id == $state)
                                           ->filter()
                                           ->contains($value);
                                   })
+                                  ->createOptionForm([
+                                      Section::make('ادخال مشغل')
+                                          ->schema([
+                                              TextInput::make('name')
+                                                  ->label('الاسم')
+                                                  ->autocomplete(false)
+                                                  ->required()
+                                                  ->live()
+                                                  ->unique()
+                                                  ->validationMessages([
+                                                      'unique' => ' :attribute مخزون مسبقا ',
+                                                  ])
+                                                  ->columnSpan(2),
+                                          ])
+                                          ->columns(4)
+                                  ])
                                   ->createOptionForm([
                                       Section::make('ادخال مشغل')
                                           ->schema([
@@ -248,10 +350,7 @@ class FactoryResource extends Resource
                                                   ->columnSpan(2),
                                           ])
                                           ->columns(4)
-                                  ])
-                                  ->createOptionUsing(function (array $data): int {
-                                      return Man::create($data)->getKey();
-                                  }),
+                                  ]),
                               DatePicker::make('val_date')
                                 ->default(now())
                                 ->columnSpan(1)
@@ -261,8 +360,7 @@ class FactoryResource extends Resource
                                   ->extraInputAttributes(['tabindex' => 1])
                                   ->columnSpan(1)
                                   ->required(),
-                              Textarea::make('notes')
-                               ->columnSpan(2),
+
                               Hidden::make('user_id')
                               ->default(Auth::id())
                           ])

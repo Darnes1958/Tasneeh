@@ -63,7 +63,7 @@ class ProductResource extends Resource
                             ->schema([
                                 TextInput::make('name')
                                     ->required()
-                                    ->unique()
+                                    ->unique(ignoreRecord: true)
                                     ->label('الاسم'),
                             ])->columns(2)
                     ]),

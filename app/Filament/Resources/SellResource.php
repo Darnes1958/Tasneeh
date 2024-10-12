@@ -6,6 +6,7 @@ use App\Enums\PlaceType;
 use App\Filament\Resources\SellResource\Pages;
 use App\Filament\Resources\SellResource\RelationManagers;
 use App\Models\Buy;
+use App\Models\Customer;
 use App\Models\Hall_stock;
 use App\Models\Item;
 use App\Models\Item_type;
@@ -30,8 +31,10 @@ use Filament\Resources\Resource;
 use Filament\Support\Enums\IconSize;
 use Filament\Tables;
 use Filament\Tables\Actions\Action;
+use Filament\Tables\Columns\Summarizers\Sum;
 use Filament\Tables\Columns\TextColumn;
 use Filament\Tables\Table;
+use Hamcrest\Core\Set;
 use Illuminate\Contracts\View\View;
 use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Database\Eloquent\Model;
@@ -43,6 +46,7 @@ class SellResource extends Resource
     protected static ?string $model = Sell::class;
 
     protected static ?string $navigationIcon = 'heroicon-o-rectangle-stack';
+    protected static ?string $navigationLabel='مبيعات';
 
     public static function form(Form $form): Form
     {
@@ -50,16 +54,9 @@ class SellResource extends Resource
             ->schema([
                 Section::make()
                     ->schema([
-                        DatePicker::make('order_date')
-                            ->id('order_date')
-                            ->default(now())
-                            ->autofocus()
-                            ->prefix('التاريخ')
-                            ->hiddenLabel()
-                            ->columnSpan(2)
-                            ->required(),
+
                         Select::make('Customer_id')
-                            ->default(1)
+                            ->default(Customer::min('id'))
                             ->prefix('الزبون')
                             ->hiddenLabel()
                             ->relationship('Customer','name')
@@ -83,7 +80,23 @@ class SellResource extends Resource
                                             ->default(Auth::id()),
                                     ])
                             ])
-                            ,
+                            ->editOptionForm([
+                                Section::make('ادخال زبون جديد')
+                                    ->schema([
+                                        TextInput::make('name')
+                                            ->required()
+                                            ->unique(ignoreRecord: true)
+                                            ->label('الاسم'),
+                                        TextInput::make('address')
+                                            ->label('العنوان'),
+                                        TextInput::make('mdar')
+                                            ->label('مدار'),
+                                        TextInput::make('libyana')
+                                            ->label('لبيانا'),
+                                        Hidden::make('user_id')
+                                            ->default(Auth::id()),
+                                    ])
+                            ]),
 
                         Select::make('hall_id')
 
@@ -104,28 +117,50 @@ class SellResource extends Resource
                                             ->unique()
                                             ->label('الاسم'),
                                         Radio::make('hall_type')
+                                            ->label('النوع')
                                             ->inline()
+                                            ->inlineLabel(false)
                                             ->options(PlaceType::class)
                                     ])
                             ])
-                            ,
+                            ->editOptionForm([
+                                Section::make('ادخال نقطة بيع')
+                                    ->schema([
+                                        TextInput::make('name')
+                                            ->required()
+                                            ->unique(ignoreRecord: true)
+                                            ->label('الاسم'),
+                                        Radio::make('hall_type')
+                                            ->label('النوع')
+                                            ->inline()
+                                            ->inlineLabel(false)
+                                            ->options(PlaceType::class)
+                                    ])
+                            ]),
+                        DatePicker::make('order_date')
+                            ->id('order_date')
+                            ->default(now())
 
+                            ->label('التاريخ')
 
-                        TextInput::make('notes')
-                            ->live()
-                            ->prefix('ملاحظات')
-                            ->hiddenLabel()
-                            ->columnSpan('full'),
+                            ->columnSpan(2)
+                            ->required(),
+
                         TextInput::make('tot')
                             ->label('إجمالي الفاتورة')
                             ->columnSpan(2)
                             ->default(0)
                             ->readOnly(),
+                        Forms\Components\Textarea::make('notes')
+                            ->live()
+                            ->label('ملاحظات')
+                            ->columnSpan('full'),
+
                         Hidden::make('user_id')
                             ->default(Auth::id()),
                     ])
-                    ->columns(6)
-                    ->columnSpan(6),
+                    ->columns(4)
+                    ->columnSpan(4),
                 Section::make()
                     ->schema([
                         TableRepeater::make('Sell_tran')
@@ -134,10 +169,12 @@ class SellResource extends Resource
                             ->relationship()
                             ->headers([
                                 Header::make('المنتج')
-                                    ->width('50%'),
+                                    ->width('40%'),
                                 Header::make('الكمية')
                                     ->width('20%'),
                                 Header::make('السعر')
+                                    ->width('20%'),
+                                Header::make('الرصيد')
                                     ->width('20%'),
                             ])
                             ->schema([
@@ -155,29 +192,45 @@ class SellResource extends Resource
                                             ->pluck('name','id');
                                     })
                                     ->disableOptionWhen(function ($value, $state, Get $get) {
-                                        info($get('../*.product_id'));
-                                        info($state);
-                                        info($value);
+
                                         return collect($get('../*.product_id'))
                                             ->reject(fn($id) => $id == $state)
                                             ->filter()
                                             ->contains($value);
                                     })
-                                   ->afterStateUpdated(function ($state,  Forms\Set $set) {
+                                   ->afterStateUpdated(function ($state,  Forms\Set $set,Get $get) {
                                        $prod=Product::find($state);
                                        $set('p',$prod->price);
                                        $set('c',$prod->cost);
+                                       $set('stock',Hall_stock::where('product_id',$state)
+                                           ->where('hall_id',$get('../../hall_id'))
+                                           ->first()->stock);
                                    }),
                                 TextInput::make('q')
                                     ->live(onBlur: true)
+                                    ->afterStateUpdated(function ($state,Forms\Set $set,Get $get,$operation){
+                                        if ($state){
+                                            if (Hall_stock::where('product_id',$get('product_id'))
+                                            ->where('hall_id',$get('../../hall_id'))->first()->stock<$state){
+                                                Notification::make()
+                                                    ->title('رصيد الصنفلا يكفي')
+                                                    ->send();
+                                                $set('q',0);
+
+                                            }
+                                        }
+                                    })
                                     ->extraInputAttributes(['tabindex' => 1])
                                     ->columnSpan(1)
                                     ->required(),
+
                                 TextInput::make('p')
                                     ->live(onBlur: true)
                                     ->extraInputAttributes(['tabindex' => 2])
                                     ->columnSpan(1)
                                     ->required() ,
+                                TextInput::make('stock')
+                                    ->dehydrated(false) ,
                                 Hidden::make('c'),
                                 Hidden::make('profit'),
                                 Hidden::make('user_id')->default(Auth::id()),
@@ -205,10 +258,9 @@ class SellResource extends Resource
                                 }
                                 return $flag;
                             })
-                            ->mutateRelationshipDataBeforeCreateUsing(function (array $data,Get $get,$operation): array {
+                            ->mutateRelationshipDataBeforeCreateUsing(function (array $data,Get $get): array {
                                 $data['user_id'] = auth()->id();
                                 $data['profit']=($data['p'] * $data['q']) - ($data['c'] * $data['q']);
-
                                 $prod=Product::find($data['product_id']);
                                 $prod->stock -= $data['q'];
                                 $prod->save();
@@ -219,7 +271,7 @@ class SellResource extends Resource
                                 return $data;
                             })
                     ])
-                    ->columnSpan(6),
+                    ->columnSpan(8),
             ])->columns(12);
     }
 
@@ -240,11 +292,38 @@ class SellResource extends Resource
                     ->sortable()
                     ->label('التاريخ'),
                 TextColumn::make('tot')
+                    ->summarize(Sum::make()->label('')->numeric(
+                        decimalPlaces: 2,
+                        decimalSeparator: '.',
+                        thousandsSeparator: ',',
+                    ))
+                    ->numeric(
+                        decimalPlaces: 2,
+                        decimalSeparator: '.',
+                        thousandsSeparator: ',',
+                    )
                     ->searchable()
                     ->sortable()
                     ->label('اجمالي الفاتورة'),
                 TextColumn::make('pay')
+                    ->summarize(Sum::make()->label('')->numeric(
+                        decimalPlaces: 2,
+                        decimalSeparator: '.',
+                        thousandsSeparator: ',',
+                    ))
+                    ->numeric(
+                        decimalPlaces: 2,
+                        decimalSeparator: '.',
+                        thousandsSeparator: ',',
+                    )
                     ->label('المدفوع'),
+                TextColumn::make('baky')
+                    ->summarize(Tables\Columns\Summarizers\Summarizer::make()
+                        ->using(function (Table $table) {
+                            return $table->getRecords()->sum('baky');
+                        })
+                    )
+                    ->label('المتبقي'),
                 TextColumn::make('notes')
                     ->label('ملاحظات'),
             ])

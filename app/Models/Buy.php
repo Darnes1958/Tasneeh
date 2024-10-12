@@ -23,6 +23,7 @@ class Buy extends Model
   public function Supplier(){
     return $this->belongsTo(Supplier::class);
   }
+
   public function Price_type(){
     return $this->belongsTo(Price_type::class);
   }
