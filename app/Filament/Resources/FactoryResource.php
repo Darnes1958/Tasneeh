@@ -2,6 +2,7 @@
 
 namespace App\Filament\Resources;
 
+use App\Enums\PlaceType;
 use App\Filament\Resources\FactoryResource\Pages;
 use App\Filament\Resources\FactoryResource\RelationManagers;
 use App\Models\Buy;
@@ -406,12 +407,9 @@ class FactoryResource extends Resource
                                                  ->columnSpan(2),
                                              Select::make('hall_type')
                                               ->label('النوع')
-                                              ->default('صالة')
+                                              ->default(0)
                                               ->required()
-                                              ->options([
-                                                  'صالة' => 'صالة عرض',
-                                                  'مخزن' => 'مخزن',
-                                              ])
+                                              ->options(PlaceType::class)
                                          ])
                                          ->columns(4)
                                  ])
