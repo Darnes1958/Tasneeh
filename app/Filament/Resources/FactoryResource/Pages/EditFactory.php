@@ -20,7 +20,13 @@ class EditFactory extends EditRecord
         return static::getResource()::getUrl('index');
     }
 
+    protected function getSaveFormAction(): Action
+    {
+        return parent::getSaveFormAction()
 
+            ->extraAttributes(['type' => 'button', 'wire:click' => 'save'])
+            ;
+    }
     protected function beforeSave(): void {
         $last=$this->getRecord()->tran;
         $cuurent=$this->data['Tran'];

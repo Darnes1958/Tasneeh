@@ -5,6 +5,7 @@ namespace App\Filament\Resources\SellResource\Pages;
 use App\Filament\Resources\SellResource;
 use App\Models\Hall_stock;
 use Filament\Actions;
+use Filament\Actions\Action;
 use Filament\Notifications\Notification;
 use Filament\Resources\Pages\CreateRecord;
 
@@ -15,6 +16,13 @@ class CreateSell extends CreateRecord
     protected function getRedirectUrl(): string
     {
         return static::getResource()::getUrl('index');
+    }
+    protected function getCreateFormAction(): Action
+    {
+        return parent::getCreateFormAction()
+
+            ->extraAttributes(['type' => 'button', 'wire:click' => 'create'])
+            ;
     }
     protected function beforeCreate(): void
     {

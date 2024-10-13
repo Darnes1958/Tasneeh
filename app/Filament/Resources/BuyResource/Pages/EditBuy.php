@@ -7,6 +7,7 @@ use App\Models\Buy_tran;
 use App\Models\Item;
 use App\Models\Place_stock;
 use Filament\Actions;
+use Filament\Actions\Action;
 use Filament\Notifications\Notification;
 use Filament\Resources\Pages\EditRecord;
 use Illuminate\Database\Eloquent\Model;
@@ -19,6 +20,13 @@ class EditBuy extends EditRecord
     protected function getRedirectUrl(): string
     {
         return static::getResource()::getUrl('index');
+    }
+    protected function getSaveFormAction(): Action
+    {
+        return parent::getSaveFormAction()
+
+            ->extraAttributes(['type' => 'button', 'wire:click' => 'save'])
+            ;
     }
     protected function beforeSave(): void {
         $last=$this->getRecord()->buy_tran;

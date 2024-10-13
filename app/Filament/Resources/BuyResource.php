@@ -62,6 +62,8 @@ class BuyResource extends Resource
 
                         Select::make('supplier_id')
                             ->default(Supplier::min('id'))
+                            ->preload()
+                            ->searchable()
                             ->prefix('المورد')
                             ->hiddenLabel()
                             ->relationship('Supplier','name')

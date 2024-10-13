@@ -2,6 +2,7 @@
 
 namespace App\Models;
 
+use App\Enums\PlaceType;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Support\Facades\Auth;
@@ -26,6 +27,9 @@ class Hall extends Model
     {
         return $this->hasMany(Hall_tran::class,'hall_id2');
     }
+    protected $casts=[
+        'hall_type'=>PlaceType::class,
+    ];
 
     public function __construct(array $attributes = [])
     {

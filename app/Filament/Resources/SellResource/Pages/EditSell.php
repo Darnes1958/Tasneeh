@@ -8,6 +8,7 @@ use App\Models\Item;
 use App\Models\Place_stock;
 use App\Models\Product;
 use Filament\Actions;
+use Filament\Actions\Action;
 use Filament\Notifications\Notification;
 use Filament\Resources\Pages\EditRecord;
 
@@ -20,6 +21,17 @@ class EditSell extends EditRecord
         return [
             Actions\DeleteAction::make(),
         ];
+    }
+    protected function getRedirectUrl(): string
+    {
+        return static::getResource()::getUrl('index');
+    }
+    protected function getSaveFormAction(): Action
+    {
+        return parent::getSaveFormAction()
+
+            ->extraAttributes(['type' => 'button', 'wire:click' => 'save'])
+            ;
     }
     protected function beforeSave(): void {
         $last=$this->getRecord()->sell_tran;
@@ -52,7 +64,7 @@ class EditSell extends EditRecord
 
         foreach ($cuurent as $key => $tran) {
             $item=Product::find($tran['product_id']);
-            $item->price=$tran->p;
+            $item->price=$tran['p'];
             $item->stock -= $tran['q'];
             $item->save();
             $place=Hall_stock::where('product_id',$tran['product_id'])

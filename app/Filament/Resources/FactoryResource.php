@@ -386,9 +386,11 @@ class FactoryResource extends Resource
                          ->form([
                              DatePicker::make('ready_date')
                                  ->label('تاريخ انتهاء العمل')
+                                 ->hidden(fn(Factory $record): bool =>  $record->status->value=='ready')
                                  ->required(),
                              Select::make('hall_id')
                                  ->label('مكان التخزين')
+                                 ->hidden(fn(Factory $record): bool =>  $record->status->value=='ready')
                                  ->options(Hall::all()->pluck('name','id'))
                                  ->searchable()
                                  ->preload()
@@ -418,34 +420,58 @@ class FactoryResource extends Resource
                                  })
                                  ->required()
                          ])
-                         ->visible(fn(Model $record): bool =>$record->status->value=='manufacturing')
+                    //     ->visible(fn(Model $record): bool =>$record->status->value=='manufacturing')
                          ->modalCancelActionLabel('عودة')
                          ->modalSubmitActionLabel('تحزين')
                          ->modalWidth(MaxWidth::Medium)
-                         ->modalHeading('تعديل العنوان')
+                         ->modalHeading('تغيير الحالة')
                          ->action(function (Factory $record,array $data){
-                             $hall=Hall_stock::where('product_id',$record->product_id)
-                                 ->where('hall_id',$data['hall_id'])->first();
-                             if ($hall) {$hall->stock += $record->quantity;}
-                             else
-                             Hall_stock::create([
-                                 'product_id'=>$record->product_id,
-                                 'hall_id'=>$data['hall_id'],
-                                 'stock'=>$record->quantity,
-                             ]);
+                             if ($record->status->value==='ready'){
+                                 $hall=Hall_stock::where('product_id',$record->product_id)
+                                     ->where('hall_id',$record->hall_id)->first();
+                                 if ($hall->stock<$record->quantity) {
+                                     Notification::make('')
+                                         ->title('الرصيد لا يسمح')
+                                         ->send();
+                                     return;
+                                 }
+                                 $hall->stock -= $record->quantity;
+                                 $hall->save();
 
-                             $record->ready_date=$data['ready_date'];
-                             $record->status='ready';
-                             $record->save();
+                                 $record->ready_date=null;
+                                 $record->status='manufacturing';
+                                 $record->hall_id=null;
+                                 $record->save();
 
-                             $prod=Product::find($record->product_id);
-                             $p=( ($prod->cost*$prod->stock) + ($record->cost) )
-                                 / ($prod->stock+$record->quantity);
-                             $prod->cost=$p;
-                             $prod->stock +=$record->quantity;
-                             $prod->price=$record->price;
+                                 $prod=Product::find($record->product_id);
+                                 $prod->stock -=$record->quantity;
+                                 $prod->save();
+                             } else {
+                                 $hall=Hall_stock::where('product_id',$record->product_id)
+                                     ->where('hall_id',$data['hall_id'])->first();
+                                 if ($hall) {$hall->stock += $record->quantity; $hall->save();}
+                                 else
+                                     Hall_stock::create([
+                                         'product_id'=>$record->product_id,
+                                         'hall_id'=>$data['hall_id'],
+                                         'stock'=>$record->quantity,
+                                     ]);
 
-                             $prod->save();
+                                 $record->ready_date=$data['ready_date'];
+                                 $record->status='ready';
+                                 $record->hall_id=$data['hall_id'];
+                                 $record->save();
+
+                                 $prod=Product::find($record->product_id);
+                                 $p=( ($prod->cost*$prod->stock) + ($record->cost) )
+                                     / ($prod->stock+$record->quantity);
+                                 $prod->cost=$p;
+                                 $prod->stock +=$record->quantity;
+                                 $prod->price=$record->price;
+
+                                 $prod->save();
+                             }
+
                          })
                  )
                  ->label('الحالة'),
