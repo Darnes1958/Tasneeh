@@ -6,6 +6,7 @@ use App\Filament\Resources\FactoryResource;
 use App\Models\Item;
 use App\Models\Place_stock;
 use Filament\Actions;
+use Filament\Actions\Action;
 use Filament\Notifications\Notification;
 use Filament\Resources\Pages\EditRecord;
 
@@ -18,6 +19,8 @@ class EditFactory extends EditRecord
     {
         return static::getResource()::getUrl('index');
     }
+
+
     protected function beforeSave(): void {
         $last=$this->getRecord()->tran;
         $cuurent=$this->data['Tran'];

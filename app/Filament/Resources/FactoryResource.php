@@ -529,7 +529,7 @@ class FactoryResource extends Resource
                 Action::make('del')
                     ->icon('heroicon-o-trash')
                     ->modalHeading('الغاء التصنيع')
-                    ->visible(function (Model $record){return $record->status==='manufacturing';})
+                    ->visible(function (Model $record) {return $record->status->value=='manufacturing';})
                     ->iconSize(IconSize::Small)
                     ->requiresConfirmation()
                     ->color('danger')
