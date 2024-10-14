@@ -3,9 +3,13 @@
 namespace App\Filament\Resources\ItemResource\Pages;
 
 use App\Filament\Resources\ItemResource;
+use App\Models\Item;
+use App\Models\OurCompany;
+use Barryvdh\DomPDF\Facade\Pdf;
 use Filament\Actions;
 use Filament\Resources\Pages\ListRecords;
 use Illuminate\Contracts\Support\Htmlable;
+use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\HtmlString;
 
 class ListItems extends ListRecords
@@ -16,12 +20,41 @@ class ListItems extends ListRecords
     {
         return  new HtmlString('<div class="leading-3 h-4 py-0 text-base text-primary-400 py-0">أصناف</div>');
     }
+    public  function convertToArabic($html, int $line_length = 100, bool $hindo = false, $forcertl = false): string
+    {
+        $Arabic = new \ArPHP\I18N\Arabic();
+        $p = $Arabic->arIdentify($html);
 
+        for ($i = count($p) - 1; $i >= 0; $i -= 2) {
+            $utf8ar = $Arabic->utf8Glyphs(substr($html, $p[$i - 1], $p[$i] - $p[$i - 1]), $line_length, $hindo, $forcertl);
+            $html   = substr_replace($html, $utf8ar, $p[$i - 1], $p[$i] - $p[$i - 1]);
+        }
+
+        return $html;
+    }
     protected function getHeaderActions(): array
     {
         return [
             Actions\CreateAction::make()
              ->label('إضافة صنف جديد'),
+            Actions\Action::make('prinitem')
+             ->label('طباعة')
+             ->icon('heroicon-s-printer')
+             ->color('success')
+             ->action(function (){
+                 $RepDate=date('Y-m-d');
+                 $cus=OurCompany::where('Company',Auth::user()->company)->first();
+
+                 $reportHtml = view('PrnView.pdf-items',
+                     ['res'=>$this->getTableQueryForExport()->get(),
+                         'cus'=>$cus,'RepDate'=>$RepDate,
+                     ])->render();
+                 $reportHtml=$this->convertToArabic($reportHtml);
+
+                 return response()->streamDownload(function () use ($reportHtml) {
+                     echo Pdf::loadHtml($reportHtml)->stream();
+                 },  'any.pdf');
+             })
         ];
     }
 }

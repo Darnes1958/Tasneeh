@@ -2,16 +2,22 @@
 
 namespace App\Filament\Resources;
 
-use App\Enums\TwoUnit;
+
 use App\Filament\Resources\ItemResource\Pages;
 use App\Filament\Resources\ItemResource\RelationManagers;
 use App\Models\Buy_tran;
+
 use App\Models\Item;
+use App\Models\OurCompany;
+use App\Models\Place;
+use App\Models\Place_stock;
 use App\Models\Price_buy;
-use App\Models\Price_sell;
+
 use App\Models\Sell_tran;
-use App\Models\Setting;
+
+use Barryvdh\DomPDF\Facade\Pdf;
 use Filament\Actions\DeleteAction;
+use Filament\Forms\Components\Fieldset;
 use Filament\Forms\Components\Hidden;
 use Filament\Forms\Components\Radio;
 use Filament\Forms\Components\Section;
@@ -19,9 +25,11 @@ use Filament\Forms\Components\Select;
 use Filament\Forms\Components\TextInput;
 use Filament\Forms\Form;
 use Filament\Forms\Get;
+use Filament\Notifications\Notification;
 use Filament\Resources\Resource;
 use Filament\Support\RawJs;
 use Filament\Tables;
+use Filament\Tables\Actions\Action;
 use Filament\Tables\Columns\TextColumn;
 use Filament\Tables\Table;
 use Illuminate\Database\Eloquent\Model;
@@ -60,14 +68,11 @@ class ItemResource extends Resource
                     'unique' => ' :attribute مخزون مسبقا ',
                   ])
                 ->columnSpan(2),
-
-
-
                 Select::make('unit_id')
                     ->label('الوحدة')
                     ->relationship('Unit','name')
                     ->required()
-                    ->columnSpan(2)
+
                     ->createOptionForm([
                         Section::make('ادخال وحدات')
                             ->description('ادخال وحدة  (صندوق,دزينه,كيس .... الخ)')
@@ -87,18 +92,9 @@ class ItemResource extends Resource
                                     ->label('الاسم'),
                             ])->columns(2)
                     ]),
-
-
               TextInput::make('count')
                     ->label('العدد')
-                    ->required()
-                    ,
-              TextInput::make('price_buy')
-                ->label('سعر الشراء')
-                ->disabled(fn(string $operation)=>$operation=='edit')
-                ->required()
-                ->id('price_buy'),
-
+                    ->required(),
 
                 Select::make('item_type_id')
                     ->label('التصنيف')
@@ -123,6 +119,36 @@ class ItemResource extends Resource
                                     ->label('الاسم'),
                             ])->columns(2)
                     ]),
+                Fieldset::make()
+                 ->columnSpan(2)
+                 ->schema([
+                     TextInput::make('balance')
+                     ->label('رصيد سابق')
+                     ->default(0)
+                     ->required()
+                     ->live()
+                     ->disabled(fn(string $operation)=>$operation=='edit'),
+                     Select::make('place_id')
+                      ->label('مكان التخزين')
+                      ->relationship('Place','name')
+                      ->required(fn ($get) => ! blank($get('balance')) && $get('balance')>0)
+                      ->disabled(fn ($get) =>  blank($get('balance')) || $get('balance')==0 )
+                      ->preload()
+                      ->createOptionForm([
+                          Section::make()
+                           ->schema([
+                               TextInput::make('name')
+                                   ->label('الاسم')
+                           ])
+                      ])
+                      ->editOptionForm([
+                          Section::make()
+                              ->schema([
+                                  TextInput::make('name')
+                                      ->label('الاسم')
+                              ])
+                      ])
+                 ])
 
             ])
             ->columns(4);
@@ -131,6 +157,7 @@ class ItemResource extends Resource
     public static function table(Table $table): Table
     {
         return $table
+
             ->columns([
                 TextColumn::make('id')
                  ->label('الرقم الألي')
@@ -156,6 +183,62 @@ class ItemResource extends Resource
                     ->searchable(),
                 TextColumn::make('stock')
                     ->label('الرصيد'),
+                TextColumn::make('balance')
+                    ->label('رصيد سابق')
+                    ->action(
+                        Tables\Actions\Action::make('updateBalance')
+                         ->fillForm(fn(Model $record): array=>[
+                             'balance' => $record['balance'],
+                             'place_id' => $record['place_id'],
+                         ])
+                         ->form([
+                             TextInput::make('balance')
+                                 ->label('رصيد سابق')
+                                 ->default(0)
+                                 ->required()
+                                 ->live(),
+                             Select::make('place_id')
+                                 ->visible(fn(Item $record): bool => blank($record['place_id'] ))
+                                 ->label('مكان التخزين')
+                                 ->relationship('Place','name')
+                                 ->required(fn ($get) => ! blank($get('balance')) && $get('balance')>0)
+                                 ->disabled(fn ($get) =>  blank($get('balance')) || $get('balance')==0 )
+                                 ->preload()
+                         ])
+                            ->modalCancelActionLabel('عودة')
+                            ->modalSubmitActionLabel('تحزين')
+                            ->modalHeading('تعديل الرصيد السابق')
+                            ->action(function (array $data,Model $record) {
+                                $oldBalance=$record['balance'];
+                                $oldPlace=$record['place_id'];
+                                if ($record->place_id) {
+                                    $place = Place_stock::where('place_id',$record['place_id'])
+                                        ->where('item_id',$record['id'])
+                                        ->first();
+                                    if ($place) {
+                                        if ($place->stock-$record->balance+$data['balance']<0)
+                                        {
+                                            Notification::make()
+                                             ->title('لا تجوز هذه الكمية سيكون الرصيد اقل من صفر')
+                                             ->success()
+                                             ->send();
+                                             return;
+                                        }
+                                        $record->update(['balance' => $data['balance']]);
+                                        $place->stock =$place->stock-$oldBalance+$data['balance'];
+                                        $place->save();
+                                    } else
+                                    {
+                                        $record->update(['balance' => $data['balance'],'place_id' => $data['place_id']]);
+                                        Place_stock::create([
+                                            'stock' => $data['balance'],
+                                            'place_id' => $data['place_id'],
+                                            'item_id' => $record['id'],
+                                        ]);
+                                    }
+                                }
+                            })
+                    ),
                 TextColumn::make('price_buy')
                 ->label('سعر الشراء'),
                 TextColumn::make('price_cost')

@@ -9,6 +9,8 @@
         "awcodes/filament-table-repeater": "^3.0",
         "laravel/framework": "^11.9",
         "laravel/tinker": "^2.9",
+        "barryvdh/laravel-dompdf": "^3.0",
+        "khaled.alshamaa/ar-php": "^6.3",
         "spatie/laravel-permission": "^6.9"
     },
     "require-dev": {

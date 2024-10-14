@@ -25,8 +25,8 @@ class Item extends Model
     public function Item_type(){
         return $this->belongsTo(Item_type::class);
     }
-    public function S_quant(){
-        return $this->belongsTo(S_quant::class);
+    public function Place(){
+        return $this->belongsTo(Place::class);
     }
     public function Unit(){
         return $this->belongsTo(Unit::class);
