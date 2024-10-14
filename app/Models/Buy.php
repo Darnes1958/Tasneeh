@@ -24,9 +24,7 @@ class Buy extends Model
     return $this->belongsTo(Supplier::class);
   }
 
-  public function Price_type(){
-    return $this->belongsTo(Price_type::class);
-  }
+
   public function Place(){
     return $this->belongsTo(Place::class);
   }

@@ -3,6 +3,7 @@
 namespace App\Models;
 
 use App\Enums\ImpExp;
+use App\Enums\PayType;
 use App\Enums\RecWho;
 
 use App\Enums\RecWhoView;
@@ -26,9 +27,7 @@ class Receipt extends Model
     public function Customer() {
         return $this->belongsTo(Customer::class);
     }
-    public function Price_type() {
-        return $this->belongsTo(Price_type::class);
-    }
+
 
     public function Acc(){
         return $this->belongsTo(Acc::class);
@@ -54,5 +53,6 @@ class Receipt extends Model
     protected $casts =[
         'rec_who' => RecWhoView::class,
         'imp_exp' => ImpExp::class,
+        'pay_type' => PayType::class,
     ];
 }

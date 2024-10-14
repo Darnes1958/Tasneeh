@@ -2,6 +2,7 @@
 
 namespace App\Filament\Resources\SalaryResource\Pages;
 
+use App\Enums\PayType;
 use App\Filament\Resources\SalaryResource;
 use App\Livewire\Traits\PublicTrait;
 use App\Models\Acc;
@@ -87,10 +88,7 @@ class ListSalaries extends ListRecords
               ->icon('heroicon-o-minus-circle')
              ->form([
               Radio::make('pay_type')
-               ->options([
-                 1=>'نقدا',
-                 2=>'مصرفي',
-               ])
+               ->options(PayType::class)
                ->live()
                ->default(1)
                ->label('طريقة الدفع'),
@@ -108,7 +106,7 @@ class ListSalaries extends ListRecords
                  ->required()
                  ->live()
                  ->preload()
-                 ->visible(fn(Get $get): bool =>($get('pay_type')==2 )),
+                 ->visible(fn(Get $get): bool =>($get('pay_type')==1 )),
                Select::make('kazena_id')
                  ->label('الخزينة')
                  ->options(Kazena::all()->pluck('name','id'))
@@ -121,7 +119,7 @@ class ListSalaries extends ListRecords
                    if ($res) return $res->id;
                    else return null;
                  })
-                 ->visible(fn(Get $get): bool =>($get('pay_type')==1 )),
+                 ->visible(fn(Get $get): bool =>($get('pay_type')==0 )),
 
               DatePicker::make('tran_date')
                 ->required()
@@ -139,7 +137,8 @@ class ListSalaries extends ListRecords
                   $tran->salary_id=$data['salary_id'];
                   $tran->tran_date=$data['tran_date'];
                   $tran->tran_type='سحب';
-                  if ($data['pay_type']==2) $tran->acc_id=$data['acc_id'];
+                 $tran->pay_type=$data['pay_type'];
+                  if ($data['pay_type']==1) $tran->acc_id=$data['acc_id'];
                   else $tran->kazena_id=$data['kazena_id'];
                   $tran->val=$data['val'];
                   $tran->notes=$data['notes'];

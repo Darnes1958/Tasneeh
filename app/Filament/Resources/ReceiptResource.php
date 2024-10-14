@@ -2,6 +2,7 @@
 
 namespace App\Filament\Resources;
 
+use App\Enums\PayType;
 use App\Enums\RecWho;
 use App\Filament\Resources\ReceiptResource\Pages;
 
@@ -112,13 +113,11 @@ class ReceiptResource extends Resource
                 ->visible(fn(Get $get): bool =>($get('rec_who')==3 || $get('rec_who') ==4))
                 ->preload(),
 
-                Select::make('price_type_id')
+                Select::make('pay_type')
                     ->label('طريقة الدفع')
-                    ->relationship('Price_type','name')
-                    ->preload()
+                    ->options(PayType::class)
                     ->live()
-                    ->searchable()
-                    ->default(1)
+                    ->default(0)
                     ->required(),
                 DatePicker::make('receipt_date')
                     ->label('التاريخ')
@@ -128,7 +127,7 @@ class ReceiptResource extends Resource
                    ->label('المبلغ')
                     ->live(onBlur: true)
                     ->afterStateUpdated(function ($state,Get $get,Forms\Set $set){
-                        if ($get('price_type_id'==2) && $get('rate') && $state) {
+                        if ($get('pay_type'==1) && $get('rate') && $state) {
                             $set('differ',$get('rate')*$state/100);
                         }
                     })
@@ -141,7 +140,7 @@ class ReceiptResource extends Resource
                     ->required()
                     ->live()
                     ->preload()
-                    ->visible(fn(Get $get): bool =>($get('price_type_id')==2 ))
+                    ->visible(fn(Get $get): bool =>($get('pay_type')==1 ))
                     ->createOptionForm([
                         Section::make('ادخال حساب مصرفي جديد')
                             ->schema([
@@ -206,7 +205,7 @@ class ReceiptResource extends Resource
                         if ($res) return $res->id;
                         else return null;
                     })
-                    ->visible(fn(Get $get): bool =>($get('price_type_id')==1 ))
+                    ->visible(fn(Get $get): bool =>($get('pay_type')==0 ))
                     ->createOptionForm([
                         Section::make('ادخال حساب خزينة جديد')
                             ->schema([
@@ -261,7 +260,7 @@ class ReceiptResource extends Resource
                             ])->columns(2)
                     ]),
                 Forms\Components\Fieldset::make('فرق عملة')
-                  ->visible(fn(Get $get)=>$get('price_type_id')==2)
+                  ->visible(fn(Get $get)=>$get('pay_type')==1)
                   ->columnSpan(2)
                   ->schema([
                       TextInput::make('rate')
@@ -315,13 +314,7 @@ class ReceiptResource extends Resource
                 TextColumn::make('customer.name')
                   ->searchable()
                     ->label('اسم الزبون'),
-                TextColumn::make('price_type.name')
-                    ->color(function (Receipt $record) {
-                        if ($record->price_type_id!=1) return 'info';
-                    })
-                    ->weight(function (Receipt $record) {
-                        if ($record->price_type_id!=1) return FontWeight::Bold;
-                    })
+                TextColumn::make('pay_type')
                     ->description(function (Receipt $record){
                         $name=null;
                         if ($record->acc_id) {$name=Acc::find($record->acc_id)->name;}

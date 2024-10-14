@@ -2,6 +2,7 @@
 
 namespace App\Filament\Resources\RentResource\Pages;
 
+use App\Enums\PayType;
 use App\Filament\Resources\RentResource;
 use App\Models\Acc;
 use App\Models\Kazena;
@@ -84,10 +85,7 @@ class ListRents extends ListRecords
                 ->icon('heroicon-o-minus-circle')
                 ->form([
                     Radio::make('pay_type')
-                        ->options([
-                            1=>'نقدا',
-                            2=>'مصرفي',
-                        ])
+                        ->options(PayType::class)
                         ->live()
                         ->default(1)
                         ->label('طريقة الدفع'),
@@ -104,7 +102,7 @@ class ListRents extends ListRecords
                         ->required()
                         ->live()
                         ->preload()
-                        ->visible(fn(Get $get): bool =>($get('pay_type')==2 )),
+                        ->visible(fn(Get $get): bool =>($get('pay_type')==1 )),
                     Select::make('kazena_id')
                         ->label('الخزينة')
                         ->options(Kazena::all()->pluck('name','id'))
@@ -117,7 +115,7 @@ class ListRents extends ListRecords
                             if ($res) return $res->id;
                             else return null;
                         })
-                        ->visible(fn(Get $get): bool =>($get('pay_type')==1 )),
+                        ->visible(fn(Get $get): bool =>($get('pay_type')==0 )),
                     DatePicker::make('tran_date')
                         ->required()
                         ->default(now())
@@ -133,9 +131,10 @@ class ListRents extends ListRecords
 
                     $tran=new Renttran;
                     $tran->rent_id=$data['rent_id'];
-                    $tran->tran_date=$data['tran_date'];;
+                    $tran->tran_date=$data['tran_date'];
                     $tran->tran_type='سحب';
-                    if ($data['pay_type']==2) $tran->acc_id=$data['acc_id'];
+                    $tran->pay_type=$data['pay_type'];
+                    if ($data['pay_type']==1) $tran->acc_id=$data['acc_id'];
                     else $tran->kazena_id=$data['kazena_id'];
                     $tran->val=$data['val'];
                     $tran->notes=$data['notes'];

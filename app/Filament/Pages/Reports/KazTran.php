@@ -122,7 +122,7 @@ class KazTran extends Page implements HasForms,HasTable
                   })
                   ->button()
                   ->color('success')
-                  ->url(fn (): string => route('kazenatranexl', ['repDate1'=>$this->repDate1,'repDate2'=>$this->repDate2,'kazena_id'=>$this->kazena_id,]))
+              //    ->url(fn (): string => route('kazenatranexl', ['repDate1'=>$this->repDate1,'repDate2'=>$this->repDate2,'kazena_id'=>$this->kazena_id,]))
           ])->verticalAlignment(VerticalAlignment::End),
 
       ])->columns(6);
@@ -155,14 +155,17 @@ class KazTran extends Page implements HasForms,HasTable
         TextColumn::make('rec_who')
           ->sortable()
           ->description(function (Acc_tran $record) {
+
             if ($record->rec_who->value ==10) return 'الي '.Acc::find($record->acc2_id)->name;
             if ($record->rec_who->value ==11 ) return 'من '.Acc::find($record->acc2_id)->name;
             if ($record->rec_who->value ==9){
               if ($record->mden==0) return 'الي '.Kazena::find($record->kazena2_id)->name;
               else return 'من '.Kazena::find($record->kazena2_id)->name;
             }
-           if ($record->rec_who->value ==13)  return Masrofat::find($record->id)->Masr_type->name;
-           if ($record->rec_who->value ==14)  return Salarytran::find($record->id)->Salary->name;
+
+            if (! in_array($record->rec_who->value,[9,10,11]) ) return $record->name;
+//            if ($record->rec_who->value ==13)  return Masrofat::find($record->id)->Masr_type->name;
+  //         if ($record->rec_who->value ==14)  return Salarytran::find($record->id)->Salary->name;
 
           })
 

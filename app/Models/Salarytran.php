@@ -2,6 +2,7 @@
 
 namespace App\Models;
 
+use App\Enums\PayType;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Support\Facades\Auth;
@@ -10,6 +11,10 @@ class Salarytran extends Model
 {
     protected $connection = 'other';
 
+    protected $casts =[
+
+        'pay_type' => PayType::class,
+    ];
     public function Salary(){
         return $this->belongsTo(Salary::class);
     }

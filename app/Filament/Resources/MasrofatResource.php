@@ -2,6 +2,7 @@
 
 namespace App\Filament\Resources;
 
+use App\Enums\PayType;
 use App\Filament\Resources\MasrofatResource\Pages;
 use App\Filament\Resources\MasrofatResource\RelationManagers;
 use App\Models\Item;
@@ -75,10 +76,7 @@ class MasrofatResource extends Resource
                    ])
                 ->label('نوع المصروفات'),
                 Forms\Components\Radio::make('pay_type')
-                    ->options([
-                        0 => 'مصرفي',
-                        1 => 'نقدا',
-                    ])
+                    ->options(PayType::class)
                     ->default(1)
                     ->inline()
                     ->inlineLabel(false)
@@ -89,15 +87,15 @@ class MasrofatResource extends Resource
                     ->relationship('Acc','name')
                     ->label('المصرف')
                     ->preload()
-                    ->requiredIf('pay_type', 0)
+                    ->requiredIf('pay_type', 1)
                     ->visible(function (Forms\Get $get){
-                        return $get('pay_type')==0;
+                        return $get('pay_type')==1;
                     }),
                 Select::make('kazena_id')
                     ->relationship('Kazena','name')
                     ->label('الخزينة')
                     ->preload()
-                    ->requiredIf('pay_type', 1)
+                    ->requiredIf('pay_type', 0)
                     ->createOptionForm([
                         Section::make('ادخال حساب خزينة جديد')
                             ->schema([
@@ -138,7 +136,7 @@ class MasrofatResource extends Resource
                             ])->columns(2)
                     ])
                     ->visible(function (Forms\Get $get){
-                        return $get('pay_type')==1;
+                        return $get('pay_type')==0;
                     }),
                 Forms\Components\DatePicker::make('masr_date')
                  ->required()
@@ -148,8 +146,8 @@ class MasrofatResource extends Resource
                  ->numeric()
                  ->required()
                  ->label('المبلغ'),
-              TextInput::make('notes')
-                ->label('ملاحظات'),
+                TextInput::make('notes')
+                    ->label('ملاحظات'),
             ]);
     }
 

@@ -63,8 +63,8 @@ class HandResource extends Resource
                  ->schema([
                      Radio::make('pay_type')
                          ->columnSpan('full')
+                         ->required()
                          ->options(PayType::class)
-                         ->dehydrated(false)
                          ->inline()
                          ->inlineLabel(false)
                          ->live()
@@ -75,7 +75,6 @@ class HandResource extends Resource
                          ->columnSpan(2)
                          ->required()
                          ->live()
-
                          ->preload()
                          ->searchable()
                          ->options(Man::all()->pluck('name','id'))

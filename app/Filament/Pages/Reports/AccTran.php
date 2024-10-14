@@ -122,7 +122,7 @@ class AccTran extends Page  implements HasForms,HasTable
                         })
                         ->button()
                         ->color('success')
-                        ->url(fn (): string => route('acctranexl', ['repDate1'=>$this->repDate1,'repDate2'=>$this->repDate2,'acc_id'=>$this->acc_id,]))
+                    //    ->url(fn (): string => route('acctranexl', ['repDate1'=>$this->repDate1,'repDate2'=>$this->repDate2,'acc_id'=>$this->acc_id,]))
                 ])->verticalAlignment(VerticalAlignment::End),
 
             ])->columns(6);
@@ -160,8 +160,9 @@ class AccTran extends Page  implements HasForms,HasTable
                          if ($record->mden==0) return 'الي '.Acc::find($record->acc2_id)->name;
                          else return 'من '.Acc::find($record->acc2_id)->name;
                         }
-                        if ($record->rec_who->value ==13)  return Masrofat::find($record->id)->Masr_type->name;
-                        if ($record->rec_who->value ==14)  return Salarytran::find($record->id)->Salary->name;
+                        if (! in_array($record->rec_who->value,[10,11,12]) ) return $record->name;
+                  //      if ($record->rec_who->value ==13)  return Masrofat::find($record->id)->Masr_type->name;
+                    //    if ($record->rec_who->value ==14)  return Salarytran::find($record->id)->Salary->name;
                     })
                     ->searchable()
                     ->label('البيان'),

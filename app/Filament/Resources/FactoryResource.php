@@ -443,9 +443,13 @@ class FactoryResource extends Resource
                                  $record->hall_id=null;
                                  $record->save();
 
+
+
                                  $prod=Product::find($record->product_id);
                                  $prod->stock -=$record->quantity;
                                  $prod->save();
+
+
                              } else {
                                  $hall=Hall_stock::where('product_id',$record->product_id)
                                      ->where('hall_id',$data['hall_id'])->first();

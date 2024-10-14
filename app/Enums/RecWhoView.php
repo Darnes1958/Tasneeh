@@ -11,7 +11,8 @@ enum RecWhoView: int implements HasLabel,HasColor,HasIcon
   case دفع = 2;
   case قبض_فاتورة = 3;
   case دفع_فاتورة = 4;
-
+    case دفـع_فاتورة = 5;
+    case قبـض_فاتورة = 6;
   case فاتورة_مبيعات = 7;
   case فاتورة_مشتريات = 8;
   case من_خزينة_الي_خزينة = 9;
@@ -22,6 +23,8 @@ enum RecWhoView: int implements HasLabel,HasColor,HasIcon
   case سحب_مرتب  = 14;
   case ترجيع_مبيعات  = 15;
   case ترجيع_مشتريات  = 16;
+  case سحب_ايجار  = 17;
+  case سحب_مشغلين  = 18;
 
 
   public function getLabel(): ?string
@@ -47,6 +50,8 @@ enum RecWhoView: int implements HasLabel,HasColor,HasIcon
       self::سحب_مرتب => 'danger',
       self::ترجيع_مبيعات => 'danger',
       self::ترجيع_مشتريات => 'danger',
+      self::سحب_ايجار => 'danger',
+      self::سحب_مشغلين => 'danger',
 
     };
   }
@@ -69,6 +74,8 @@ enum RecWhoView: int implements HasLabel,HasColor,HasIcon
       self::سحب_مرتب => 'heroicon-m-arrow-long-right',
       self::ترجيع_مبيعات => 'heroicon-m-arrow-long-right',
       self::ترجيع_مشتريات => 'heroicon-m-arrow-long-right',
+      self::سحب_ايجار => 'heroicon-m-arrow-long-right',
+      self::سحب_مشغلين => 'heroicon-m-arrow-long-right',
     };
   }
 }

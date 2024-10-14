@@ -3,6 +3,7 @@
 namespace App\Models;
 
 use App\Enums\ImpExp;
+use App\Enums\PayType;
 use App\Enums\RecWho;
 use App\Enums\RecWhoView;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
@@ -20,9 +21,7 @@ class Recsupp extends Model
   public function Supplier() {
     return $this->belongsTo(Supplier::class);
   }
-  public function Price_type() {
-    return $this->belongsTo(Price_type::class);
-  }
+
     public function Acc(){
         return $this->belongsTo(Acc::class);
     }
@@ -47,6 +46,7 @@ class Recsupp extends Model
   protected $casts =[
     'rec_who' => RecWhoView::class,
     'imp_exp' => ImpExp::class,
+      'pay_type' => PayType::class,
   ];
 
 }

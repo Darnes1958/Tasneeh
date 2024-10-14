@@ -119,9 +119,9 @@ class MoneyResource extends Resource
                 ->columns(2)
                 ->columnSpan(2),
 
-              Hidden::make('price_type_id')
+              Hidden::make('pay_type')
                ->default(function (Forms\Get $get) {
-                 if ($get('rec_who')==4) return 2; else return  1;
+                 if ($get('rec_who')==4) return 1; else return  0;
                }),
               Hidden::make('user_id')
                 ->default(Auth::id()),
