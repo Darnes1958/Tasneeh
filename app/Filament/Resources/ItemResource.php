@@ -119,6 +119,10 @@ class ItemResource extends Resource
                                     ->label('الاسم'),
                             ])->columns(2)
                     ]),
+                TextInput::make('price_buy')
+                ->required()
+                ->label('سعر الشراء'),
+                Hidden::make('price_cost'),
                 Fieldset::make()
                  ->columnSpan(2)
                  ->schema([
@@ -189,6 +193,8 @@ class ItemResource extends Resource
                         Tables\Actions\Action::make('updateBalance')
                          ->fillForm(fn(Model $record): array=>[
                              'balance' => $record['balance'],
+                             'price_buy'=> $record['price_buy'],
+                             'price_cost'=> $record['price_cost'],
                              'place_id' => $record['place_id'],
                          ])
                          ->form([
@@ -197,6 +203,12 @@ class ItemResource extends Resource
                                  ->default(0)
                                  ->required()
                                  ->live(),
+                             TextInput::make('price_buy')
+                                 ->label('سعر الشراء')
+                                 ->default(0)
+                                 ->required()
+                                 ->live(),
+                             Hidden::make('price_cost'),
                              Select::make('place_id')
                                  ->visible(fn(Item $record): bool => blank($record['place_id'] ))
                                  ->label('مكان التخزين')
@@ -224,12 +236,19 @@ class ItemResource extends Resource
                                              ->send();
                                              return;
                                         }
-                                        $record->update(['balance' => $data['balance']]);
+                                        $record->update(['balance' => $data['balance'],
+                                            'price_buy'=> $data['price_buy'],
+                                            'price_cost'=> $data['price_buy'],]);
                                         $place->stock =$place->stock-$oldBalance+$data['balance'];
                                         $place->save();
                                     } else
                                     {
-                                        $record->update(['balance' => $data['balance'],'place_id' => $data['place_id']]);
+
+                                        $record->update(['balance' => $data['balance'],
+                                            'place_id' => $data['place_id'],
+                                            'price_buy'=> $data['price_buy'],
+                                            'price_cost'=> $data['price_buy'],
+                                            ]);
                                         Place_stock::create([
                                             'stock' => $data['balance'],
                                             'place_id' => $data['place_id'],

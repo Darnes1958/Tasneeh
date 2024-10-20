@@ -23,6 +23,7 @@ class CreateItem extends CreateRecord
 
         $data['user_id'] = auth()->id();
         $data['stock']=$data['balance'];
+        $data['price_cost']=$data['price_buy'];
 
 
 
