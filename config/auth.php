@@ -53,7 +53,7 @@ return [
     |
     | If you have multiple user tables or models you may configure multiple
     | providers to represent the model / table. These providers may then
-    | be assigned to any extra authentication guards you have defined.
+    | be assigned to Bokreah extra authentication guards you have defined.
     |
     | Supported: "database", "eloquent"
     |

@@ -33,7 +33,7 @@ return [
         /*
          * When using the "HasRoles" trait from this package, we need to know which
          * table should be used to retrieve your roles. We have chosen a basic
-         * default value but you may easily change it to any table you like.
+         * default value but you may easily change it to Bokreah table you like.
          */
 
         'roles' => 'roles',
@@ -41,7 +41,7 @@ return [
         /*
          * When using the "HasPermissions" trait from this package, we need to know which
          * table should be used to retrieve your permissions. We have chosen a basic
-         * default value but you may easily change it to any table you like.
+         * default value but you may easily change it to Bokreah table you like.
          */
 
         'permissions' => 'permissions',
@@ -49,7 +49,7 @@ return [
         /*
          * When using the "HasPermissions" trait from this package, we need to know which
          * table should be used to retrieve your models permissions. We have chosen a
-         * basic default value but you may easily change it to any table you like.
+         * basic default value but you may easily change it to Bokreah table you like.
          */
 
         'model_has_permissions' => 'model_has_permissions',
@@ -57,7 +57,7 @@ return [
         /*
          * When using the "HasRoles" trait from this package, we need to know which
          * table should be used to retrieve your models roles. We have chosen a
-         * basic default value but you may easily change it to any table you like.
+         * basic default value but you may easily change it to Bokreah table you like.
          */
 
         'model_has_roles' => 'model_has_roles',
@@ -65,7 +65,7 @@ return [
         /*
          * When using the "HasRoles" trait from this package, we need to know which
          * table should be used to retrieve your roles permissions. We have chosen a
-         * basic default value but you may easily change it to any table you like.
+         * basic default value but you may easily change it to Bokreah table you like.
          */
 
         'role_has_permissions' => 'role_has_permissions',
@@ -177,7 +177,7 @@ return [
 
         /*
          * You may optionally indicate a specific cache driver to use for permission and
-         * role caching using any of the `store` drivers listed in the cache.php config
+         * role caching using Bokreah of the `store` drivers listed in the cache.php config
          * file. Using 'default' here means to use the `default` set in cache.php.
          */
 

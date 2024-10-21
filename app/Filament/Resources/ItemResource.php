@@ -236,24 +236,29 @@ class ItemResource extends Resource
                                              ->send();
                                              return;
                                         }
-                                        $record->update(['balance' => $data['balance'],
-                                            'price_buy'=> $data['price_buy'],
-                                            'price_cost'=> $data['price_buy'],]);
                                         $place->stock =$place->stock-$oldBalance+$data['balance'];
                                         $place->save();
+                                        $record->update(['balance' => $data['balance'],
+                                            'price_buy'=> $data['price_buy'],
+                                            'price_cost'=> $data['price_buy'],
+                                            'stock'=>Place_stock::where('item_id',$record['id'])->sum('stock'),]);
+                                        $record->save();
+
                                     } else
                                     {
 
-                                        $record->update(['balance' => $data['balance'],
-                                            'place_id' => $data['place_id'],
-                                            'price_buy'=> $data['price_buy'],
-                                            'price_cost'=> $data['price_buy'],
-                                            ]);
                                         Place_stock::create([
                                             'stock' => $data['balance'],
                                             'place_id' => $data['place_id'],
                                             'item_id' => $record['id'],
                                         ]);
+                                        $record->update(['balance' => $data['balance'],
+                                            'place_id' => $data['place_id'],
+                                            'price_buy'=> $data['price_buy'],
+                                            'price_cost'=> $data['price_buy'],
+                                            'stock'=>Place_stock::where('item_id',$record['id'])->sum('stock'),
+                                            ]);
+
                                     }
                                 }
                             })

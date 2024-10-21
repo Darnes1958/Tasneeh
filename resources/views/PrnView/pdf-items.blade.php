@@ -1,4 +1,4 @@
-@extends('PrnView.PrnMaster2')
+@extends('PrnView.PrnMaster3')
 
 @section('mainrep')
 
@@ -12,42 +12,48 @@
   </div>
 
 
-  <table style="width: 60% ;float: right;">
-      <caption style="font-size: 12pt; margin: 8px;text-align: right">كشف بالأصناف </caption>
+  <table style="width: 70% ;float: right;">
+      <caption style="font-size: 12pt; margin: 8px;text-align: right;font-weight: bold;font-family: Amiri;">كشف بالأصنـــــــــاف </caption>
 
 
     <thead style=" font-family: DejaVu Sans, sans-serif; margin-top: 8px;" >
     <tr  style="background: #9dc1d3;" >
+        <th style="width: 14%">رقم الصنف</th>
+        <th >الاسم</th>
+        <th style="width: 14%"> رصيد سابق</th>
+        <th style="width: 14%">الرصيد الكلي</th>
+      <th style="width: 14%"> الاجمالي</th>
 
-
-      <th style="width: 12%"> رصيد سابق</th>
-      <th style="width: 12%">الرصيد</th>
-      <th >الاسم</th>
-      <th style="width: 12%">رقم الصنف</th>
     </tr>
     </thead>
-    <tbody style="margin-bottom: 40px; ">
+    <tbody >
+    @php $sumbuy=0; @endphp
 
     @foreach($res as $key => $item)
       <tr >
-
-
-        <td> {{ $item->balance }} </td>
-        <td style="text-align: center;"> {{ $item->stock }} </td>
-        <td> {{ $item->name }} </td>
-
-        <td style="text-align: center;"> {{ $item->id }} </td>
+          <td style="text-align: center;"> {{ $item->id }} </td>
+          <td> {{ $item->name }} </td>
+          <td> {{ number_format($item->balance,2, '.', ',') }} </td>
+          <td> {{ number_format($item->stock,2, '.', ',') }} </td>
+          <td> {{ number_format($item->buy_tot,3, '.', ',') }} </td>
       </tr>
-      <div id="footer" style="height: 50px; width: 96%; margin-bottom: 0px; margin-top: 10px;
-                              display: flex;  justify-content: center;">
-        <label class="page"></label>
-        <label> صفحة رقم </label>
-      </div>
+
+      @php $sumbuy+=$item->buy_tot;@endphp
 
     @endforeach
+    <tr class="font-size-12 " style="font-weight: bold">
 
+        <td>   </td>
+        <td style="font-family: DejaVu Sans, sans-serif;font-weight:bold;">الإجمــــــــالي  </td>
+        <td>   </td>
+
+        <td>   </td>
+        <td> {{number_format($sumbuy, 3, '.', ',')}}  </td>
+    </tr>
     </tbody>
+
   </table>
+
 </div>
 </div>
 

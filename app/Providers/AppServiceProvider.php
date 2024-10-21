@@ -17,7 +17,7 @@ use Illuminate\View\View;
 class AppServiceProvider extends ServiceProvider
 {
     /**
-     * Register any application services.
+     * Register Bokreah application services.
      */
     public function register(): void
     {
@@ -25,7 +25,7 @@ class AppServiceProvider extends ServiceProvider
     }
 
     /**
-     * Bootstrap any application services.
+     * Bootstrap Bokreah application services.
      */
     public function boot(): void
     {

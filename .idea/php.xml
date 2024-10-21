@@ -161,6 +161,9 @@
       <path value="$PROJECT_DIR$/vendor/khaled.alshamaa/ar-php" />
       <path value="$PROJECT_DIR$/vendor/sabberworm/php-css-parser" />
       <path value="$PROJECT_DIR$/vendor/barryvdh/laravel-dompdf" />
+      <path value="$PROJECT_DIR$/vendor/spatie/temporary-directory" />
+      <path value="$PROJECT_DIR$/vendor/spatie/laravel-pdf" />
+      <path value="$PROJECT_DIR$/vendor/spatie/browsershot" />
     </include_path>
   </component>
   <component name="PhpProjectSharedConfiguration" php_language_level="8.2" />

@@ -11,7 +11,12 @@ class Item extends Model
     protected $connection = 'other';
 
 
-
+    protected $appends=[
+        'buy_tot',
+    ];
+    public function getBuyTotAttribute(){
+     return $this->stock*$this->price_buy;
+    }
     public function placeStocks(){
       return $this->hasMany(Place_stock::class);
     }
