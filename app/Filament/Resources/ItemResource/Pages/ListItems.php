@@ -48,6 +48,22 @@ class ListItems extends ListRecords
                  $RepDate=date('Y-m-d');
                  $cus=OurCompany::where('Company',Auth::user()->company)->first();
 
+
+
+                 $reportHtml=$this->convertToArabic($reportHtml);
+
+                 return response()->streamDownload(function () use ($reportHtml) {
+                     echo Pdf::loadHtml($reportHtml)->stream();
+                 },  'any.pdf');
+
+                 $reportHtml = view('PrnView.pdf-items',
+                     ['res'=>$this->getTableQueryForExport()->get(),
+                         'cus'=>$cus,'RepDate'=>$RepDate,
+                     ])->render();
+
+
+
+
                  \Spatie\LaravelPdf\Facades\Pdf::view('PrnView.pdf-items',
                      ['res'=>$this->getTableQueryForExport()->get(),
                          'cus'=>$cus,'RepDate'=>$RepDate,
