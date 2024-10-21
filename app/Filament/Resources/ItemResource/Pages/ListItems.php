@@ -13,6 +13,7 @@ use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Response;
 use Illuminate\Support\Facades\Storage;
 use Illuminate\Support\HtmlString;
+use Spatie\Browsershot\Browsershot;
 use Spatie\LaravelPdf\Enums\Unit;
 
 class ListItems extends ListRecords
@@ -50,16 +51,16 @@ class ListItems extends ListRecords
 
 
 
-                 $reportHtml=$this->convertToArabic($reportHtml);
+               //  $reportHtml=$this->convertToArabic($reportHtml);
 
-                 return response()->streamDownload(function () use ($reportHtml) {
-                     echo Pdf::loadHtml($reportHtml)->stream();
-                 },  'any.pdf');
+           //      return response()->streamDownload(function () use ($reportHtml) {
+         //            echo Pdf::loadHtml($reportHtml)->stream();
+      //           },  'any.pdf');
 
-                 $reportHtml = view('PrnView.pdf-items',
-                     ['res'=>$this->getTableQueryForExport()->get(),
-                         'cus'=>$cus,'RepDate'=>$RepDate,
-                     ])->render();
+       //          $reportHtml = view('PrnView.pdf-items',
+       //              ['res'=>$this->getTableQueryForExport()->get(),
+      //                   'cus'=>$cus,'RepDate'=>$RepDate,
+      //               ])->render();
 
 
 
@@ -68,7 +69,10 @@ class ListItems extends ListRecords
                      ['res'=>$this->getTableQueryForExport()->get(),
                          'cus'=>$cus,'RepDate'=>$RepDate,
                      ])
-
+                     ->withBrowsershot(function (Browsershot $shot) {
+                         $shot->setNodeBinary('C:/Program Files/nodejs/node') ->setNpmBinary('C:/Program Files/nodejs/npm')
+                             ->setChromePath("C:\Program Files\Google\Chrome\Application\chrome.exe");
+                     })
                      ->footerView('PrnView.footer')
                      ->margins(10, 10, 40, 10, Unit::Pixel)
                      ->save(Auth::user()->company.'/invoice-2023-04-10.pdf');
