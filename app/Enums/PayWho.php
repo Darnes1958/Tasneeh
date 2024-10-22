@@ -8,8 +8,8 @@ use Filament\Support\Contracts\HasColor;
 enum PayWho: int implements HasLabel,HasColor
 {
   case اعمال = 0;
-  case قبض_عن_عمل = 1;
-  case قبض = 2;
+  case دفع_عن_عمل = 1;
+  case دفع = 2;
   case خصم = 3;
 
 

@@ -6,8 +6,6 @@
 
 <head>
   <meta http-equiv="Content-Type" content="text/html; charset=utf-8"/>
-  <link href="https://fonts.googleapis.com/css2?family=Amiri&display=swap" rel="stylesheet" />
-    <script src="https://cdn.tailwindcss.com"></script>
   <style>
       @media print {
           .pagebreak { page-break-before: always; } /* page-break-after works, as well */
