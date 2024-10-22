@@ -37,6 +37,7 @@ use Filament\Tables\Table;
 use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Support\Facades\Auth;
+use Illuminate\Support\Facades\DB;
 
 class ItemResource extends Resource
 {
@@ -290,9 +291,7 @@ class ItemResource extends Resource
                             decimalSeparator: '.',
                             thousandsSeparator: ',',
                         )
-                        ->using(function (Table $table) {
-                            return $table->getRecords()->sum('buy_tot');
-                        })
+                        ->using(fn (\Illuminate\Database\Query\Builder $query): string => $query->sum(DB::Raw('stock*price_buy')))
                     )
                     ->numeric(
                         decimalPlaces: 2,
