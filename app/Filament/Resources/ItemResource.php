@@ -30,8 +30,11 @@ use Filament\Resources\Resource;
 use Filament\Support\RawJs;
 use Filament\Tables;
 use Filament\Tables\Actions\Action;
+use Filament\Tables\Columns\Summarizers\Summarizer;
 use Filament\Tables\Columns\TextColumn;
+use Filament\Tables\Filters\Filter;
 use Filament\Tables\Table;
+use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Support\Facades\Auth;
 
@@ -177,17 +180,20 @@ class ItemResource extends Resource
                     ->sortable()
                     ->searchable(),
 
-                TextColumn::make('count')
-                    ->label('العدد')
-                    ->sortable()
-                    ->formatStateUsing(function (string $state) {
-                        if ($state==1) return '';
-                        return $state;
-                    })
-                    ->searchable(),
+
                 TextColumn::make('stock')
+                    ->numeric(
+                        decimalPlaces: 2,
+                        decimalSeparator: '.',
+                        thousandsSeparator: ',',
+                    )
                     ->label('الرصيد'),
                 TextColumn::make('balance')
+                    ->numeric(
+                        decimalPlaces: 2,
+                        decimalSeparator: '.',
+                        thousandsSeparator: ',',
+                    )
                     ->label('رصيد سابق')
                     ->action(
                         Tables\Actions\Action::make('updateBalance')
@@ -264,12 +270,47 @@ class ItemResource extends Resource
                             })
                     ),
                 TextColumn::make('price_buy')
+                    ->numeric(
+                        decimalPlaces: 2,
+                        decimalSeparator: '.',
+                        thousandsSeparator: ',',
+                    )
                 ->label('سعر الشراء'),
                 TextColumn::make('price_cost')
+                    ->numeric(
+                        decimalPlaces: 2,
+                        decimalSeparator: '.',
+                        thousandsSeparator: ',',
+                    )
                     ->label('سعر التكلفة'),
+                TextColumn::make('buy_tot')
+                    ->summarize(Summarizer::make()
+                        ->numeric(
+                            decimalPlaces: 2,
+                            decimalSeparator: '.',
+                            thousandsSeparator: ',',
+                        )
+                        ->using(function (Table $table) {
+                            return $table->getRecords()->sum('buy_tot');
+                        })
+                    )
+                    ->numeric(
+                        decimalPlaces: 2,
+                        decimalSeparator: '.',
+                        thousandsSeparator: ',',
+                    )
+                    ->label('الاجمالي'),
             ])
             ->filters([
-                //
+                Filter::make('is_zero')
+                 ->label('رصيدها صفر')
+                 ->query(fn(Builder $query): Builder=>$query->where('stock',0)),
+                Filter::make('not_zero')
+                    ->label('رصيدها لا يساوي صفر')
+                    ->query(fn(Builder $query): Builder=>$query->where('stock','!=',0)),
+                Filter::make('has_balance')
+                    ->label('لديها رصيد سابق')
+                    ->query(fn(Builder $query): Builder=>$query->where('balance','!=',0)),
             ])
             ->checkIfRecordIsSelectableUsing(
                 fn (Model $record): bool => !$record->Buy_tran()->exists()
