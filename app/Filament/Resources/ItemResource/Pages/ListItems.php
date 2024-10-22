@@ -69,10 +69,7 @@ class ListItems extends ListRecords
                      ['res'=>$this->getTableQueryForExport()->get(),
                          'cus'=>$cus,'RepDate'=>$RepDate,
                      ])
-                     ->withBrowsershot(function (Browsershot $shot) {
-                         $shot->setNodeBinary('C:/Program Files/nodejs/node') ->setNpmBinary('C:/Program Files/nodejs/npm')
-                             ->setChromePath("C:\Program Files\Google\Chrome\Application\chrome.exe");
-                     })
+
                      ->footerView('PrnView.footer')
                      ->margins(10, 10, 40, 10, Unit::Pixel)
                      ->save(Auth::user()->company.'/invoice-2023-04-10.pdf');
