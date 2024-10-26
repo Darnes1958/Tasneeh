@@ -31,7 +31,7 @@ class EditHand extends EditRecord
         if ($hand->pay_who->value==0 || $hand->pay_who->value==3)
             $this->AddKyde($nakd->account->id,$man->account->id,$hand,$this->data['val'],$this->data['val_date'],'من مشغلين الي النقدية');
         else
-            $this->AddKyde($man->account->id,$nakd->account->id,$hand,$this->data['val'],$this->data['val_date'],'من مشغلين الي النقدية');
+            $this->AddKyde($man->account->id,$nakd->account->id,$hand,$this->data['val'],$this->data['val_date'],'من النقدية الي مشغلين');
 
 
 

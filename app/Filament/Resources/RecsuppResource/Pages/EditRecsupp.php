@@ -47,8 +47,8 @@ class EditRecsupp extends EditRecord
 
       if ($rescupp->kazena_id) $nakd=Kazena::find($rescupp->kazena_id);
       else $nakd=Acc::find($rescupp->acc_id);
-      if ($rescupp->imp_exp==0)
-          $this->AddKyde($nakd->account_id,$supp->account->id,
+      if ($rescupp->imp_exp->value==0)
+          $this->AddKyde($nakd->account->id,$supp->account->id,
               $rescupp,$this->data['val'],$this->data['receipt_date'],'من الموردين الي النقدية');
       else
           $this->AddKyde($supp->account->id,$nakd->account->id,
