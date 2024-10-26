@@ -2,11 +2,13 @@
 
 namespace App\Filament\Resources;
 
+use App\Enums\AccRef;
 use App\Enums\PlaceType;
 
 use App\Filament\Resources\BuyResource\Pages;
 use App\Filament\Resources\BuyResource\RelationManagers;
 
+use App\Livewire\Traits\AccTrait;
 use App\Models\Buy;
 use App\Models\Cost;
 use App\Models\Costtype;
@@ -48,6 +50,7 @@ use Illuminate\Support\Facades\Auth;
 
 class BuyResource extends Resource
 {
+    use AccTrait;
     protected static ?string $model = Buy::class;
 
     protected static ?string $navigationIcon = 'heroicon-o-rectangle-stack';
@@ -87,22 +90,12 @@ class BuyResource extends Resource
                                             ->default(Auth::id()),
                                     ])
                             ])
-                            ->editOptionForm([
-                                Section::make('تعديل بيانات مورد')
-                                    ->schema([
-                                        TextInput::make('name')
-                                            ->required()
-                                            ->label('الاسم'),
-                                        TextInput::make('address')
-                                            ->label('العنوان'),
-                                        TextInput::make('mdar')
-                                            ->label('مدار'),
-                                        TextInput::make('libyana')
-                                            ->label('لبيانا'),
-                                        Hidden::make('user_id')
-                                            ->default(Auth::id()),
-                                    ])->columns(2)
-                            ]),
+                            ->createOptionUsing(function (array $data): int {
+                                $thekey=Supplier::create($data)->getKey();
+                                $hall=Supplier::find($thekey);
+                                self::AddAcc2(AccRef::suppliers,$hall);
+                                return $thekey;
+                            }),
                         DatePicker::make('order_date')
                             ->id('order_date')
                             ->default(now())
@@ -145,18 +138,12 @@ class BuyResource extends Resource
 
                                     ])
                             ])
-                            ->editOptionForm([
-                                Section::make('تعديل مكان تخزين')
-                                    ->schema([
-                                        TextInput::make('name')
-                                            ->required()
-                                            ->unique()
-                                            ->label('الاسم'),
-                                        Radio::make('place_type')
-                                            ->inline()
-                                            ->options(PlaceType::class)
-                                    ])->columns(2)
-                            ]),
+                            ->createOptionUsing(function (array $data): int {
+                                $thekey=Place::create($data)->getKey();
+                                $place=Place::find($thekey);
+                                self::AddAcc2(AccRef::places,$place);
+                                return $thekey;
+                            }),
 
                         TextInput::make('notes')
                             ->live()
@@ -615,6 +602,8 @@ class BuyResource extends Resource
                          $item->stock-=$tran->quant;
                          $item->save();
                      }
+                     if ($record->kyde)
+                        foreach ($record->kyde as $rec) $rec->delete();
                       $record->delete();
                  }),
                 Action::make('buytran')

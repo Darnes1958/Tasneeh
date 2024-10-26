@@ -84,7 +84,7 @@ class MasrofatResource extends Resource
                     ->label('طريقة الدفع')
                     ,
                 Select::make('acc_id')
-                    ->relationship('Acc','name')
+                    ->relationship('AccRef','name')
                     ->label('المصرف')
                     ->preload()
                     ->requiredIf('pay_type', 1)
@@ -164,7 +164,7 @@ class MasrofatResource extends Resource
                     ->label('البيان')
                     ->searchable()
                     ->sortable(),
-                Tables\Columns\TextColumn::make('Acc.name')
+                Tables\Columns\TextColumn::make('AccRef.name')
                     ->label('المصرف')
                     ->searchable()
                     ->sortable(),

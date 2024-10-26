@@ -2,16 +2,10 @@
 
 namespace App\Filament\Resources;
 
-use App\Filament\Resources\PlaceResource\Pages;
-use App\Filament\Resources\PlaceResource\RelationManagers;
-use App\Models\Account;
-use App\Models\Factory;
-use App\Models\Hall_stock;
-use App\Models\Place;
-use App\Models\Place_stock;
-use App\Models\Sell;
+use App\Filament\Resources\ManResource\Pages;
+use App\Filament\Resources\ManResource\RelationManagers;
+use App\Models\Man;
 use Filament\Forms;
-use Filament\Forms\Components\Hidden;
 use Filament\Forms\Components\TextInput;
 use Filament\Forms\Form;
 use Filament\Resources\Resource;
@@ -21,25 +15,28 @@ use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\SoftDeletingScope;
 
-class PlaceResource extends Resource
+class ManResource extends Resource
 {
-    protected static ?string $model = Place::class;
+    protected static ?string $model = Man::class;
 
     protected static ?string $navigationIcon = 'heroicon-o-rectangle-stack';
-    protected static ?string $navigationLabel='ادخال مخازن اصناف';
-    protected static ?string $navigationGroup='مخازن و أصناف';
-    protected static ?int $navigationSort=6;
+    protected static ?string $navigationLabel='مشغلين';
+    protected static ?string $navigationGroup='زبائن وموردين';
+
 
     public static function form(Form $form): Form
     {
         return $form
             ->schema([
                 TextInput::make('name')
+                    ->label('الاسم')
+                    ->autocomplete(false)
                     ->required()
+                    ->live()
                     ->unique(ignoreRecord: true)
-                    ->label('الاسم'),
-                Hidden::make('place_type')
-                    ->default(0)
+                    ->validationMessages([
+                        'unique' => ' :attribute مخزون مسبقا ',
+                    ])
             ]);
     }
 
@@ -48,7 +45,8 @@ class PlaceResource extends Resource
         return $table
             ->columns([
                 Tables\Columns\TextColumn::make('name')
-                 ->label('الاسم')
+                ->searchable()
+                ->label('الاسم')
             ])
             ->filters([
                 //
@@ -59,13 +57,12 @@ class PlaceResource extends Resource
                     ->icon('heroicon-o-trash')
                     ->color('danger')
                     ->iconButton()
+                    ->hidden(fn($record) => $record->Hand)
                     ->requiresConfirmation()
                     ->action(function (Model $record){
                         if ($record->account) $record->account->delete();
                         $record->delete();
-                    })
-                    ->hidden(fn(Model $record): bool => Place_stock::where('place_id',$record->id)
-                            ->where('stock','>',0)->exists() || Factory::where('place_id',$record->id)->exists()),
+                    }),
             ])
             ->bulkActions([
                 //
@@ -82,9 +79,9 @@ class PlaceResource extends Resource
     public static function getPages(): array
     {
         return [
-            'index' => Pages\ListPlaces::route('/'),
-            'create' => Pages\CreatePlace::route('/create'),
-            'edit' => Pages\EditPlace::route('/{record}/edit'),
+            'index' => Pages\ListMen::route('/'),
+            'create' => Pages\CreateMan::route('/create'),
+            'edit' => Pages\EditMan::route('/{record}/edit'),
         ];
     }
 }

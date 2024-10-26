@@ -10,6 +10,10 @@ class Customer extends Model
 {
   protected $connection = 'other';
 
+    public function account()
+    {
+        return $this->morphOne(Account::class, 'accountable');
+    }
   public function Sell(){
     return $this->hasMany(Sell::class);
   }

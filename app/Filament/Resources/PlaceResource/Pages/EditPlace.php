@@ -3,6 +3,8 @@
 namespace App\Filament\Resources\PlaceResource\Pages;
 
 use App\Filament\Resources\PlaceResource;
+use App\Models\Hall;
+use App\Models\Place;
 use Filament\Actions;
 use Filament\Resources\Pages\EditRecord;
 
@@ -14,10 +16,10 @@ class EditPlace extends EditRecord
     {
         return static::getResource()::getUrl('index');
     }
-    protected function getHeaderActions(): array
+    protected function beforeSave(): void
     {
-        return [
-            Actions\DeleteAction::make(),
-        ];
+        $res=Place::find($this->data['id']);
+        if ($res->account)
+            $res->account->update(['name'=>$this->data['name']]);
     }
 }

@@ -9,7 +9,10 @@ use Illuminate\Support\Facades\Auth;
 class Supplier extends Model
 {
   protected $connection = 'other';
-
+    public function account()
+    {
+        return $this->morphOne(Account::class, 'accountable');
+    }
   public function Buy(){
     return $this->hasMany(Buy::class);
   }

@@ -135,7 +135,7 @@ class ReceiptResource extends Resource
                    ->numeric(),
                 Select::make('acc_id')
                     ->label('المصرف')
-                    ->relationship('Acc','name')
+                    ->relationship('AccRef','name')
                     ->searchable()
                     ->required()
                     ->live()
@@ -199,7 +199,7 @@ class ReceiptResource extends Resource
                     ->required()
                     ->live()
                     ->preload()
-                    ->disabled(function () {return $res=Kazena::where('user_id',Auth::id())->first();})
+
                     ->default(function (){
                         $res=Kazena::where('user_id',Auth::id())->first();
                         if ($res) return $res->id;

@@ -10,7 +10,10 @@ class Man extends Model
 {
     protected $connection = 'other';
 
-
+    public function account()
+    {
+        return $this->morphOne(Account::class, 'accountable');
+    }
     public function Hand()
     {
         return $this->hasMany(Hand::class);

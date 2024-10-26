@@ -12,6 +12,10 @@ class Hand extends Model
 {
     protected $connection = 'other';
 
+    public function kyde()
+    {
+        return $this->morphMany(Kyde::class, 'kydeable');
+    }
     public function Factory()
     {
         return $this->belongsTo(Factory::class);

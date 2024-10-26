@@ -2,10 +2,12 @@
 
 namespace App\Filament\Resources;
 
+use App\Enums\AccRef;
 use App\Enums\PayType;
 use App\Enums\RecWho;
 use App\Filament\Resources\RecsuppResource\Pages;
 use App\Filament\Resources\RecsuppResource\RelationManagers;
+use App\Livewire\Traits\AccTrait;
 use App\Models\Acc;
 use App\Models\Buy;
 use App\Models\Kazena;
@@ -38,6 +40,7 @@ use function Laravel\Prompts\text;
 
 class RecsuppResource extends Resource
 {
+    use AccTrait;
     protected static ?string $model = Recsupp::class;
 
     protected static ?string $navigationIcon = 'heroicon-o-rectangle-stack';
@@ -90,23 +93,12 @@ class RecsuppResource extends Resource
                   ->default(Auth::id()),
               ])
           ])
-          ->editOptionForm([
-            Section::make('تعديل بيانات مورد')
-              ->schema([
-                TextInput::make('name')
-                  ->required()
-                  ->label('الاسم'),
-                TextInput::make('address')
-                  ->label('العنوان'),
-                TextInput::make('mdar')
-                  ->label('مدار'),
-                TextInput::make('libyana')
-                  ->label('لبيانا'),
-                Hidden::make('user_id')
-                  ->default(Auth::id()),
-
-              ])->columns(2)
-          ]),
+            ->createOptionUsing(function (array $data): int {
+                $thekey=Supplier::create($data)->getKey();
+                $hall=Supplier::find($thekey);
+                self::AddAcc2(AccRef::suppliers,$hall);
+                return $thekey;
+            }),
 
         Select::make('buy_id')
           ->label('رقم الفاتورة')
@@ -140,57 +132,8 @@ class RecsuppResource extends Resource
               ->live()
               ->preload()
               ->visible(fn(Get $get): bool =>($get('pay_type')==1 ))
-              ->createOptionForm([
-                  Section::make('ادخال حساب مصرفي جديد')
-                      ->schema([
-                          TextInput::make('name')
-                              ->label('اسم المصرف')
-                              ->required()
-                              ->autofocus()
-                              ->columnSpan(2)
-                              ->unique(ignoreRecord: true)
-                              ->validationMessages([
-                                  'unique' => ' :attribute مخزون مسبقا ',
-                              ])        ,
-                          TextInput::make('acc')
-                              ->label('رقم الحساب')
-                              ->required()
-                              ->unique(ignoreRecord: true)
-                              ->validationMessages([
-                                  'unique' => ' :attribute مخزون مسبقا ',
-                              ])  ,
-                          TextInput::make('raseed')
-                              ->label('رصيد بداية المدة')
-                              ->numeric()
-                              ->required()                          ,
-                      ])
-              ])
-              ->editOptionForm([
-                  Section::make('تعديل بيانات مورد')
-                      ->schema([
-                          TextInput::make('name')
-                              ->label('اسم المصرف')
-                              ->required()
-                              ->autofocus()
-                              ->columnSpan(2)
-                              ->unique(ignoreRecord: true)
-                              ->validationMessages([
-                                  'unique' => ' :attribute مخزون مسبقا ',
-                              ])        ,
-                          TextInput::make('acc')
-                              ->label('رقم الحساب')
-                              ->required()
-                              ->unique(ignoreRecord: true)
-                              ->validationMessages([
-                                  'unique' => ' :attribute مخزون مسبقا ',
-                              ])  ,
-                          TextInput::make('raseed')
-                              ->label('رصيد بداية المدة')
-                              ->numeric()
-                              ->required()
 
-                      ])->columns(2)
-              ]),
+           ,
           Select::make('kazena_id')
               ->label('الخزينة')
               ->relationship('Kazena','name')
@@ -198,66 +141,14 @@ class RecsuppResource extends Resource
               ->required()
               ->live()
               ->preload()
-              ->disabled(function () {return $res=Kazena::where('user_id',Auth::id())->first();})
+
               ->default(function (){
                   $res=Kazena::where('user_id',Auth::id())->first();
                   if ($res) return $res->id;
                   else return null;
               })
               ->visible(fn(Get $get): bool =>($get('pay_type')==0 ))
-              ->createOptionForm([
-                  Section::make('ادخال حساب خزينة جديد')
-                      ->schema([
-                          TextInput::make('name')
-                              ->label('اسم الخزينة')
-                              ->required()
-                              ->autofocus()
-                              ->columnSpan(2)
-                              ->unique(ignoreRecord: true)
-                              ->validationMessages([
-                                  'unique' => ' :attribute مخزون مسبقا ',
-                              ])        ,
-                          Forms\Components\Select::make('user_id')
-                              ->label('المستخدم')
-                              ->searchable()
-                              ->preload()
-                              ->options(User::
-                              where('company',Auth::user()->company)
-                                  ->where('id','!=',1)
-                                  ->pluck('name','id')),
-                          TextInput::make('balance')
-                              ->label('رصيد بداية المدة')
-                              ->numeric()
-                              ->required()                          ,
-                      ])
-              ])
-              ->editOptionForm([
-                  Section::make('تعديل بيانات خزينة')
-                      ->schema([
-                          TextInput::make('name')
-                              ->label('اسم الخزينة')
-                              ->required()
-                              ->autofocus()
-                              ->columnSpan(2)
-                              ->unique(ignoreRecord: true)
-                              ->validationMessages([
-                                  'unique' => ' :attribute مخزون مسبقا ',
-                              ])        ,
-                          Forms\Components\Select::make('user_id')
-                              ->label('المستخدم')
-                              ->searchable()
-                              ->preload()
-                              ->options(User::
-                              where('company',Auth::user()->company)
-                                  ->where('id','!=',1)
-                                  ->pluck('name','id')),
-                          TextInput::make('raseed')
-                              ->label('رصيد بداية المدة')
-                              ->numeric()
-                              ->required()
-
-                      ])->columns(2)
-              ]),
+              ,
         TextInput::make('notes')
           ->columnSpan(3)
           ->label('ملاحظات'),
@@ -372,10 +263,13 @@ class RecsuppResource extends Resource
                 $sub=Recsupp::where('buy_id',$record->buy_id)->whereIn('rec_who',[4,5])->sum('val');
               $buy=Buy::find($record->buy_id);
               $buy->pay=$sub-$sum;
-
               $buy->save();
 
-            }
+                  if ($record->kyde)
+                      foreach ($record->kyde as $rec) $rec->delete();
+
+
+              }
 
           }),
       ])

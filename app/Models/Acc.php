@@ -9,7 +9,10 @@ use Illuminate\Support\Facades\Auth;
 class Acc extends Model
 {
     protected $connection = 'other';
-
+    public function account()
+    {
+        return $this->morphOne(Account::class, 'accountable');
+    }
   public function SalaryTran(){
     return $this->hasMany(Salarytran::class);
   }

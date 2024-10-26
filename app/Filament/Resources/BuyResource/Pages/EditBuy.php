@@ -2,10 +2,15 @@
 
 namespace App\Filament\Resources\BuyResource\Pages;
 
+use App\Enums\AccRef;
 use App\Filament\Resources\BuyResource;
+use App\Livewire\Traits\AccTrait;
+use App\Models\Buy;
 use App\Models\Buy_tran;
 use App\Models\Item;
+use App\Models\Place;
 use App\Models\Place_stock;
+use App\Models\Supplier;
 use Filament\Actions;
 use Filament\Actions\Action;
 use Filament\Notifications\Notification;
@@ -14,6 +19,7 @@ use Illuminate\Database\Eloquent\Model;
 
 class EditBuy extends EditRecord
 {
+    use AccTrait;
     protected static string $resource = BuyResource::class;
     protected ?string $heading='تعديل فاتورة شراء';
 
@@ -95,7 +101,18 @@ class EditBuy extends EditRecord
                 ]);
             }
 
+
+
         }
+
+        $buy=Buy::find($this->data['id']);
+        $supp=Supplier::find($this->data['supplier_id']);
+        $place=Place::find($buy->place_id);
+        if ($buy->kyde)
+            foreach ($buy->kyde as $rec) $rec->delete();
+        $this->AddKyde(AccRef::buys->value,$supp->account->id,$buy,$this->data['tot'],$this->data['order_date'],'فاتورة مشتريات');
+        $this->AddKyde($place->account->id,AccRef::buys->value,$buy,$this->data['tot'],$this->data['order_date'],'من المشتريات الي المخازن');
+
 
     }
 

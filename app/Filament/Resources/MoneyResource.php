@@ -69,7 +69,7 @@ class MoneyResource extends Resource
                  Select::make('acc_id')
                    ->label('من الحساب المصرفي')
                    ->options(Acc::all()->pluck('name','id'))
-                   ->relationship('Acc','name')
+                   ->relationship('AccRef','name')
                    ->searchable()
                    ->required(function (Forms\Get $get){
                      return $get('rec_who')==3 || $get('rec_who')==4;

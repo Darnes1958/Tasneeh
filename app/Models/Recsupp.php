@@ -14,6 +14,10 @@ class Recsupp extends Model
 {
   protected $connection = 'other';
 
+    public function kyde()
+    {
+        return $this->morphMany(Kyde::class, 'kydeable');
+    }
 
   public function Buy(){
     return $this->belongsTo(Buy::class);

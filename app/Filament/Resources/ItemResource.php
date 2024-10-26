@@ -3,8 +3,10 @@
 namespace App\Filament\Resources;
 
 
+use App\Enums\AccRef;
 use App\Filament\Resources\ItemResource\Pages;
 use App\Filament\Resources\ItemResource\RelationManagers;
+use App\Livewire\Traits\AccTrait;
 use App\Models\Buy_tran;
 
 use App\Models\Item;
@@ -41,6 +43,7 @@ use Illuminate\Support\Facades\DB;
 
 class ItemResource extends Resource
 {
+    use AccTrait;
     protected static ?string $model = Item::class;
 
     protected static ?string $pluralModelLabel='أصناف';
@@ -140,7 +143,7 @@ class ItemResource extends Resource
                       ->label('مكان التخزين')
                       ->relationship('Place','name')
                       ->required(fn ($get) => ! blank($get('balance')) && $get('balance')>0)
-                      ->disabled(fn ($get) =>  blank($get('balance')) || $get('balance')==0 )
+                      ->disabled(fn ($get,string $operation) => $operation=='edit' || blank($get('balance')) || $get('balance')==0 )
                       ->preload()
                       ->createOptionForm([
                           Section::make()
@@ -230,6 +233,7 @@ class ItemResource extends Resource
                             ->action(function (array $data,Model $record) {
                                 $oldBalance=$record['balance'];
                                 $oldPlace=$record['place_id'];
+
                                 if ($record->place_id) {
                                     $place = Place_stock::where('place_id',$record['place_id'])
                                         ->where('item_id',$record['id'])
@@ -243,6 +247,7 @@ class ItemResource extends Resource
                                              ->send();
                                              return;
                                         }
+                                        $thePlace=$record['place_id'];
                                         $place->stock =$place->stock-$oldBalance+$data['balance'];
                                         $place->save();
                                         $record->update(['balance' => $data['balance'],
@@ -253,7 +258,7 @@ class ItemResource extends Resource
 
                                     } else
                                     {
-
+                                        $thePlace=$data['place_id'];
                                         Place_stock::create([
                                             'stock' => $data['balance'],
                                             'place_id' => $data['place_id'],
@@ -267,6 +272,13 @@ class ItemResource extends Resource
                                             ]);
 
                                     }
+                                    $Item=Item::find($record['id']);
+                                    if ($Item->kyde)
+                                        foreach ($Item->kyde as $rec) $rec->delete();
+
+                                    $place=Place::find($thePlace);
+                                    if ($record['balance']!=0)
+                                    self::AddKyde2($place->account->id,AccRef::makzoone->value,$Item,$record['price_buy']*$record['balance'],now(),'مخزون بداية المدة');
                                 }
                             })
                     ),
@@ -317,8 +329,9 @@ class ItemResource extends Resource
             ->actions([
               Tables\Actions\EditAction::make()->iconButton(),
               Tables\Actions\DeleteAction::make()
+
                   ->hidden(fn ($record):bool =>
-                  $record->Buy_tran()->exists()
+                  $record->Buy_tran()->exists() || $record->balance>0
                   || !Auth::user()->can('تعديل مشتريات')
                   )
                   ->iconButton(),

@@ -4,6 +4,7 @@ namespace App\Filament\Resources;
 
 use App\Filament\Resources\SupplierResource\Pages;
 use App\Filament\Resources\SupplierResource\RelationManagers;
+use App\Livewire\Traits\AccTrait;
 use App\Models\Buy;
 use App\Models\Customer;
 use App\Models\Receipt;
@@ -19,11 +20,13 @@ use Filament\Tables;
 use Filament\Tables\Columns\TextColumn;
 use Filament\Tables\Table;
 use Illuminate\Database\Eloquent\Builder;
+use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\SoftDeletingScope;
 use Illuminate\Support\Facades\Auth;
 
 class SupplierResource extends Resource
 {
+    use AccTrait;
     protected static ?string $model = Supplier::class;
   protected static ?string $navigationLabel='موردين';
   protected static ?string $navigationGroup='زبائن وموردين';
@@ -88,15 +91,22 @@ class SupplierResource extends Resource
         Tables\Actions\EditAction::make()
           ->iconButton()
           ->hidden(fn(Supplier $record)=>$record->id==1),
-        Tables\Actions\DeleteAction::make()
+        Tables\Actions\Action::make('del')
+          ->icon('heroicon-o-trash')
+            ->color('danger')
           ->iconButton()
+          ->requiresConfirmation()
           ->modalHeading('حذف مورد')
           ->modalDescription('هل انت متأكد من الغاء هذا المورد ؟')
           ->hidden(fn(Supplier $record)=>
             Buy::where('supplier_id',$record->id)->exists()
-            || $record->id<3
             || Recsupp::where('supplier_id',$record->id)->exists()
-            || Auth::user()->can('الغاء موردين')),
+            )
+            ->action(function (Model $record){
+
+                if ($record->account) $record->account->delete();
+                $record->delete();
+            }),
       ]);
   }
 

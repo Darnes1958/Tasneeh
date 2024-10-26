@@ -114,7 +114,7 @@ class MasrTran extends Page  implements HasForms,HasTable
                     ->searchable()
                     ->sortable(),
 
-                TextColumn::make('Acc.name')
+                TextColumn::make('AccRef.name')
                     ->label('المصرف')
                     ->searchable()
                     ->sortable(),

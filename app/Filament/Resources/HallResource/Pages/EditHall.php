@@ -3,6 +3,7 @@
 namespace App\Filament\Resources\HallResource\Pages;
 
 use App\Filament\Resources\HallResource;
+use App\Models\Hall;
 use Filament\Actions;
 use Filament\Resources\Pages\EditRecord;
 
@@ -14,10 +15,10 @@ class EditHall extends EditRecord
     {
         return static::getResource()::getUrl('index');
     }
-    protected function getHeaderActions(): array
+    protected function beforeSave(): void
     {
-        return [
-            Actions\DeleteAction::make(),
-        ];
+        $res=Hall::find($this->data['id']);
+        if ($res->account)
+        $res->account->update(['name'=>$this->data['name']]);
     }
 }

@@ -2,9 +2,14 @@
 
 namespace App\Filament\Resources\ItemResource\Pages;
 
+use App\Enums\AccRef;
 use App\Filament\Resources\ItemResource;
+use App\Livewire\Traits\AccTrait;
+use App\Models\Hand;
 use App\Models\Item;
+use App\Models\Man;
 use App\Models\OurCompany;
+use App\Models\Place;
 use Barryvdh\DomPDF\Facade\Pdf;
 use Filament\Actions;
 use Filament\Resources\Pages\ListRecords;
@@ -18,6 +23,7 @@ use Spatie\LaravelPdf\Enums\Unit;
 
 class ListItems extends ListRecords
 {
+    use AccTrait;
     protected static string $resource = ItemResource::class;
 
     public function getTitle():  string|Htmlable
@@ -83,7 +89,22 @@ class ListItems extends ListRecords
 
 
 
-             })
+             }),
+            Actions\Action::make('acc')
+                ->label('add acc')
+                ->visible(fn(): bool=>Auth::id()==1)
+                ->action(function (){
+                    $items=Item::all();
+                    foreach ($items as $item){
+                        if ($item->balance>0 && $item->price_buy>0)
+                        {
+                            $place=Place::find($item->place_id);
+                            $this->AddKyde($place->account->id,AccRef::makzoone->value,$item,$item->price_buy*$item->balance,now(),'مخزون بداية المدة');
+
+                        }
+                    }
+
+                }),
         ];
     }
 }

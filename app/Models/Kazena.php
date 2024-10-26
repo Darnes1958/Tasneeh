@@ -11,6 +11,10 @@ use Illuminate\Support\Facades\Auth;
 class Kazena extends Model
 {
     protected $connection = 'other';
+    public function account()
+    {
+        return $this->morphOne(Account::class, 'accountable');
+    }
     public function Receipt(){
         return $this->hasMany(Receipt::class);
     }

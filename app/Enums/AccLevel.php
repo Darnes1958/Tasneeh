@@ -5,12 +5,12 @@ use Filament\Support\Contracts\HasLabel;
 use Filament\Support\Contracts\HasIcon;
 use Filament\Support\Contracts\HasColor;
 
-enum PayWho: int implements HasLabel,HasColor
+enum AccLevel: int implements HasLabel,HasColor
 {
-  case اعمال = 0;
-  case دفع_عن_عمل = 1;
-  case دفع = 2;
-  case خصم = 3;
+  case رئيسي = 1;
+  case فرعي = 2;
+  case تحليلي = 3;
+  case تحليلي_مساعد = 4;
 
 
   public function getLabel(): ?string
@@ -20,10 +20,10 @@ enum PayWho: int implements HasLabel,HasColor
   public function getColor(): string | array | null
   {
     return match ($this) {
-      self::اعمال => 'info',
-      self::دفع => 'primary',
-      self::دفع_عن_عمل => 'success',
-      self::خصم => 'danger',
+      self::رئيسي => 'success',
+      self::فرعي => 'info',
+      self::تحليلي => 'primary',
+      self::تحليلي_مساعد => 'Fuchsia',
     };
   }
 

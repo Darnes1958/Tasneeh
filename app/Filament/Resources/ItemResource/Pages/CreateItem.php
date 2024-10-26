@@ -2,9 +2,12 @@
 
 namespace App\Filament\Resources\ItemResource\Pages;
 
+use App\Enums\AccRef;
 use App\Filament\Resources\ItemResource;
+use App\Livewire\Traits\AccTrait;
 use App\Models\Barcode;
 use App\Models\Item;
+use App\Models\Place;
 use App\Models\Place_stock;
 use App\Models\Price_buy;
 use App\Models\Setting;
@@ -14,6 +17,7 @@ use Illuminate\Support\Facades\Auth;
 
 class CreateItem extends CreateRecord
 {
+    use AccTrait;
     protected static string $resource = ItemResource::class;
     protected static bool $canCreateAnother = false;
     protected ?string $heading="";
@@ -37,6 +41,9 @@ class CreateItem extends CreateRecord
                 'place_id'=> $this->data['place_id'],
                 'stock'=>$this->data['balance'],
             ]);
+            $Item=Item::find(Item::max('id'));
+            $place=Place::find($this->data['place_id']);
+            $this->AddKyde($place->account->id,AccRef::makzoone->value,$Item,$this->data['price_buy']*$this->data['balance'],now(),'مخزون بداية المدة');
         }
     }
     protected function getRedirectUrl(): string

@@ -17,6 +17,11 @@ class Item extends Model
     public function getBuyTotAttribute(){
      return $this->stock*$this->price_buy;
     }
+
+    public function kyde()
+    {
+        return $this->morphMany(Kyde::class, 'kydeable');
+    }
     public function placeStocks(){
       return $this->hasMany(Place_stock::class);
     }

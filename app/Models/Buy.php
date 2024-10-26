@@ -20,6 +20,11 @@ class Buy extends Model
     {
         return $this->tot-$this->pay;
     }
+
+    public function kyde()
+    {
+        return $this->morphMany(Kyde::class, 'kydeable');
+    }
   public function Supplier(){
     return $this->belongsTo(Supplier::class);
   }

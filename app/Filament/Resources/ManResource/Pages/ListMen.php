@@ -1,38 +1,44 @@
 <?php
 
-namespace App\Filament\Resources\HallResource\Pages;
+namespace App\Filament\Resources\ManResource\Pages;
 
 use App\Enums\AccRef;
-use App\Filament\Resources\HallResource;
+use App\Filament\Resources\ManResource;
 use App\Livewire\Traits\AccTrait;
-use App\Models\Hall;
+use App\Models\Hand;
+use App\Models\Man;
 use Filament\Actions;
 use Filament\Resources\Pages\ListRecords;
 use Illuminate\Support\Facades\Auth;
 
-class ListHalls extends ListRecords
+class ListMen extends ListRecords
 {
     use AccTrait;
-    protected static string $resource = HallResource::class;
+    protected static string $resource = ManResource::class;
 
     protected ?string $heading=' ';
 
     protected function getHeaderActions(): array
     {
         return [
-            Actions\CreateAction::make()->label('ادخال'),
+            Actions\CreateAction::make()->label('اضافة مشغل'),
             Actions\Action::make('acc')
                 ->label('add acc')
                 ->visible(fn(): bool=>Auth::id()==1)
                 ->action(function (){
-                    $places = Hall::all();
+                    $places = Man::all();
                     foreach ($places as $place){
                         if (!$place->account){
-                            $this->AddAcc(AccRef::halls,$place);
+                            $this->AddAcc(AccRef::mans,$place);
+                        }
+                    }
+                    $hands=Hand::all();
+                    foreach ($hands as $hand){
+                        if (!$hand->kyde){
+
                         }
                     }
                 }),
-
         ];
     }
 }

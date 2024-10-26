@@ -3,6 +3,8 @@
 namespace App\Filament\Resources\SupplierResource\Pages;
 
 use App\Filament\Resources\SupplierResource;
+use App\Models\Place;
+use App\Models\Supplier;
 use Filament\Actions;
 use Filament\Resources\Pages\EditRecord;
 use Illuminate\Support\Facades\Auth;
@@ -11,10 +13,10 @@ class EditSupplier extends EditRecord
 {
     protected static string $resource = SupplierResource::class;
   protected ?string $heading="";
-    protected function getHeaderActions(): array
+    protected function beforeSave(): void
     {
-        return [
-            Actions\DeleteAction::make()->visible(Auth::user()->can('الغاء موردين')),
-        ];
+        $res=Supplier::find($this->data['id']);
+        if ($res->account)
+            $res->account->update(['name'=>$this->data['name']]);
     }
 }

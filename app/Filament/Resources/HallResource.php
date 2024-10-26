@@ -5,6 +5,7 @@ namespace App\Filament\Resources;
 use App\Enums\PlaceType;
 use App\Filament\Resources\HallResource\Pages;
 use App\Filament\Resources\HallResource\RelationManagers;
+use App\Models\Account;
 use App\Models\Hall;
 use App\Models\Hall_stock;
 use App\Models\Sell;
@@ -61,9 +62,17 @@ class HallResource extends Resource
             ])
             ->actions([
                 Tables\Actions\EditAction::make(),
-                Tables\Actions\DeleteAction::make()
+                Tables\Actions\Action::make('del')
+                 ->icon('heroicon-o-trash')
+                 ->color('danger')
+                 ->iconButton()
                  ->hidden(fn(Model $record): bool => Hall_stock::where('hall_id',$record->id)
-                    ->where('stock','>',0)->exists() || Sell::where('hall_id',$record->id)->exists()),
+                    ->where('stock','>',0)->exists() || Sell::where('hall_id',$record->id)->exists())
+                 ->requiresConfirmation()
+                ->action(function (Model $record){
+                    if ($record->account) $record->account->delete();
+                    $record->delete();
+                }),
             ])
             ->bulkActions([
                 //

@@ -116,57 +116,8 @@ class HandResource extends Resource
                          ->live()
                          ->preload()
                          ->visible(fn(Get $get): bool =>($get('pay_type')==1 ))
-                         ->createOptionForm([
-                             Section::make('ادخال حساب مصرفي جديد')
-                                 ->schema([
-                                     TextInput::make('name')
-                                         ->label('اسم المصرف')
-                                         ->required()
-                                         ->autofocus()
-                                         ->columnSpan(2)
-                                         ->unique(ignoreRecord: true)
-                                         ->validationMessages([
-                                             'unique' => ' :attribute مخزون مسبقا ',
-                                         ])        ,
-                                     TextInput::make('acc')
-                                         ->label('رقم الحساب')
-                                         ->required()
-                                         ->unique(ignoreRecord: true)
-                                         ->validationMessages([
-                                             'unique' => ' :attribute مخزون مسبقا ',
-                                         ])  ,
-                                     TextInput::make('raseed')
-                                         ->label('رصيد بداية المدة')
-                                         ->numeric()
-                                         ->required()                          ,
-                                 ])
-                         ])
-                         ->editOptionForm([
-                             Section::make('تعديل بيانات مصرف')
-                                 ->schema([
-                                     TextInput::make('name')
-                                         ->label('اسم المصرف')
-                                         ->required()
-                                         ->autofocus()
-                                         ->columnSpan(2)
-                                         ->unique(ignoreRecord: true)
-                                         ->validationMessages([
-                                             'unique' => ' :attribute مخزون مسبقا ',
-                                         ])        ,
-                                     TextInput::make('acc')
-                                         ->label('رقم الحساب')
-                                         ->required()
-                                         ->unique(ignoreRecord: true)
-                                         ->validationMessages([
-                                             'unique' => ' :attribute مخزون مسبقا ',
-                                         ])  ,
-                                     TextInput::make('raseed')
-                                         ->label('رصيد بداية المدة')
-                                         ->numeric()
-                                         ->required()
 
-                                 ])->columns(2)
-                         ]),
+                         ,
                      Select::make('kazena_id')
                          ->label('الخزينة')
                          ->columnSpan(2)
@@ -181,59 +132,8 @@ class HandResource extends Resource
                              else return null;
                          })
                          ->visible(fn(Get $get): bool =>($get('pay_type')==0 ))
-                         ->createOptionForm([
-                             Section::make('ادخال حساب خزينة جديد')
-                                 ->schema([
-                                     TextInput::make('name')
-                                         ->label('اسم الخزينة')
-                                         ->required()
-                                         ->autofocus()
-                                         ->columnSpan(2)
-                                         ->unique(ignoreRecord: true)
-                                         ->validationMessages([
-                                             'unique' => ' :attribute مخزون مسبقا ',
-                                         ])        ,
-                                     Forms\Components\Select::make('user_id')
-                                         ->label('المستخدم')
-                                         ->searchable()
-                                         ->preload()
-                                         ->options(User::
-                                         where('company',Auth::user()->company)
-                                             ->where('id','!=',1)
-                                             ->pluck('name','id')),
-                                     TextInput::make('balance')
-                                         ->label('رصيد بداية المدة')
-                                         ->numeric()
-                                         ->required()                          ,
-                                 ])
-                         ])
-                         ->editOptionForm([
-                             Section::make('تعديل بيانات خزينة')
-                                 ->schema([
-                                     TextInput::make('name')
-                                         ->label('اسم الخزينة')
-                                         ->required()
-                                         ->autofocus()
-                                         ->columnSpan(2)
-                                         ->unique(ignoreRecord: true)
-                                         ->validationMessages([
-                                             'unique' => ' :attribute مخزون مسبقا ',
-                                         ])        ,
-                                     Forms\Components\Select::make('user_id')
-                                         ->label('المستخدم')
-                                         ->searchable()
-                                         ->preload()
-                                         ->options(User::
-                                         where('company',Auth::user()->company)
-                                             ->where('id','!=',1)
-                                             ->pluck('name','id')),
-                                     TextInput::make('raseed')
-                                         ->label('رصيد بداية المدة')
-                                         ->numeric()
-                                         ->required()
 
-                                 ])->columns(2)
-                         ]),
+                        ,
                      DatePicker::make('val_date')
 
                          ->default(now())
@@ -365,7 +265,11 @@ class HandResource extends Resource
                 Tables\Actions\EditAction::make()
                  ->hidden(fn($record) => $record->pay_who->value==0),
                 Tables\Actions\DeleteAction::make()
-                 ->hidden(fn($record) => $record->pay_who->value==0),
+                 ->hidden(fn($record) => $record->pay_who->value==0)
+                    ->after(function (Hand $record) {
+                       if ($record->kyde)
+                         foreach ($record->kyde as $rec) $rec->delete();
+                    }),
             ])
            ;
     }
