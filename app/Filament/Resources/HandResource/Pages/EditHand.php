@@ -18,22 +18,9 @@ class EditHand extends EditRecord
     protected ?string $heading='تعديل بيانات دفع لمشغل';
 
 
-    protected function beforeSave(): void {
-        $hand=Hand::find($this->data['id']);
-        $man=Man::find($this->data['man_id']);
 
-        if ($hand->kyde)
-            foreach ($hand->kyde as $rec) $rec->delete();
-
-        if ($hand->kazena_id) $nakd=Kazena::find($hand->kazena_id);
-        else $nakd=Acc::find($hand->acc_id);
-
-        if ($hand->pay_who->value==0 || $hand->pay_who->value==3)
-            $this->AddKyde($nakd->account->id,$man->account->id,$hand,$this->data['val'],$this->data['val_date'],'من مشغلين الي النقدية');
-        else
-            $this->AddKyde($man->account->id,$nakd->account->id,$hand,$this->data['val'],$this->data['val_date'],'من النقدية الي مشغلين');
-
-
-
+    protected function afterSave(): void
+    {
+        self::inputKydewithDelete(Hand::find($this->data['id']));
     }
 }

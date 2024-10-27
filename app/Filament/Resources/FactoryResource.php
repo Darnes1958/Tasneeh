@@ -16,6 +16,7 @@ use App\Models\Place;
 use App\Models\Place_stock;
 use App\Models\Product;
 
+use App\Models\Tran;
 use Awcodes\TableRepeater\Header;
 use Filament\Actions\StaticAction;
 use Filament\Forms;
@@ -61,6 +62,9 @@ class FactoryResource extends Resource
             ->schema([
                 Section::make()
                     ->schema([
+                    Hidden::make('id')
+                        ->dehydrated(false),
+
                     Select::make('product_id')
                         ->relationship('Product', 'name')
                         ->createOptionForm([
@@ -163,7 +167,6 @@ class FactoryResource extends Resource
                         ->required()
                         ->columnSpan(2)
                         ->label('تاريخ بداية التصنيع'),
-
                     TextInput::make('quantity')
                         ->columnSpan(2)
                         ->required()
@@ -229,12 +232,16 @@ class FactoryResource extends Resource
                                return $flag;
                            })
                            ->schema([
+
                                Select::make('item_id')
                                    ->required()
+
                                    ->searchable()
                                    ->options(function (Get $get){
                                        return Item::
-                                       whereIn('id',Place_stock::where('place_id',$get('../../place_id'))->pluck('item_id'))->pluck('name','id');
+                                       whereIn('id',Place_stock::
+                                           where('place_id',$get('../../place_id'))->pluck('item_id'))
+                                           ->pluck('name','id');
                                    }
                                        )
                                    ->live()
@@ -250,9 +257,27 @@ class FactoryResource extends Resource
                                            ->contains($value);
                                    }),
                                TextInput::make('quant')
+
                                    ->live(onBlur: true)
                                    ->extraInputAttributes(['tabindex' => 1])
+                                   ->afterStateUpdated(function ($state,Forms\Set $set,Get $get,$old,$operation){
 
+                                       if ($operation=='edit') {
+
+                                           $tran=Tran::where('factory_id',$get('../../id'))
+                                                 ->where('item_id',$get('item_id'))
+                                                 ->first();
+                                           if ($tran) $stock=$tran->stock+$get('stock'); else $stock=$get('stock');
+                                       } else $stock=$get('stock');
+
+                                      if ($state > $stock) {
+                                          $set('quant',$old);
+                                          Notification::make()
+                                            ->title('الرصيد لا يسمح')
+                                            ->color('danger')
+                                            ->send();
+                                      }
+                                   })
                                    ->required(),
                                TextInput::make('stock')
                                    ->dehydrated(false),
@@ -269,6 +294,12 @@ class FactoryResource extends Resource
                                    ->where('place_id',$get('place_id'))->first();
                                $place->stock-= $data['quant'];
                                $place->save();
+                               return $data;
+                           })
+                           ->mutateRelationshipDataBeforeFillUsing(function (array $data): array {
+                               $data['stock'] = Place_stock::where('item_id',$data['item_id'])
+                                   ->where('place_id',Factory::find($data['factory_id'])->place_id)->first()->stock;
+
                                return $data;
                            })
                    ])

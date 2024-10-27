@@ -41,9 +41,7 @@ class CreateItem extends CreateRecord
                 'place_id'=> $this->data['place_id'],
                 'stock'=>$this->data['balance'],
             ]);
-            $Item=Item::find(Item::max('id'));
-            $place=Place::find($this->data['place_id']);
-            $this->AddKyde($place->account->id,AccRef::makzoone->value,$Item,$this->data['price_buy']*$this->data['balance'],now(),'مخزون بداية المدة');
+            self::inputKyde(Item::find(Item::max('id')));
         }
     }
     protected function getRedirectUrl(): string

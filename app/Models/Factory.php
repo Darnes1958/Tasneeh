@@ -25,6 +25,9 @@ class Factory extends Model
         return $this->cost / $this->quantity;
     }
 
+    public function kyde(){
+        return $this->morphMany(Kyde::class,'kydeable');
+    }
     public function Product()
     {
         return $this->belongsTo(Product::class);

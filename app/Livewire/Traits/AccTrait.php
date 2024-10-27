@@ -4,9 +4,12 @@ namespace App\Livewire\Traits;
 
 
 use App\Enums\AccRef;
+use App\Models\Acc;
 use App\Models\Account;
 use App\Models\Hall;
+use App\Models\Kazena;
 use App\Models\KydeData;
+use App\Models\Man;
 use App\Models\Place;
 use App\Models\Rent;
 use App\Models\Renttran;
@@ -120,6 +123,90 @@ trait AccTrait {
             'mden'=>0,
             'daen'=>$val,
         ]);
+    }
+
+    public static function retAccData($model)
+    {
+        $arr=[];
+        switch ($model->getTable()) {
+            case 'buys': {
+                $arr['kyde_date']=$model->order_date;
+                $arr['val']=$model->tot;
+                break;
+            }
+            case 'hands': {
+                $arr['kyde_date']=$model->val_date;
+                if ($model->factory){
+                    $arr['mden']=AccRef::mans;
+                    $arr['daen']=Man::find($model->man_id)->account->id;
+                    $arr['data']='من مشغلين الي تكلفة التصنيع';
+                }
+                if (!$model->factory){
+                    if ($model->kazena_id) $nakd=kazena::find($model->kazena_id)->account->id;
+                    else $nakd=Acc::find($model->acc_id)->account->id;
+                    if ($model->pay_who->value==0 || $model->pay_who->value==3)
+                    {
+                        $arr['mden']=$nakd;
+                        $arr['daen']=Man::find($model->man_id)->account->id;
+                        $arr['data']='من مشغلين الي النقدية';
+                    } else{
+                        $arr['daen']=$nakd;
+                        $arr['mden']=Man::find($model->man_id)->account->id;
+                        $arr['data']='من النقدية الي المشغلين';
+
+                    }
+                }
+
+                $arr['val']=$model->val;
+                break;
+            }
+            case 'items': {
+                $arr['kyde_date']=now();
+                $arr['val']=$model->balance*$model->price_buy;
+                $arr['mden']=Place::find($model->place_id)->account->id;
+                $arr['daen']=AccRef::makzoone->value;
+                $arr['data']='مخزون بداية المدة';
+
+                break;
+            }
+            case 'factories': {
+                $arr['kyde_date']=$model->process_date;
+                $arr['val']=$model->tot;
+                $arr['mden']=AccRef::factories;
+                $arr['daen']=Place::find($model->place_id)->account->id;
+                $arr['data']='منتجات تحت التصنيع';
+                break;
+            }
+
+        }
+        return $arr;
+    }
+
+    public static function inputKyde($model)
+    {
+        $arr=self::retAccData($model);
+        $kyde_id= $model->kyde()->create([
+            'kyde_date'=>$arr['kyde_date'],
+            'notes'=>$arr['data'],
+        ])->id;
+        KydeData::create([
+            'kyde_id'=>$kyde_id,
+            'account_id'=>$arr['mden'],
+            'mden'=>$arr['val'],
+            'daen'=>0,
+        ]);
+        KydeData::create([
+            'kyde_id'=>$kyde_id,
+            'account_id'=>$arr['daen'],
+            'mden'=>0,
+            'daen'=>$arr['val'],
+        ]);
+
+    }
+    public static function inputKydewithDelete($model){
+        if ($model->kyde)
+            foreach ($model->kyde as $rec) $rec->delete();
+        self::inputKyde($model);
     }
 
 

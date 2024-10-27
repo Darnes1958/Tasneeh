@@ -272,13 +272,8 @@ class ItemResource extends Resource
                                             ]);
 
                                     }
-                                    $Item=Item::find($record['id']);
-                                    if ($Item->kyde)
-                                        foreach ($Item->kyde as $rec) $rec->delete();
 
-                                    $place=Place::find($thePlace);
-                                    if ($record['balance']!=0)
-                                    self::AddKyde2($place->account->id,AccRef::makzoone->value,$Item,$record['price_buy']*$record['balance'],now(),'مخزون بداية المدة');
+                                    self::inputKydewithDelete(Item::find($record['id']));
                                 }
                             })
                     ),
