@@ -246,12 +246,12 @@ class HandResource extends Resource
                             ->hiddenLabel(),
 
                     ])
-                    ->query(function (\Illuminate\Database\Eloquent\Builder $query, array $data): \Illuminate\Database\Eloquent\Builder {
+                    ->query(function ( $query, array $data) {
                         return $query
                             ->when($data['date1'],
-                                fn (Builder $query, $date): Builder => $query->where('val_date','>=',$data['date1']))
+                                fn ( $query, $date) => $query->where('val_date','>=',$data['date1']))
                             ->when($data['date2'],
-                                fn (Builder $query, $date): Builder => $query->where('val_date','<=',$data['date2']),
+                                fn ( $query, $date) => $query->where('val_date','<=',$data['date2']),
 
                             );
                     })

@@ -10,6 +10,7 @@ use Filament\Actions;
 use Filament\Actions\Action;
 use Filament\Notifications\Notification;
 use Filament\Resources\Pages\CreateRecord;
+use Illuminate\Database\Eloquent\Model;
 
 class CreateFactory extends CreateRecord
 {
@@ -44,7 +45,9 @@ class CreateFactory extends CreateRecord
             }
         }
     }
+
     protected function afterCreate(): void{
+
         $fac=Factory::find(Factory::max('id'));
         self::inputKyde($fac);
         if ($fac->Hand){

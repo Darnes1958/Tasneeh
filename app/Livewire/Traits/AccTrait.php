@@ -125,7 +125,7 @@ trait AccTrait {
         ]);
     }
 
-    public static function retAccData($model)
+    public static function retAccData($model,$spacial = null)
     {
         $arr=[];
         switch ($model->getTable()) {
@@ -170,21 +170,37 @@ trait AccTrait {
                 break;
             }
             case 'factories': {
-                $arr['kyde_date']=$model->process_date;
+                if ($spacial)
+                    $arr['kyde_date']=$model->ready_date;
+                else
+                    $arr['kyde_date']=$model->process_date;
                 $arr['val']=$model->tot;
-                $arr['mden']=AccRef::factories;
-                $arr['daen']=Place::find($model->place_id)->account->id;
-                $arr['data']='منتجات تحت التصنيع';
+                if ($spacial)
+                    $arr['mden']=Hall::find($model->hall_id)->account->id;
+                else
+                    $arr['mden']=AccRef::factories;
+
+                if ($spacial)
+                    $arr['daen']=AccRef::factories;
+                else
+                    $arr['daen']=Place::find($model->place_id)->account->id;
+
+                if ($spacial)
+                    $arr['data']='من التصنيع إلي مخازن المنتجات';
+                else
+                    $arr['data']='منتجات تحت التصنيع';
                 break;
             }
+
 
         }
         return $arr;
     }
 
-    public static function inputKyde($model)
+    public static function inputKyde($model,$special = null)
     {
-        $arr=self::retAccData($model);
+
+        $arr=self::retAccData($model,$special);
         $kyde_id= $model->kyde()->create([
             'kyde_date'=>$arr['kyde_date'],
             'notes'=>$arr['data'],

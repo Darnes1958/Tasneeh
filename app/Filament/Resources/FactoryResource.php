@@ -5,6 +5,7 @@ namespace App\Filament\Resources;
 use App\Enums\PlaceType;
 use App\Filament\Resources\FactoryResource\Pages;
 use App\Filament\Resources\FactoryResource\RelationManagers;
+use App\Livewire\Traits\AccTrait;
 use App\Models\Buy;
 use App\Models\Factory;
 use App\Models\Hall;
@@ -50,6 +51,7 @@ use Filament\Tables\Columns\Summarizers\Sum;
 
 class FactoryResource extends Resource
 {
+    use AccTrait;
     protected static ?string $model = Factory::class;
 
     protected static ?string $navigationIcon = 'heroicon-o-wrench-screwdriver';
@@ -240,7 +242,7 @@ class FactoryResource extends Resource
                                    ->options(function (Get $get){
                                        return Item::
                                        whereIn('id',Place_stock::
-                                           where('place_id',$get('../../place_id'))->pluck('item_id'))
+                                           where('place_id',$get('../../place_id'))->where('stock','>',0)->pluck('item_id'))
                                            ->pluck('name','id');
                                    }
                                        )
@@ -259,6 +261,8 @@ class FactoryResource extends Resource
                                TextInput::make('quant')
 
                                    ->live(onBlur: true)
+                                   ->numeric()
+
                                    ->extraInputAttributes(['tabindex' => 1])
                                    ->afterStateUpdated(function ($state,Forms\Set $set,Get $get,$old,$operation){
 
@@ -280,6 +284,8 @@ class FactoryResource extends Resource
                                    })
                                    ->required(),
                                TextInput::make('stock')
+                                   ->numeric()
+                                   ->mask(0.00)
                                    ->dehydrated(false),
 
                                TextInput::make('price')
@@ -479,6 +485,8 @@ class FactoryResource extends Resource
                                  $prod=Product::find($record->product_id);
                                  $prod->stock -=$record->quantity;
                                  $prod->save();
+                                 if ($record->kyde)
+                                     foreach ($record->kyde as $kyde) $kyde->delete();
 
 
                              } else {
@@ -505,6 +513,7 @@ class FactoryResource extends Resource
                                  $prod->price=$record->price;
 
                                  $prod->save();
+                                 self::inputKyde($record,'yes');
                              }
 
                          })
@@ -602,7 +611,16 @@ class FactoryResource extends Resource
                             $item=Item::find($tran->item_id);
                             $item->stock+=$tran->quant;
                             $item->save();
+
+
                         }
+                        if ($record->Hand)
+                            foreach ($record->Hand as $hand) {
+                                    foreach ($hand->kyde as $rec) $rec->delete();
+                            }
+                        if ($record->kyde)
+                            foreach ($record->kyde as $rec) $rec->delete();
+
                         $record->delete();
                     }),
                 Action::make('the_tran')

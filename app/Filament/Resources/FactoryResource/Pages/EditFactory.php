@@ -3,6 +3,8 @@
 namespace App\Filament\Resources\FactoryResource\Pages;
 
 use App\Filament\Resources\FactoryResource;
+use App\Livewire\Traits\AccTrait;
+use App\Models\Factory;
 use App\Models\Item;
 use App\Models\Place_stock;
 use Filament\Actions;
@@ -12,6 +14,7 @@ use Filament\Resources\Pages\EditRecord;
 
 class EditFactory extends EditRecord
 {
+    use AccTrait;
     protected static string $resource = FactoryResource::class;
 
     protected ?string $heading='';
@@ -47,32 +50,37 @@ class EditFactory extends EditRecord
             }
         }
         foreach ($last as $item){
-
             $res=Item::find($item->item_id);
             $res->stock+=$item->quant;
             $res->save();
-
             $res=Place_stock::where('place_id',$this->data['place_id'])
                 ->where('item_id',$item->item_id)->first();
             $res->stock+=$item->quant;
             $res->save();
-
         }
 
         foreach ($cuurent as $key => $tran) {
-
             $item=Item::find($tran['item_id']);
             $item->stock -= $tran['quant'];
             $item->save();
-
             $place=Place_stock::where('item_id',$tran['item_id'])
                 ->where('place_id',$this->data['place_id'])->first();
             $place->stock-= $tran['quant'];
             $place->save();
-
-
         }
+        $fac=Factory::find($this->data['id']);
+        if ($fac->Hand) foreach ($fac->Hand as $hand) {$hand->kyde->delete();}
 
+    }
+
+    protected function afterSave(): void{
+        $fac=Factory::find($this->data['id']);
+        self::inputKydewithDelete($fac);
+        if ($fac->Hand){
+            foreach ($fac->Hand as $hand){
+                self::inputKyde($hand);
+            }
+        }
     }
 
 }
