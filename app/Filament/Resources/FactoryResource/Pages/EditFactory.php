@@ -69,7 +69,7 @@ class EditFactory extends EditRecord
             $place->save();
         }
         $fac=Factory::find($this->data['id']);
-        if ($fac->Hand) foreach ($fac->Hand as $hand) {$hand->kyde->delete();}
+        if ($fac->Hand) foreach ($fac->Hand as $hand) { foreach ($hand->kyde as $kyde) $kyde->delete();}
 
     }
 
