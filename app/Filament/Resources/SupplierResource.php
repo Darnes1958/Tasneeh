@@ -90,7 +90,7 @@ class SupplierResource extends Resource
       ->actions([
         Tables\Actions\EditAction::make()
           ->iconButton()
-          ->hidden(fn(Supplier $record)=>$record->id==1),
+          ,
         Tables\Actions\Action::make('del')
           ->icon('heroicon-o-trash')
             ->color('danger')

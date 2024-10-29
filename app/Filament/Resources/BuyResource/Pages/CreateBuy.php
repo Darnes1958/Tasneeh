@@ -34,14 +34,9 @@ class CreateBuy extends CreateRecord
     protected function afterCreate(): void
     {
         $buy=Buy::find(Buy::max('id'));
-        $supp=Supplier::find($buy->supplier_id);
-        $place=Place::find($buy->place_id);
-
-        $this->AddKyde(AccRef::buys->value,$supp->account->id,$buy,$buy->tot,$buy->order_date,'فاتورة مشتريات');
-        $this->AddKyde($place->account->id,AccRef::buys->value,$buy,$buy->tot,$buy->order_date,'من المشتريات الي المخازن');
-
-        if ($buy->cost) self::inputKyde($buy->cost);
-
+        self::inputKyde($buy,'order');
+        self::inputKyde($buy,'store');
+        if ($buy->cost) self::inputKyde($buy,'buyCosts');
     }
 
 

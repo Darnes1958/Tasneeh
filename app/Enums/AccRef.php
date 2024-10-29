@@ -11,10 +11,13 @@ enum AccRef: string implements HasLabel
   case places = '2-4';
   case factories = '2-6';
   case suppliers = '4-1';
+  case customers = '2-3-1';
   case costs = '6-4';
   case mans = '6-3';
   case buys = '6-1';
   case makzoone = '6-2';
+  case sells = '5-1';
+
 
   case kazena = '2-1';
 

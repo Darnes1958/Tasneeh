@@ -431,144 +431,138 @@ class BuyResource extends Resource
                     ->collapsed()
                     ->collapsible()
                     ->schema([
-                        Wizard::make([
-                            Wizard\Step::make('pay')
-                             ->label('طريقة الدفع')
+                        Radio::make('pay_type')
+                            ->columnSpan('full')
+                            ->required()
+                            ->options(PayType::class)
+                            ->inline()
+                            ->inlineLabel(false)
+                            ->dehydrated(false)
+                            ->live()
+                            ->default(0)
+                            ->hiddenLabel(),
+                        Select::make('acc_id')
+                            ->prefix('المصرف')
+                            ->hiddenLabel()
+                            ->columnSpan('full')
+                            ->dehydrated(false)
+                            ->options(Acc::all()->pluck('name','id'))
+                            ->searchable()
+                            ->required()
+                            ->live()
+                            ->preload()
+                            ->visible(fn(Get $get): bool =>($get('pay_type')==1 )),
+                        Select::make('kazena_id')
+                            ->prefix('الخزينة')
+                            ->hiddenLabel()
+                            ->columnSpan('full')
+                            ->dehydrated(false)
+                            ->options(Kazena::all()->pluck('name','id'))
+                            ->searchable()
+                            ->required()
+                            ->live()
+                            ->preload()
+                            ->visible(fn(Get $get): bool =>($get('pay_type')==0 )),
+
+                         TableRepeater::make('Cost')
+                             ->disabled(fn(Get $get): bool =>(!$get('acc_id') && !$get('kazena_id') ))
+                             ->hiddenLabel()
+                             ->relationship()
+                             ->headers([
+                                 Header::make('نوع التكلفة')
+                                     ->width('50%'),
+                                 Header::make('المبلغ')
+                                     ->width('30%'),
+
+                             ])
                              ->schema([
-                                Radio::make('pay_type')
-                                    ->columnSpan('full')
-                                    ->required()
-                                    ->options(PayType::class)
-                                    ->inline()
-                                    ->inlineLabel(false)
-                                    ->dehydrated(false)
-                                    ->live()
-                                    ->default(0)
-                                    ->hiddenLabel(),
-                                Select::make('acc_id')
-                                    ->prefix('المصرف')
-                                    ->hiddenLabel()
-                                    ->columnSpan('full')
-                                    ->dehydrated(false)
-                                    ->options(Acc::all()->pluck('name','id'))
-                                    ->searchable()
-                                    ->required()
-                                    ->live()
-                                    ->preload()
-                                    ->visible(fn(Get $get): bool =>($get('pay_type')==1 )),
-                                Select::make('kazena_id')
-                                    ->prefix('الخزينة')
-                                    ->hiddenLabel()
-                                    ->columnSpan('full')
-                                    ->dehydrated(false)
-                                    ->options(Kazena::all()->pluck('name','id'))
-                                    ->searchable()
-                                    ->required()
-                                    ->live()
-                                    ->preload()
-                                    ->visible(fn(Get $get): bool =>($get('pay_type')==0 )),
-                            ]),
-                            Wizard\Step::make('data')
-                             ->label('البيان')
-                             ->schema([
-                                 TableRepeater::make('Cost')
-                                     ->disabled(fn(Get $get): bool =>(!$get('acc_id') && !$get('kazena_id') ))
-                                     ->hiddenLabel()
-                                     ->relationship()
-                                     ->headers([
-                                         Header::make('نوع التكلفة')
-                                             ->width('50%'),
-                                         Header::make('المبلغ')
-                                             ->width('30%'),
-
-                                     ])
-                                     ->schema([
-                                         Select::make('costtype_id')
-                                             ->required()
-                                             ->preload()
-                                             ->searchable()
-                                             ->relationship('Costtype','name')
-                                             ->disableOptionWhen(function ($value, $state, Get $get) {
-                                                 return collect($get('../*.costtype_id'))
-                                                     ->reject(fn($id) => $id == $state)
-                                                     ->filter()
-                                                     ->contains($value);
-                                             })
-                                             ->afterStateUpdated(function (Get $get,Forms\Set $set){
-                                                 $set('kazena_id',$get('../../kazena_id'));
-                                                 $set('acc_id',$get('../../acc_id'));
-                                             })
-                                             ->createOptionForm([
-                                                 Section::make('ادخال نوع تكلفة')
-                                                     ->schema([
-
-                                                         TextInput::make('name')
-                                                             ->label('البيان')
-                                                             ->autocomplete(false)
-                                                             ->required()
-                                                             ->live()
-                                                             ->unique()
-                                                             ->validationMessages([
-                                                                 'unique' => ' :attribute مخزون مسبقا ',
-                                                             ])
-                                                             ->columnSpan(2),
-                                                     ])
-                                                     ->columns(3)
-                                             ])
-                                             ->editOptionForm([
-                                                 Section::make('تعديل نوع تكلفة')
-                                                     ->schema([
-                                                         TextInput::make('name')
-                                                             ->label('البيان')
-                                                             ->autocomplete(false)
-                                                             ->required()
-                                                             ->live()
-                                                             ->unique(ignoreRecord: true)
-                                                             ->validationMessages([
-                                                                 'unique' => ' :attribute مخزون مسبقا ',
-                                                             ])
-                                                             ->columnSpan(2),
-                                                     ])
-                                                     ->columns(3)
-
-                                             ]),
-
-
-                                         TextInput::make('val')
-                                             ->extraInputAttributes(['tabindex' => 1])
-                                             ->columnSpan(1)
-                                             ->required(),
-                                         Hidden::make('acc_id')
-                                         ,
-                                         Hidden::make('kazena_id')
-
-                                         ,
-                                     ])
-                                     ->live(onBlur: true)
-                                     ->afterStateUpdated(function ($state,Forms\Set $set,Get $get){
-                                         $cost=0;
-                                         foreach ($state as $item){
-                                             if ($item['val'] )
-                                                 $cost +=$item['val'];
-
-                                         }
-                                         $set('cost',$cost);
+                                 Select::make('costtype_id')
+                                     ->required()
+                                     ->preload()
+                                     ->searchable()
+                                     ->relationship('Costtype','name')
+                                     ->disableOptionWhen(function ($value, $state, Get $get) {
+                                         return collect($get('../*.costtype_id'))
+                                             ->reject(fn($id) => $id == $state)
+                                             ->filter()
+                                             ->contains($value);
                                      })
-                                     ->columnSpan('full')
-                                     ->defaultItems(0)
-                                     ->addActionLabel('اضافة تكلفة')
-                                     ->addable(function ($state){
+                                     ->afterStateUpdated(function (Get $get,Forms\Set $set){
+                                         $set('kazena_id',$get('../../kazena_id'));
+                                         $set('acc_id',$get('../../acc_id'));
+                                     })
+                                     ->createOptionForm([
+                                         Section::make('ادخال نوع تكلفة')
+                                             ->schema([
+
+                                                 TextInput::make('name')
+                                                     ->label('البيان')
+                                                     ->autocomplete(false)
+                                                     ->required()
+                                                     ->live()
+                                                     ->unique()
+                                                     ->validationMessages([
+                                                         'unique' => ' :attribute مخزون مسبقا ',
+                                                     ])
+                                                     ->columnSpan(2),
+                                             ])
+                                             ->columns(3)
+                                     ])
+                                     ->editOptionForm([
+                                         Section::make('تعديل نوع تكلفة')
+                                             ->schema([
+                                                 TextInput::make('name')
+                                                     ->label('البيان')
+                                                     ->autocomplete(false)
+                                                     ->required()
+                                                     ->live()
+                                                     ->unique(ignoreRecord: true)
+                                                     ->validationMessages([
+                                                         'unique' => ' :attribute مخزون مسبقا ',
+                                                     ])
+                                                     ->columnSpan(2),
+                                             ])
+                                             ->columns(3)
+
+                                     ]),
+
+
+                                 TextInput::make('val')
+                                     ->extraInputAttributes(['tabindex' => 1])
+                                     ->columnSpan(1)
+                                     ->required(),
+                                 Hidden::make('acc_id')
+                                 ,
+                                 Hidden::make('kazena_id')
+
+                                 ,
+                             ])
+                             ->live(onBlur: true)
+                             ->afterStateUpdated(function ($state,Forms\Set $set,Get $get){
+                                 $cost=0;
+                                 foreach ($state as $item){
+                                     if ($item['val'] )
+                                         $cost +=$item['val'];
+
+                                 }
+                                 $set('cost',$cost);
+                             })
+                             ->mutateRelationshipDataBeforeCreateUsing(function (array $data,Get $get,$operation): array {
+                                 $data['kazena_id']=$get('kazena_id');
+                                 $data['acc_id']=$get('acc_id');
+
+                                 return $data;
+                             })
+                             ->columnSpan('full')
+                             ->defaultItems(0)
+                             ->addActionLabel('اضافة تكلفة')
+                             ->addable(function ($state){
                                          $flag=true;
                                          foreach ($state as $item) {
                                              if (!$item['costtype_id'] || !$item['val'] ) {$flag=false; break;}
                                          }
                                          return $flag;
                                      })
-                             ])
-                        ]),
-
-
-
                     ])
                     ->columnSpan(5),
             ])->columns(12);

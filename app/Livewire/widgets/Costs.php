@@ -2,7 +2,9 @@
 
 namespace App\Livewire\widgets;
 
+use App\Models\Acc;
 use App\Models\Cost;
+use App\Models\Kazena;
 use Filament\Tables;
 use Filament\Tables\Columns\TextColumn;
 use Filament\Tables\Table;
@@ -38,6 +40,15 @@ class Costs extends BaseWidget
                         thousandsSeparator: ',',
                     )
                     ->sortable(),
+                TextColumn::make('payBy')
+                    ->label('بواسطة')
+                    ->state(function (Cost $record) {
+                        $name=null;
+                        if ($record->acc_id) {$name=Acc::find($record->acc_id)->name;}
+                        if ($record->kazena_id) {$name=Kazena::find($record->kazena_id)->name;}
+                        return $name;
+                    })
+
             ]);
     }
 }

@@ -17,6 +17,7 @@ use App\Models\Renttran;
 use App\Models\Salary;
 use App\Models\Salarytran;
 
+use App\Models\Supplier;
 use Carbon\Carbon;
 use DateTime;
 use Illuminate\Support\Facades\DB;
@@ -131,8 +132,30 @@ trait AccTrait {
         $arr=[];
         switch ($model->getTable()) {
             case 'buys': {
-                $arr['kyde_date']=$model->order_date;
-                $arr['val']=$model->tot;
+                if ($spacial=='buyCosts'){
+                    if ($model->Cost[0]->kazena_id) $nakd=kazena::find($model->Cost[0]->kazena_id)->account->id;
+                    else $nakd=Acc::find($model->Cost[0]->acc_id)->account->id;
+                    $arr['kyde_date']=$model->order_date;
+                    $arr['val']=$model->cost;
+                    $arr['mden']=AccRef::costs->value;
+                    $arr['daen']=$nakd;
+                    $arr['data']='تكاليف اضافية علي المشتريات - '.$model->Cost[0]->Costtype->name;
+                }
+                if ($spacial=='order'){
+                    $arr['kyde_date']=$model->order_date;
+                    $arr['val']=$model->total;
+                    $arr['mden']=AccRef::buys->value;
+                    $arr['daen']=Supplier::find($model->supplier_id)->account->id;
+                    $arr['data']='فاتورة مشتريات';
+                }
+                if ($spacial=='store'){
+                    $arr['kyde_date']=$model->order_date;
+                    $arr['val']=$model->total;
+                    $arr['mden']=Place::find($model->place_id)->account->id;
+                    $arr['daen']=AccRef::buys->value;
+                    $arr['data']='فاتورة مشتريات';
+                }
+
                 break;
             }
             case 'hands': {
@@ -161,18 +184,7 @@ trait AccTrait {
                 $arr['val']=$model->val;
                 break;
             }
-            case 'costs': {
-                $buy=Buy::find($model->buy_id);
-                if ($model->kazena_id) $nakd=kazena::find($model->kazena_id)->account->id;
-                else $nakd=Acc::find($model->acc_id)->account->id;
-                $arr['kyde_date']=$buy->order_date;
-                $arr['val']=$buy->cost;
-                $arr['mden']=AccRef::costs->value;
-                $arr['daen']=$nakd;
-                $arr['data']='تكاليف اضافية علي المشتريات - '.$model->Costtype->name;
 
-                break;
-            }
             case 'factories': {
                 if ($spacial)
                     $arr['kyde_date']=$model->ready_date;
@@ -193,6 +205,15 @@ trait AccTrait {
                     $arr['data']='من التصنيع إلي مخازن المنتجات';
                 else
                     $arr['data']='منتجات تحت التصنيع';
+                break;
+            }
+            case 'sells': {
+                $hall=Hall::find($model->hall_id)->account->id;
+                $arr['kyde_date']=$model->order_date;
+                $arr['val']=$model->total;
+                $arr['mden']=AccRef::sells->value;
+                $arr['daen']=$hall;
+                $arr['data']='فاتورة مبيعات';
                 break;
             }
 

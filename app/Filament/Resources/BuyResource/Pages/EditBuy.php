@@ -100,20 +100,19 @@ class EditBuy extends EditRecord
                     'stock'=>$tran['quant'],
                 ]);
             }
-
-
-
         }
 
+
+    }
+    protected function afterSave(): void{
         $buy=Buy::find($this->data['id']);
-        $supp=Supplier::find($this->data['supplier_id']);
-        $place=Place::find($buy->place_id);
+
         if ($buy->kyde)
             foreach ($buy->kyde as $rec) $rec->delete();
-        $this->AddKyde(AccRef::buys->value,$supp->account->id,$buy,$this->data['tot'],$this->data['order_date'],'فاتورة مشتريات');
-        $this->AddKyde($place->account->id,AccRef::buys->value,$buy,$this->data['tot'],$this->data['order_date'],'من المشتريات الي المخازن');
 
-
+        self::inputKyde($buy,'order');
+        self::inputKyde($buy,'store');
+        if ($buy->cost) self::inputKyde($buy,'buyCosts');
     }
 
 }

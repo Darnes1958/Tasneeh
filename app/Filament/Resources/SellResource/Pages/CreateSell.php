@@ -3,7 +3,9 @@
 namespace App\Filament\Resources\SellResource\Pages;
 
 use App\Filament\Resources\SellResource;
+use App\Livewire\Traits\AccTrait;
 use App\Models\Hall_stock;
+use App\Models\Sell;
 use Filament\Actions;
 use Filament\Actions\Action;
 use Filament\Notifications\Notification;
@@ -11,6 +13,7 @@ use Filament\Resources\Pages\CreateRecord;
 
 class CreateSell extends CreateRecord
 {
+    use AccTrait;
     protected static string $resource = SellResource::class;
     protected ?string $heading='';
     protected function getRedirectUrl(): string
@@ -39,4 +42,12 @@ class CreateSell extends CreateRecord
                 }
             }
     }
+    protected function afterCreate(): void
+    {
+        $sell=Sell::find(Sell::max('id'));
+        self::inputKyde($sell);
+
+
+    }
+
 }

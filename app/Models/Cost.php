@@ -13,7 +13,12 @@ class Cost extends Model
     {
         return $this->morphMany(Kyde::class, 'kydeable');
     }
-
+    public function Acc(){
+        return $this->belongsTo(Acc::class);
+    }
+    public function Kazena(){
+        return $this->belongsTo(Kazena::class);
+    }
     public function Costtype(){
         return $this->belongsTo(Costtype::class);
     }

@@ -13,13 +13,19 @@ class Sell extends Model
 {
   protected $connection = 'other';
 
-    protected $appends = ['baky'];
+    protected $appends = ['baky','total'];
 
     public function getBakyAttribute()
     {
         return $this->tot-$this->pay;
     }
-
+    public function getTotalAttribute(){
+        return $this->tot-$this->ksm;
+    }
+    public function kyde()
+    {
+        return $this->morphMany(Kyde::class, 'kydeable');
+    }
   public function Customer(){
     return $this->belongsTo(Customer::class);
   }

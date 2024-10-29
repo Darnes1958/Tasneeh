@@ -2,9 +2,11 @@
 
 namespace App\Filament\Resources;
 
+use App\Enums\AccRef;
 use App\Enums\PlaceType;
 use App\Filament\Resources\SellResource\Pages;
 use App\Filament\Resources\SellResource\RelationManagers;
+use App\Livewire\Traits\AccTrait;
 use App\Models\Buy;
 use App\Models\Customer;
 use App\Models\Hall_stock;
@@ -43,6 +45,7 @@ use Illuminate\Support\Facades\Auth;
 
 class SellResource extends Resource
 {
+    use AccTrait;
     protected static ?string $model = Sell::class;
 
     protected static ?string $navigationIcon = 'heroicon-o-rectangle-stack';
@@ -54,15 +57,16 @@ class SellResource extends Resource
             ->schema([
                 Section::make()
                     ->schema([
-
                         Select::make('Customer_id')
+                            ->searchable()
+                            ->preload()
                             ->default(Customer::min('id'))
                             ->prefix('الزبون')
                             ->hiddenLabel()
                             ->relationship('Customer','name')
                             ->live()
                             ->required()
-                            ->columnSpan(4)
+                            ->columnSpan('full')
                             ->createOptionForm([
                                 Section::make('ادخال زبون جديد')
                                     ->schema([
@@ -80,26 +84,13 @@ class SellResource extends Resource
                                             ->default(Auth::id()),
                                     ])
                             ])
-                            ->editOptionForm([
-                                Section::make('ادخال زبون جديد')
-                                    ->schema([
-                                        TextInput::make('name')
-                                            ->required()
-                                            ->unique(ignoreRecord: true)
-                                            ->label('الاسم'),
-                                        TextInput::make('address')
-                                            ->label('العنوان'),
-                                        TextInput::make('mdar')
-                                            ->label('مدار'),
-                                        TextInput::make('libyana')
-                                            ->label('لبيانا'),
-                                        Hidden::make('user_id')
-                                            ->default(Auth::id()),
-                                    ])
-                            ]),
-
+                            ->createOptionUsing(function (array $data): int {
+                                $thekey=Customer::create($data)->getKey();
+                                $hall=Customer::find($thekey);
+                                self::AddAcc2(AccRef::customers,$hall);
+                                return $thekey;
+                            }),
                         Select::make('hall_id')
-
                             ->disabled(function ($operation){
                                 return $operation=='edit';
                             })
@@ -108,7 +99,7 @@ class SellResource extends Resource
                             ->relationship('Hall','name')
                             ->live()
                             ->required()
-                            ->columnSpan(4)
+                            ->columnSpan('full')
                             ->createOptionForm([
                                 Section::make('ادخال نقطة بيع')
                                     ->schema([
@@ -140,9 +131,7 @@ class SellResource extends Resource
                         DatePicker::make('order_date')
                             ->id('order_date')
                             ->default(now())
-
                             ->label('التاريخ')
-
                             ->columnSpan(2)
                             ->required(),
 
@@ -151,6 +140,11 @@ class SellResource extends Resource
                             ->columnSpan(2)
                             ->default(0)
                             ->readOnly(),
+                        TextInput::make('ksm')
+                            ->label('الخصم')
+                            ->columnSpan(2)
+                            ->default(0),
+
                         Forms\Components\Textarea::make('notes')
                             ->live()
                             ->label('ملاحظات')
@@ -159,7 +153,7 @@ class SellResource extends Resource
                         Hidden::make('user_id')
                             ->default(Auth::id()),
                     ])
-                    ->columns(4)
+                    ->columns(6)
                     ->columnSpan(4),
                 Section::make()
                     ->schema([
@@ -363,6 +357,9 @@ class SellResource extends Resource
                             $item->stock+=$tran->q;
                             $item->save();
                         }
+                        if ($record->kyde)
+                            foreach ($record->kyde as $rec) $rec->delete();
+
                         $record->delete();
                     }),
                 Action::make('selltran')

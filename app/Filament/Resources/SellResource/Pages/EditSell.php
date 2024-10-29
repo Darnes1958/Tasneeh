@@ -3,10 +3,12 @@
 namespace App\Filament\Resources\SellResource\Pages;
 
 use App\Filament\Resources\SellResource;
+use App\Models\Buy;
 use App\Models\Hall_stock;
 use App\Models\Item;
 use App\Models\Place_stock;
 use App\Models\Product;
+use App\Models\Sell;
 use Filament\Actions;
 use Filament\Actions\Action;
 use Filament\Notifications\Notification;
@@ -75,4 +77,15 @@ class EditSell extends EditRecord
         }
 
     }
+
+        protected function afterSave(): void{
+            $sell=Sell::find($this->data['id']);
+
+            if ($sell->kyde)
+                foreach ($sell->kyde as $rec) $rec->delete();
+
+            self::inputKyde($sell);
+
+        }
+
 }
