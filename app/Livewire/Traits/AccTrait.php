@@ -6,6 +6,7 @@ namespace App\Livewire\Traits;
 use App\Enums\AccRef;
 use App\Models\Acc;
 use App\Models\Account;
+use App\Models\Buy;
 use App\Models\Hall;
 use App\Models\Kazena;
 use App\Models\KydeData;
@@ -160,12 +161,15 @@ trait AccTrait {
                 $arr['val']=$model->val;
                 break;
             }
-            case 'items': {
-                $arr['kyde_date']=now();
-                $arr['val']=$model->balance*$model->price_buy;
-                $arr['mden']=Place::find($model->place_id)->account->id;
-                $arr['daen']=AccRef::makzoone->value;
-                $arr['data']='مخزون بداية المدة';
+            case 'costs': {
+                $buy=Buy::find($model->buy_id);
+                if ($model->kazena_id) $nakd=kazena::find($model->kazena_id)->account->id;
+                else $nakd=Acc::find($model->acc_id)->account->id;
+                $arr['kyde_date']=$buy->order_date;
+                $arr['val']=$buy->cost;
+                $arr['mden']=AccRef::costs->value;
+                $arr['daen']=$nakd;
+                $arr['data']='تكاليف اضافية علي المشتريات - '.$model->Costtype->name;
 
                 break;
             }

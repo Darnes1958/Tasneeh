@@ -10,17 +10,17 @@ class Buy extends Model
 {
   protected $connection = 'other';
 
-  protected $casts = [
-    'details' => 'json',
-  ];
 
-    protected $appends = ['baky'];
+
+    protected $appends = ['baky','total'];
 
     public function getBakyAttribute()
     {
-        return $this->tot-$this->pay;
+        return $this->tot-$this->ksm-$this->pay;
     }
-
+   public function getTotalAttribute(){
+        return $this->tot-$this->ksm;
+   }
     public function kyde()
     {
         return $this->morphMany(Kyde::class, 'kydeable');

@@ -3,17 +3,20 @@
 namespace App\Filament\Resources;
 
 use App\Enums\AccRef;
+use App\Enums\PayType;
 use App\Enums\PlaceType;
 
 use App\Filament\Resources\BuyResource\Pages;
 use App\Filament\Resources\BuyResource\RelationManagers;
 
 use App\Livewire\Traits\AccTrait;
+use App\Models\Acc;
 use App\Models\Buy;
 use App\Models\Cost;
 use App\Models\Costtype;
 use App\Models\Item;
 use App\Models\Item_type;
+use App\Models\Kazena;
 use App\Models\Place;
 use App\Models\Place_stock;
 use App\Models\Sell_tran;
@@ -31,6 +34,7 @@ use Filament\Forms\Components\Radio;
 use Filament\Forms\Components\Section;
 use Filament\Forms\Components\Select;
 use Filament\Forms\Components\TextInput;
+use Filament\Forms\Components\Wizard;
 use Filament\Forms\Form;
 use Filament\Forms\Get;
 use Filament\Notifications\Notification;
@@ -39,6 +43,7 @@ use Filament\Support\Enums\IconSize;
 use Filament\Tables;
 use Filament\Tables\Actions\Action;
 use Filament\Tables\Columns\Summarizers\Sum;
+use Filament\Tables\Columns\Summarizers\Summarizer;
 use Filament\Tables\Columns\TextColumn;
 use Filament\Tables\Table;
 
@@ -46,7 +51,9 @@ use Illuminate\Contracts\View\View;
 use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\SoftDeletingScope;
+use Illuminate\Support\Arr;
 use Illuminate\Support\Facades\Auth;
+use Illuminate\Support\Facades\DB;
 
 class BuyResource extends Resource
 {
@@ -125,7 +132,7 @@ class BuyResource extends Resource
                             ->relationship('Place','name')
                             ->live()
                             ->required()
-                            ->columnSpan('full')
+                            ->columnSpan(4)
                             ->createOptionForm([
                                 Section::make('ادخال مكان تخزين')
                                     ->schema([
@@ -144,10 +151,13 @@ class BuyResource extends Resource
                                 self::AddAcc2(AccRef::places,$place);
                                 return $thekey;
                             }),
+                        TextInput::make('ksm')
+                            ->label('الخصم')
+                            ->columnSpan(2)
+                            ->default('0'),
 
                         TextInput::make('notes')
                             ->live()
-                            ->extraAttributes(['x-on:change' => 'myfun'])
                             ->prefix('ملاحظات')
                             ->hiddenLabel()
                             ->columnSpan('full'),
@@ -421,86 +431,143 @@ class BuyResource extends Resource
                     ->collapsed()
                     ->collapsible()
                     ->schema([
-                        TableRepeater::make('Cost')
-                            ->hiddenLabel()
-                            ->relationship()
-                            ->headers([
-                                Header::make('نوع التكلفة')
-                                    ->width('50%'),
-                                Header::make('المبلغ')
-                                    ->width('30%'),
-                            ])
-                            ->schema([
-                                Select::make('costtype_id')
+                        Wizard::make([
+                            Wizard\Step::make('pay')
+                             ->label('طريقة الدفع')
+                             ->schema([
+                                Radio::make('pay_type')
+                                    ->columnSpan('full')
                                     ->required()
+                                    ->options(PayType::class)
+                                    ->inline()
+                                    ->inlineLabel(false)
+                                    ->dehydrated(false)
+                                    ->live()
+                                    ->default(0)
+                                    ->hiddenLabel(),
+                                Select::make('acc_id')
+                                    ->prefix('المصرف')
+                                    ->hiddenLabel()
+                                    ->columnSpan('full')
+                                    ->dehydrated(false)
+                                    ->options(Acc::all()->pluck('name','id'))
                                     ->searchable()
-                                    ->relationship('Costtype','name')
-
-                                    ->disableOptionWhen(function ($value, $state, Get $get) {
-                                        return collect($get('../*.costtype_id'))
-                                            ->reject(fn($id) => $id == $state)
-                                            ->filter()
-                                            ->contains($value);
-                                    })
-                                    ->createOptionForm([
-                                        Section::make('ادخال نوع تكلفة')
-                                            ->schema([
-
-                                                TextInput::make('name')
-                                                    ->label('البيان')
-                                                    ->autocomplete(false)
-                                                    ->required()
-                                                    ->live()
-                                                    ->unique()
-                                                    ->validationMessages([
-                                                        'unique' => ' :attribute مخزون مسبقا ',
-                                                    ])
-                                                    ->columnSpan(2),
-                                            ])
-                                            ->columns(3)
-                                    ])
-                                    ->editOptionForm([
-                                Section::make('تعديل نوع تكلفة')
-                                    ->schema([
-                                        TextInput::make('name')
-                                            ->label('البيان')
-                                            ->autocomplete(false)
-                                            ->required()
-                                            ->live()
-                                            ->unique(ignoreRecord: true)
-                                            ->validationMessages([
-                                                'unique' => ' :attribute مخزون مسبقا ',
-                                            ])
-                                            ->columnSpan(2),
-                                    ])
-                                    ->columns(3)
+                                    ->required()
+                                    ->live()
+                                    ->preload()
+                                    ->visible(fn(Get $get): bool =>($get('pay_type')==1 )),
+                                Select::make('kazena_id')
+                                    ->prefix('الخزينة')
+                                    ->hiddenLabel()
+                                    ->columnSpan('full')
+                                    ->dehydrated(false)
+                                    ->options(Kazena::all()->pluck('name','id'))
+                                    ->searchable()
+                                    ->required()
+                                    ->live()
+                                    ->preload()
+                                    ->visible(fn(Get $get): bool =>($get('pay_type')==0 )),
                             ]),
+                            Wizard\Step::make('data')
+                             ->label('البيان')
+                             ->schema([
+                                 TableRepeater::make('Cost')
+                                     ->disabled(fn(Get $get): bool =>(!$get('acc_id') && !$get('kazena_id') ))
+                                     ->hiddenLabel()
+                                     ->relationship()
+                                     ->headers([
+                                         Header::make('نوع التكلفة')
+                                             ->width('50%'),
+                                         Header::make('المبلغ')
+                                             ->width('30%'),
+
+                                     ])
+                                     ->schema([
+                                         Select::make('costtype_id')
+                                             ->required()
+                                             ->preload()
+                                             ->searchable()
+                                             ->relationship('Costtype','name')
+                                             ->disableOptionWhen(function ($value, $state, Get $get) {
+                                                 return collect($get('../*.costtype_id'))
+                                                     ->reject(fn($id) => $id == $state)
+                                                     ->filter()
+                                                     ->contains($value);
+                                             })
+                                             ->afterStateUpdated(function (Get $get,Forms\Set $set){
+                                                 $set('kazena_id',$get('../../kazena_id'));
+                                                 $set('acc_id',$get('../../acc_id'));
+                                             })
+                                             ->createOptionForm([
+                                                 Section::make('ادخال نوع تكلفة')
+                                                     ->schema([
+
+                                                         TextInput::make('name')
+                                                             ->label('البيان')
+                                                             ->autocomplete(false)
+                                                             ->required()
+                                                             ->live()
+                                                             ->unique()
+                                                             ->validationMessages([
+                                                                 'unique' => ' :attribute مخزون مسبقا ',
+                                                             ])
+                                                             ->columnSpan(2),
+                                                     ])
+                                                     ->columns(3)
+                                             ])
+                                             ->editOptionForm([
+                                                 Section::make('تعديل نوع تكلفة')
+                                                     ->schema([
+                                                         TextInput::make('name')
+                                                             ->label('البيان')
+                                                             ->autocomplete(false)
+                                                             ->required()
+                                                             ->live()
+                                                             ->unique(ignoreRecord: true)
+                                                             ->validationMessages([
+                                                                 'unique' => ' :attribute مخزون مسبقا ',
+                                                             ])
+                                                             ->columnSpan(2),
+                                                     ])
+                                                     ->columns(3)
+
+                                             ]),
 
 
-                                TextInput::make('val')
-                                    ->extraInputAttributes(['tabindex' => 1])
-                                    ->columnSpan(1)
-                                    ->required(),
-                            ])
-                            ->live()
-                            ->afterStateUpdated(function ($state,Forms\Set $set,Get $get){
-                                $cost=0;
-                                foreach ($state as $item){
-                                    if ($item['val'] )
-                                        $cost +=$item['val'];
-                                }
-                                $set('cost',$cost);
-                            })
-                            ->columnSpan('full')
-                            ->defaultItems(0)
-                            ->addActionLabel('اضافة تكلفة')
-                            ->addable(function ($state){
-                                $flag=true;
-                                foreach ($state as $item) {
-                                    if (!$item['costtype_id'] || !$item['val'] ) {$flag=false; break;}
-                                }
-                                return $flag;
-                            })
+                                         TextInput::make('val')
+                                             ->extraInputAttributes(['tabindex' => 1])
+                                             ->columnSpan(1)
+                                             ->required(),
+                                         Hidden::make('acc_id')
+                                         ,
+                                         Hidden::make('kazena_id')
+
+                                         ,
+                                     ])
+                                     ->live(onBlur: true)
+                                     ->afterStateUpdated(function ($state,Forms\Set $set,Get $get){
+                                         $cost=0;
+                                         foreach ($state as $item){
+                                             if ($item['val'] )
+                                                 $cost +=$item['val'];
+
+                                         }
+                                         $set('cost',$cost);
+                                     })
+                                     ->columnSpan('full')
+                                     ->defaultItems(0)
+                                     ->addActionLabel('اضافة تكلفة')
+                                     ->addable(function ($state){
+                                         $flag=true;
+                                         foreach ($state as $item) {
+                                             if (!$item['costtype_id'] || !$item['val'] ) {$flag=false; break;}
+                                         }
+                                         return $flag;
+                                     })
+                             ])
+                        ]),
+
+
 
                     ])
                     ->columnSpan(5),
@@ -537,6 +604,33 @@ class BuyResource extends Resource
                     ->searchable()
                     ->sortable()
                     ->label('اجمالي الفاتورة'),
+                TextColumn::make('ksm')
+                    ->summarize(Sum::make()->label('')->numeric(
+                        decimalPlaces: 2,
+                        decimalSeparator: '.',
+                        thousandsSeparator: ',',
+                    ))
+                    ->numeric(
+                        decimalPlaces: 2,
+                        decimalSeparator: '.',
+                        thousandsSeparator: ',',
+                    )
+                    ->label('الخصم'),
+                TextColumn::make('total')
+                    ->numeric(
+                        decimalPlaces: 2,
+                        decimalSeparator: '.',
+                        thousandsSeparator: ',',
+                    )
+                    ->summarize(Summarizer::make()
+                        ->numeric(
+                            decimalPlaces: 2,
+                            decimalSeparator: '.',
+                            thousandsSeparator: ',',
+                        )
+                        ->using(fn ($query): string => $query->sum(DB::Raw('tot-ksm')))
+                    )
+                    ->label('الصافي'),
                 TextColumn::make('pay')
                     ->summarize(Sum::make()->label('')->numeric(
                         decimalPlaces: 2,
@@ -549,6 +643,21 @@ class BuyResource extends Resource
                         thousandsSeparator: ',',
                     )
                     ->label('المدفوع'),
+                TextColumn::make('baky')
+                    ->numeric(
+                        decimalPlaces: 2,
+                        decimalSeparator: '.',
+                        thousandsSeparator: ',',
+                    )
+                    ->summarize(Summarizer::make()
+                        ->numeric(
+                            decimalPlaces: 2,
+                            decimalSeparator: '.',
+                            thousandsSeparator: ',',
+                        )
+                        ->using(fn ($query): string => $query->sum(DB::Raw('tot-pay-ksm')))
+                    )
+                    ->label('المطلوب'),
                 TextColumn::make('cost')
                     ->summarize(Sum::make()->label('')->numeric(
                         decimalPlaces: 2,

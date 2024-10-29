@@ -10,3 +10,6 @@
 }
 
 @config 'tailwind.config.js';
+.my-blue {
+    @apply text-blue-600
+}

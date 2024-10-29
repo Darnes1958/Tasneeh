@@ -40,6 +40,8 @@ class CreateBuy extends CreateRecord
         $this->AddKyde(AccRef::buys->value,$supp->account->id,$buy,$buy->tot,$buy->order_date,'فاتورة مشتريات');
         $this->AddKyde($place->account->id,AccRef::buys->value,$buy,$buy->tot,$buy->order_date,'من المشتريات الي المخازن');
 
+        if ($buy->cost) self::inputKyde($buy->cost);
+
     }
 
 

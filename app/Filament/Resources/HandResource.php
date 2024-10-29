@@ -115,9 +115,7 @@ class HandResource extends Resource
                          ->required()
                          ->live()
                          ->preload()
-                         ->visible(fn(Get $get): bool =>($get('pay_type')==1 ))
-
-                         ,
+                         ->visible(fn(Get $get): bool =>($get('pay_type')==1 )),
                      Select::make('kazena_id')
                          ->label('الخزينة')
                          ->columnSpan(2)
@@ -131,9 +129,7 @@ class HandResource extends Resource
                              if ($res) return $res->id;
                              else return null;
                          })
-                         ->visible(fn(Get $get): bool =>($get('pay_type')==0 ))
-
-                        ,
+                         ->visible(fn(Get $get): bool =>($get('pay_type')==0 )),
                      DatePicker::make('val_date')
 
                          ->default(now())

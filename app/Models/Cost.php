@@ -9,6 +9,10 @@ use Illuminate\Support\Facades\Auth;
 class Cost extends Model
 {
     protected $connection = 'other';
+    public function kyde()
+    {
+        return $this->morphMany(Kyde::class, 'kydeable');
+    }
 
     public function Costtype(){
         return $this->belongsTo(Costtype::class);

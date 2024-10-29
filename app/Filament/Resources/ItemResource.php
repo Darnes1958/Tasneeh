@@ -298,7 +298,7 @@ class ItemResource extends Resource
                             decimalSeparator: '.',
                             thousandsSeparator: ',',
                         )
-                        ->using(fn (\Illuminate\Database\Query\Builder $query): string => $query->sum(DB::Raw('stock*price_buy')))
+                        ->using(fn ($query): string => $query->sum(DB::Raw('stock*price_buy')))
                     )
                     ->numeric(
                         decimalPlaces: 2,

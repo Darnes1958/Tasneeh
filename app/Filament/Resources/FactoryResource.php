@@ -32,6 +32,7 @@ use Filament\Support\Enums\IconSize;
 use Filament\Support\Enums\MaxWidth;
 use Filament\Tables;
 use Filament\Tables\Actions\Action;
+use Filament\Tables\Columns\Summarizers\Summarizer;
 use Filament\Tables\Enums\FiltersLayout;
 use Filament\Tables\Filters\SelectFilter;
 use Filament\Tables\Table;
@@ -47,6 +48,7 @@ use Awcodes\TableRepeater\Components\TableRepeater;
 use Illuminate\Support\Facades\Auth;
 use Filament\Tables\Columns\TextColumn;
 use Filament\Tables\Columns\Summarizers\Sum;
+use Illuminate\Support\Facades\DB;
 
 
 class FactoryResource extends Resource
@@ -579,13 +581,14 @@ class FactoryResource extends Resource
                     ->sortable()
                     ->label('سعر المنتج'),
                 TextColumn::make('price_tot')
-                    ->summarize(Tables\Columns\Summarizers\Summarizer::make()
-                        ->using(function (Table $table) {
-                            return $table->getRecords()->sum('price_tot');
-                        })
+                    ->summarize(Summarizer::make()
+                      ->numeric(
+                        decimalPlaces: 2,
+                        decimalSeparator: '.',
+                        thousandsSeparator: ',',
+                     )
+                     ->using(fn ($query): string => $query->sum(DB::Raw('quantity*price')))
                     )
-                    ->searchable()
-                    ->sortable()
                     ->label('اجمالي السعر'),
             ])
             ->filters([
