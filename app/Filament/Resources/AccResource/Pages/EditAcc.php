@@ -11,10 +11,5 @@ class EditAcc extends EditRecord
 {
     protected static string $resource = AccResource::class;
 
-    protected function getHeaderActions(): array
-    {
-        return [
-            Actions\DeleteAction::make()->visible(Auth::user()->can('الغاء مصارف')),
-        ];
-    }
+    protected ?string $heading='';
 }
