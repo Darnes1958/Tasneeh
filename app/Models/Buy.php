@@ -37,7 +37,7 @@ class Buy extends Model
   public function Buy_tran(){
     return $this->hasMany(Buy_tran::class);
   }
-  public function Cost(){
+  public function costs(){
       return $this->hasMany(Cost::class);
   }
   public function Tar_Buy(){

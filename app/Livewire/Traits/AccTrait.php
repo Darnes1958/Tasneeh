@@ -134,13 +134,11 @@ trait AccTrait {
         switch ($model->getTable()) {
             case 'buys': {
                 if ($spacial=='buyCosts'){
-                    if ($model->Cost[0]->kazena_id) $nakd=kazena::find($model->Cost[0]->kazena_id)->account->id;
-                    else $nakd=Acc::find($model->Cost[0]->acc_id)->account->id;
                     $arr['kyde_date']=$model->order_date;
                     $arr['val']=$model->cost;
                     $arr['mden']=AccRef::costs->value;
-                    $arr['daen']=$nakd;
-                    $arr['data']='تكاليف اضافية علي المشتريات - '.$model->Cost[0]->Costtype->name;
+                    $arr['daen']=AccRef::costDaen->value;
+                    $arr['data']='تكاليف اضافية علي المشتريات - '.$model->costs[0]->Costtype->name;
                 }
                 if ($spacial=='order'){
                     $arr['kyde_date']=$model->order_date;

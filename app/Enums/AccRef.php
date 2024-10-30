@@ -18,6 +18,7 @@ enum AccRef: string implements HasLabel
   case makzoone = '6-2';
   case mans = '6-3';
   case costs = '6-4';
+    case costDaen = '4-2';
   case masrofats = '6-5';
   case rents = '6-6';
   case rents_mden = '6-9';

@@ -431,41 +431,8 @@ class BuyResource extends Resource
                     ->collapsed()
                     ->collapsible()
                     ->schema([
-                        Radio::make('pay_type')
-                            ->columnSpan('full')
-                            ->required()
-                            ->options(PayType::class)
-                            ->inline()
-                            ->inlineLabel(false)
-                            ->dehydrated(false)
-                            ->live()
-                            ->default(0)
-                            ->hiddenLabel(),
-                        Select::make('acc_id')
-                            ->prefix('المصرف')
-                            ->hiddenLabel()
-                            ->columnSpan('full')
-                            ->dehydrated(false)
-                            ->options(Acc::all()->pluck('name','id'))
-                            ->searchable()
-                            ->required()
-                            ->live()
-                            ->preload()
-                            ->visible(fn(Get $get): bool =>($get('pay_type')==1 )),
-                        Select::make('kazena_id')
-                            ->prefix('الخزينة')
-                            ->hiddenLabel()
-                            ->columnSpan('full')
-                            ->dehydrated(false)
-                            ->options(Kazena::all()->pluck('name','id'))
-                            ->searchable()
-                            ->required()
-                            ->live()
-                            ->preload()
-                            ->visible(fn(Get $get): bool =>($get('pay_type')==0 )),
 
-                         TableRepeater::make('Cost')
-                             ->disabled(fn(Get $get): bool =>(!$get('acc_id') && !$get('kazena_id') ))
+                         TableRepeater::make('costs')
                              ->hiddenLabel()
                              ->relationship()
                              ->headers([
@@ -487,10 +454,7 @@ class BuyResource extends Resource
                                              ->filter()
                                              ->contains($value);
                                      })
-                                     ->afterStateUpdated(function (Get $get,Forms\Set $set){
-                                         $set('kazena_id',$get('../../kazena_id'));
-                                         $set('acc_id',$get('../../acc_id'));
-                                     })
+
                                      ->createOptionForm([
                                          Section::make('ادخال نوع تكلفة')
                                              ->schema([
@@ -547,12 +511,7 @@ class BuyResource extends Resource
                                  }
                                  $set('cost',$cost);
                              })
-                             ->mutateRelationshipDataBeforeCreateUsing(function (array $data,Get $get,$operation): array {
-                                 $data['kazena_id']=$get('kazena_id');
-                                 $data['acc_id']=$get('acc_id');
 
-                                 return $data;
-                             })
                              ->columnSpan('full')
                              ->defaultItems(0)
                              ->addActionLabel('اضافة تكلفة')

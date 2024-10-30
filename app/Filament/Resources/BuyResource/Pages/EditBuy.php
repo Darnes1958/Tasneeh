@@ -112,7 +112,7 @@ class EditBuy extends EditRecord
 
         self::inputKyde($buy,'order');
         self::inputKyde($buy,'store');
-        if ($buy->cost) self::inputKyde($buy,'buyCosts');
+        if ($buy->costs) self::inputKyde($buy,'buyCosts');
     }
 
 }

@@ -36,7 +36,9 @@ class CreateBuy extends CreateRecord
         $buy=Buy::find(Buy::max('id'));
         self::inputKyde($buy,'order');
         self::inputKyde($buy,'store');
-        if ($buy->cost) self::inputKyde($buy,'buyCosts');
+
+        if ($buy->costs->count()>0)   self::inputKyde($buy,'buyCosts');
+
     }
 
 
