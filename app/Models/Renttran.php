@@ -15,6 +15,10 @@ class Renttran extends Model
 
         'pay_type' => PayType::class,
     ];
+    public function kyde()
+    {
+        return $this->morphMany(Kyde::class, 'kydeable');
+    }
     public function Rent(){
         return $this->belongsTo(Rent::class);
     }

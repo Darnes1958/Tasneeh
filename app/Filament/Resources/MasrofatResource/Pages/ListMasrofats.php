@@ -9,7 +9,7 @@ use Filament\Resources\Pages\ListRecords;
 class ListMasrofats extends ListRecords
 {
     protected static string $resource = MasrofatResource::class;
-
+    protected ?string $heading=' ';
     protected function getHeaderActions(): array
     {
         return [

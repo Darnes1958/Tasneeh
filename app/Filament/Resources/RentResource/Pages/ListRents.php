@@ -4,6 +4,7 @@ namespace App\Filament\Resources\RentResource\Pages;
 
 use App\Enums\PayType;
 use App\Filament\Resources\RentResource;
+use App\Livewire\Traits\AccTrait;
 use App\Models\Acc;
 use App\Models\Kazena;
 use App\Models\Rent;
@@ -21,6 +22,7 @@ use Illuminate\Support\Facades\Auth;
 
 class ListRents extends ListRecords
 {
+    use AccTrait;
     use PublicTrait;
     protected static string $resource = RentResource::class;
 
@@ -60,6 +62,7 @@ class ListRents extends ListRecords
                             $tran->notes='إيجار شهر '.$data['month'];
                             $tran->month=$data['month'];
                             $tran->save();
+                            self::inputKyde($tran);
                         }
                         $this->TarseedRents();
                         Notification::make()
@@ -140,6 +143,7 @@ class ListRents extends ListRecords
                     $tran->notes=$data['notes'];
                     $tran->month='0';
                     $tran->save();
+                    self::inputKyde($tran);
 
                     $this->TarseedRents();
                     Notification::make()

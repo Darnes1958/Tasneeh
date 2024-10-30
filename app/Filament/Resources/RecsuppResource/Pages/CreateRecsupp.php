@@ -52,7 +52,7 @@ class CreateRecsupp extends CreateRecord
     {
         $rescupp=Recsupp::find(Recsupp::max('id'));
         $supp=Supplier::find($rescupp->supplier_id);
-        if ($rescupp->kazena_id) $nakd=kazena::find($rescupp->kazena_id);
+        if ($rescupp->kazena_id) $nakd=Kazena::find($rescupp->kazena_id);
         else $nakd=Acc::find($rescupp->acc_id);
         if ($rescupp->imp_exp->value==0)
             $this->AddKyde($nakd->account_id,$supp->account->id,

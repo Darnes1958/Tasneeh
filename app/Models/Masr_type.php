@@ -9,6 +9,10 @@ use Illuminate\Support\Facades\Auth;
 class Masr_type extends Model
 {
     protected $connection = 'other';
+    public function account()
+    {
+        return $this->morphOne(Account::class, 'accountable');
+    }
     public function Masrofat(){
         return $this->hasMany(Masrofat::class);
     }

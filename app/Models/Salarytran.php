@@ -15,6 +15,10 @@ class Salarytran extends Model
 
         'pay_type' => PayType::class,
     ];
+    public function kyde()
+    {
+        return $this->morphMany(Kyde::class, 'kydeable');
+    }
     public function Salary(){
         return $this->belongsTo(Salary::class);
     }

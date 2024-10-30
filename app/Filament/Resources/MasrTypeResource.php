@@ -14,6 +14,7 @@ use Filament\Resources\Resource;
 use Filament\Tables;
 use Filament\Tables\Table;
 use Illuminate\Database\Eloquent\Builder;
+use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\SoftDeletingScope;
 use Illuminate\Support\Facades\Auth;
 
@@ -58,6 +59,9 @@ class MasrTypeResource extends Resource
             ->actions([
                 Tables\Actions\EditAction::make(),
                 Tables\Actions\DeleteAction::make()
+                    ->after(function (Model $record){
+                        if ($record->account) $record->account->delete();
+                    })
                     ->hidden(fn(Masr_type $record)=>
                         Masrofat::where('masr_type_id',$record->id)->count()>0),
             ])

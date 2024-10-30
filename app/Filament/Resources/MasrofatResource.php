@@ -2,9 +2,11 @@
 
 namespace App\Filament\Resources;
 
+use App\Enums\AccRef;
 use App\Enums\PayType;
 use App\Filament\Resources\MasrofatResource\Pages;
 use App\Filament\Resources\MasrofatResource\RelationManagers;
+use App\Livewire\Traits\AccTrait;
 use App\Models\Item;
 use App\Models\Masr_type;
 use App\Models\Masrofat;
@@ -27,6 +29,7 @@ use Illuminate\Support\Str;
 
 class MasrofatResource extends Resource
 {
+    use AccTrait;
     protected static ?string $model = Masrofat::class;
 
     protected static ?string $navigationIcon = 'heroicon-o-rectangle-stack';
@@ -60,20 +63,12 @@ class MasrofatResource extends Resource
                                    ])        ,
                            ])
                    ])
-                   ->editOptionForm([
-                       Section::make('تعديل بيانات خزينة')
-                           ->schema([
-                               TextInput::make('name')
-                                   ->label('البيان')
-                                   ->required()
-                                   ->autofocus()
-                                   ->columnSpan(2)
-                                   ->unique(ignoreRecord: true)
-                                   ->validationMessages([
-                                       'unique' => ' :attribute مخزون مسبقا ',
-                                   ])        ,
-                           ])
-                   ])
+                   ->createOptionUsing(function (array $data): int {
+                       $thekey=Masr_type::create($data)->getKey();
+                       $model=Masr_type::find($thekey);
+                       self::AddAcc2(AccRef::masrofats,$model);
+                       return $thekey;
+                   })
                 ->label('نوع المصروفات'),
                 Forms\Components\Radio::make('pay_type')
                     ->options(PayType::class)
@@ -84,7 +79,7 @@ class MasrofatResource extends Resource
                     ->label('طريقة الدفع')
                     ,
                 Select::make('acc_id')
-                    ->relationship('AccRef','name')
+                    ->relationship('Acc','name')
                     ->label('المصرف')
                     ->preload()
                     ->requiredIf('pay_type', 1)
@@ -96,45 +91,6 @@ class MasrofatResource extends Resource
                     ->label('الخزينة')
                     ->preload()
                     ->requiredIf('pay_type', 0)
-                    ->createOptionForm([
-                        Section::make('ادخال حساب خزينة جديد')
-                            ->schema([
-                                TextInput::make('name')
-                                    ->label('اسم الخزينة')
-                                    ->required()
-                                    ->autofocus()
-                                    ->columnSpan(2)
-                                    ->unique(ignoreRecord: true)
-                                    ->validationMessages([
-                                        'unique' => ' :attribute مخزون مسبقا ',
-                                    ])        ,
-
-                                TextInput::make('balance')
-                                    ->label('رصيد بداية المدة')
-                                    ->numeric()
-                                    ->required()                          ,
-                            ])
-                    ])
-                    ->editOptionForm([
-                        Section::make('تعديل بيانات خزينة')
-                            ->schema([
-                                TextInput::make('name')
-                                    ->label('اسم الخزينة')
-                                    ->required()
-                                    ->autofocus()
-                                    ->columnSpan(2)
-                                    ->unique(ignoreRecord: true)
-                                    ->validationMessages([
-                                        'unique' => ' :attribute مخزون مسبقا ',
-                                    ])        ,
-
-                                TextInput::make('raseed')
-                                    ->label('رصيد بداية المدة')
-                                    ->numeric()
-                                    ->required()
-
-                            ])->columns(2)
-                    ])
                     ->visible(function (Forms\Get $get){
                         return $get('pay_type')==0;
                     }),
@@ -216,7 +172,11 @@ class MasrofatResource extends Resource
             ->filtersFormWidth(MaxWidth::ExtraSmall)
             ->actions([
                 Tables\Actions\EditAction::make(),
-                Tables\Actions\DeleteAction::make()->visible(Auth::user()->can('الغاء مصروفات')),
+                Tables\Actions\DeleteAction::make()
+                    ->visible(Auth::user()->can('الغاء مصروفات'))
+                    ->after(function (Model $record) {
+                        if ($record->kyde) foreach ($record->kyde as $kyde) {$kyde->delete();}
+                    }),
             ])
             ->bulkActions([
                 Tables\Actions\BulkActionGroup::make([

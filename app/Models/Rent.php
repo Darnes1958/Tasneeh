@@ -10,6 +10,10 @@ class Rent extends Model
 {
     protected $connection = 'other';
 
+    public function account()
+    {
+        return $this->morphOne(Account::class, 'accountable');
+    }
     public function Renttran(){
         return $this->hasMany(Rent::class);
     }

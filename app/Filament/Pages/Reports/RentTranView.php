@@ -89,8 +89,10 @@ class RentTranView extends Page implements HasTable, HasForms
                 Action::make('delete')
                     ->requiresConfirmation()
                     ->icon('heroicon-o-trash')
+                    ->color('danger')
                     ->iconButton()
                     ->action(function (Model $record) {
+                        if ($record->kyde) foreach ($record->kyde as $kyde) {$kyde->delete();}
                         $record->delete();
                     })
 

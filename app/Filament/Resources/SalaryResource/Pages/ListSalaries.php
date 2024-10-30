@@ -4,6 +4,7 @@ namespace App\Filament\Resources\SalaryResource\Pages;
 
 use App\Enums\PayType;
 use App\Filament\Resources\SalaryResource;
+use App\Livewire\Traits\AccTrait;
 use App\Livewire\Traits\PublicTrait;
 use App\Models\Acc;
 use App\Models\Kazena;
@@ -24,6 +25,7 @@ use Illuminate\Support\Facades\Auth;
 
 class ListSalaries extends ListRecords
 {
+  use AccTrait;
   use PublicTrait;
     protected static string $resource = SalaryResource::class;
 
@@ -63,6 +65,8 @@ class ListSalaries extends ListRecords
                           $tran->notes='مرتب شهر '.$data['month'];
                           $tran->month=$data['month'];
                           $tran->save();
+                          self::inputKyde($tran);
+
                       }
                       $this->TarseedTrans();
                       Notification::make()
@@ -144,6 +148,7 @@ class ListSalaries extends ListRecords
                   $tran->notes=$data['notes'];
                   $tran->month='0';
                   $tran->save();
+                 self::inputKyde($tran);
 
                 $this->TarseedTrans();
                 Notification::make()
@@ -183,6 +188,7 @@ class ListSalaries extends ListRecords
               $tran->notes=$data['notes'];
               $tran->month='0';
               $tran->save();
+                self::inputKyde($tran);
 
               $this->TarseedTrans();
               Notification::make()
@@ -222,6 +228,7 @@ class ListSalaries extends ListRecords
               $tran->notes=$data['notes'];
               $tran->month='0';
               $tran->save();
+                self::inputKyde($tran);
 
               $this->TarseedTrans();
               Notification::make()
@@ -273,6 +280,9 @@ class ListSalaries extends ListRecords
                     ->options(Salarytran::where('month','!=','0')->distinct()->pluck('month', 'month'))
                 ])
                 ->action(function (array $data) {
+                        foreach (Salarytran::where('month',$data['month'])->get() as $salary){
+                            if ($salary->kyde) foreach ($salary->kyde as $kyde){$kyde->delete();}
+                        }
                         Salarytran::where('month',$data['month'])->delete();
                         $this->TarseedTrans();
 

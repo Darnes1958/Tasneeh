@@ -11,6 +11,7 @@ use App\Models\Hall;
 use App\Models\Kazena;
 use App\Models\KydeData;
 use App\Models\Man;
+use App\Models\Masr_type;
 use App\Models\Place;
 use App\Models\Rent;
 use App\Models\Renttran;
@@ -216,8 +217,59 @@ trait AccTrait {
                 $arr['data']='فاتورة مبيعات';
                 break;
             }
+            case 'masrofats': {
+                $masr_type=Masr_type::find($model->masr_type_id)->account->id;
+                if ($model->kazena_id) $nakd=kazena::find($model->kazena_id)->account->id;
+                else $nakd=Acc::find($model->acc_id)->account->id;
+                $arr['kyde_date']=$model->masr_date;
+                $arr['val']=$model->val;
+                $arr['mden']=$masr_type;
+                $arr['daen']=$nakd;
+                $arr['data']='مصروفات ادارية وعمومية';
+                break;
+            }
+            case 'salarytrans': {
 
+                $arr['kyde_date']=$model->tran_date;
+                $arr['val']=$model->val;
+                if ($model->tran_type=='مرتب' || $model->tran_type=='اضافة'){
+                    $arr['mden']=AccRef::salaries_mden;
+                    $arr['daen']=Salary::find($model->salary_id)->account->id;
+                    $arr['data']='ادراج واضافة للمرتبات';
+                }
+                if ($model->tran_type=='خصم' ) {
+                    $arr['mden']=Salary::find($model->salary_id)->account->id;
+                    $arr['daen']=AccRef::salaries_mden;
+                    $arr['data']='خصم من مرتب';
+                }
+                if ($model->tran_type=='سحب'){
+                    if ($model->kazena_id) $nakd=kazena::find($model->kazena_id)->account->id;
+                    else $nakd=Acc::find($model->acc_id)->account->id;
+                    $arr['mden']=Salary::find($model->salary_id)->account->id;
+                    $arr['daen']=$nakd;
+                    $arr['data']='سحب من مرتب';
+                }
+                break;
+            }
+            case 'renttrans': {
 
+                $arr['kyde_date']=$model->tran_date;
+                $arr['val']=$model->val;
+                if ($model->tran_type=='إيجار' ){
+                    $arr['mden']=AccRef::rents_mden;
+                    $arr['daen']=Rent::find($model->rent_id)->account->id;
+                    $arr['data']='ادراج ايجارات';
+                }
+
+                if ($model->tran_type=='سحب'){
+                    if ($model->kazena_id) $nakd=kazena::find($model->kazena_id)->account->id;
+                    else $nakd=Acc::find($model->acc_id)->account->id;
+                    $arr['mden']=Rent::find($model->rent_id)->account->id;
+                    $arr['daen']=$nakd;
+                    $arr['data']='سحب من ايجار';
+                }
+                break;
+            }
         }
         return $arr;
     }

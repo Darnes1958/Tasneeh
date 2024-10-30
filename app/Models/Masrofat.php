@@ -9,7 +9,10 @@ use Illuminate\Support\Facades\Auth;
 class Masrofat extends Model
 {
     protected $connection = 'other';
-
+    public function kyde()
+    {
+        return $this->morphMany(Kyde::class, 'kydeable');
+    }
     public function Masr_type(){
         return $this->belongsTo(Masr_type::class);
     }

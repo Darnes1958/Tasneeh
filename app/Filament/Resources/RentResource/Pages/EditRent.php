@@ -3,17 +3,19 @@
 namespace App\Filament\Resources\RentResource\Pages;
 
 use App\Filament\Resources\RentResource;
+use App\Models\Masr_type;
+use App\Models\Rent;
 use Filament\Actions;
 use Filament\Resources\Pages\EditRecord;
 
 class EditRent extends EditRecord
 {
     protected static string $resource = RentResource::class;
-
-    protected function getHeaderActions(): array
+    protected ?string $heading='';
+    protected function beforeSave(): void
     {
-        return [
-            Actions\DeleteAction::make(),
-        ];
+        $res=Rent::find($this->data['id']);
+        if ($res->account)
+            $res->account->update(['name'=>$this->data['name']]);
     }
 }
