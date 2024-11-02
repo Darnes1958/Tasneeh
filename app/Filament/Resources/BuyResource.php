@@ -489,17 +489,11 @@ class BuyResource extends Resource
                                              ->columns(3)
 
                                      ]),
-
-
                                  TextInput::make('val')
                                      ->extraInputAttributes(['tabindex' => 1])
                                      ->columnSpan(1)
                                      ->required(),
-                                 Hidden::make('acc_id')
-                                 ,
-                                 Hidden::make('kazena_id')
 
-                                 ,
                              ])
                              ->live(onBlur: true)
                              ->afterStateUpdated(function ($state,Forms\Set $set,Get $get){

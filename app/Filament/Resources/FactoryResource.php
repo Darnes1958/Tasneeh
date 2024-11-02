@@ -2,6 +2,7 @@
 
 namespace App\Filament\Resources;
 
+use App\Enums\AccRef;
 use App\Enums\PlaceType;
 use App\Filament\Resources\FactoryResource\Pages;
 use App\Filament\Resources\FactoryResource\RelationManagers;
@@ -367,22 +368,6 @@ class FactoryResource extends Resource
                                                   ->autocomplete(false)
                                                   ->required()
                                                   ->live()
-                                                  ->unique()
-                                                  ->validationMessages([
-                                                      'unique' => ' :attribute مخزون مسبقا ',
-                                                  ])
-                                                  ->columnSpan(2),
-                                          ])
-                                          ->columns(4)
-                                  ])
-                                  ->createOptionForm([
-                                      Section::make('ادخال مشغل')
-                                          ->schema([
-                                              TextInput::make('name')
-                                                  ->label('الاسم')
-                                                  ->autocomplete(false)
-                                                  ->required()
-                                                  ->live()
                                                   ->unique(ignoreRecord: true)
                                                   ->validationMessages([
                                                       'unique' => ' :attribute مخزون مسبقا ',
@@ -390,7 +375,13 @@ class FactoryResource extends Resource
                                                   ->columnSpan(2),
                                           ])
                                           ->columns(4)
-                                  ]),
+                                  ])
+                                  ->createOptionUsing(function (array $data): int {
+                                      $thekey=Man::create($data)->getKey();
+                                      $place=Man::find($thekey);
+                                      self::AddAcc2(AccRef::mans,$place);
+                                      return $thekey;
+                                  }),
                               DatePicker::make('val_date')
                                 ->default(now())
                                 ->columnSpan(1)
