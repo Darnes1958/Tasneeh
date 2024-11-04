@@ -2,6 +2,7 @@
 
 namespace App\Filament\Resources\SalaryResource\Pages;
 
+use App\Enums\AccRef;
 use App\Enums\PayType;
 use App\Filament\Resources\SalaryResource;
 use App\Livewire\Traits\AccTrait;
@@ -32,6 +33,17 @@ class ListSalaries extends ListRecords
     protected function getHeaderActions(): array
     {
         return [
+            Actions\Action::make('acc')
+                ->label('add acc')
+                ->visible(fn(): bool=>Auth::id()==1)
+                ->action(function (){
+                    $places = Salary::all();
+                    foreach ($places as $place){
+                        if (!$place->account){
+                            $this->AddAcc(AccRef::salaries,$place);
+                        }
+                    }
+                }),
             Actions\CreateAction::make()
             ->label('إضافة مرتب جديد'),
             Actions\Action::make('إدارج_مرتبات')
