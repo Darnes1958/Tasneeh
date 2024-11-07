@@ -6,6 +6,7 @@
 
 <head>
   <meta http-equiv="Content-Type" content="text/html; charset=utf-8"/>
+    <script src="https://cdn.tailwindcss.com"></script>
   <style>
       @media print {
           .pagebreak { page-break-before: always; } /* page-break-after works, as well */

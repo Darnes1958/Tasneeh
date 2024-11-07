@@ -14,6 +14,7 @@ use App\Models\Hall_stock;
 use App\Models\Item;
 use App\Models\Item_type;
 use App\Models\Man;
+use App\Models\OurCompany;
 use App\Models\Place;
 use App\Models\Place_stock;
 use App\Models\Product;
@@ -50,6 +51,8 @@ use Illuminate\Support\Facades\Auth;
 use Filament\Tables\Columns\TextColumn;
 use Filament\Tables\Columns\Summarizers\Sum;
 use Illuminate\Support\Facades\DB;
+use Illuminate\Support\Facades\Response;
+use Spatie\LaravelPdf\Enums\Unit;
 
 
 class FactoryResource extends Resource
@@ -268,9 +271,7 @@ class FactoryResource extends Resource
 
                                    ->extraInputAttributes(['tabindex' => 1])
                                    ->afterStateUpdated(function ($state,Forms\Set $set,Get $get,$old,$operation){
-
                                        if ($operation=='edit') {
-
                                            $tran=Tran::where('factory_id',$get('../../id'))
                                                  ->where('item_id',$get('item_id'))
                                                  ->first();
@@ -516,6 +517,7 @@ class FactoryResource extends Resource
                     ->description(function (Model $record) {
                         return $record->Product->description;
                     })
+
                     ->searchable()
                     ->sortable()
                     ->label('اسم المنتج'),
@@ -641,6 +643,29 @@ class FactoryResource extends Resource
                         'view-hand-widget',
                         ['factory_id' => $record->id],
                     )),
+                Action::make('print')
+                ->iconButton()
+                ->icon('heroicon-o-printer')
+                ->color('info')
+                ->action(function (Model $record) {
+
+                    $RepDate=date('Y-m-d');
+                    $cus=OurCompany::where('Company',Auth::user()->company)->first();
+
+                    \Spatie\LaravelPdf\Facades\Pdf::view('PrnView.pdf-fac-items',
+                        ['res'=>$record,
+                            'cus'=>$cus,'RepDate'=>$RepDate,
+                        ])
+                        ->footerView('PrnView.footer')
+                        ->margins(10, 10, 40, 10, Unit::Pixel)
+                        ->save(Auth::user()->company.'/invoice-2023-04-10.pdf');
+                    $file= public_path().'/'.Auth::user()->company.'/invoice-2023-04-10.pdf';
+
+                    $headers = [
+                        'Content-Type' => 'application/pdf',
+                    ];
+                    return Response::download($file, 'filename.pdf', $headers);
+                })
             ]);
     }
 
