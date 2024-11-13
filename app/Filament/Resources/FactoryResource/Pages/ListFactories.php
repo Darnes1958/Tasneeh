@@ -9,6 +9,7 @@ use Filament\Resources\Pages\ListRecords;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Response;
 use Spatie\LaravelPdf\Enums\Unit;
+use function Symfony\Component\Translation\t;
 
 class ListFactories extends ListRecords
 {
@@ -25,12 +26,18 @@ class ListFactories extends ListRecords
                 ->icon('heroicon-s-printer')
                 ->color('success')
                 ->action(function (){
+                    $filters=$this->table->getFilters();
+                    $any=$filters['created_at']->getState();
+                    $title='  كشف بالمنتجات  ';
+                    if ($any['Date1']) $title=$title.' من تاريخ '.$any['Date1'];
+                    if ($any['Date2']) $title=$title.'  حتي تاريخ '.$any['Date2'];
+
                     $RepDate=date('Y-m-d');
                     $cus=OurCompany::where('Company',Auth::user()->company)->first();
 
                     \Spatie\LaravelPdf\Facades\Pdf::view('PrnView.pdf-factories',
                         ['res'=>$this->getTableQueryForExport()->get(),
-                            'cus'=>$cus,'RepDate'=>$RepDate,
+                            'cus'=>$cus,'RepDate'=>$RepDate,'title'=>$title
                         ])
                         ->footerView('PrnView.footer')
                         ->margins(10, 40, 40, 40, Unit::Pixel)

@@ -4,10 +4,12 @@ namespace App\Filament\Resources;
 
 use App\Enums\AccRef;
 use App\Enums\PlaceType;
+use App\Enums\Status;
 use App\Filament\Resources\FactoryResource\Pages;
 use App\Filament\Resources\FactoryResource\RelationManagers;
 use App\Livewire\Traits\AccTrait;
 use App\Models\Buy;
+use App\Models\Customer;
 use App\Models\Factory;
 use App\Models\Hall;
 use App\Models\Hall_stock;
@@ -21,6 +23,7 @@ use App\Models\Product;
 
 use App\Models\Tran;
 use Awcodes\TableRepeater\Header;
+use Carbon\Carbon;
 use Filament\Actions\StaticAction;
 use Filament\Forms;
 use Filament\Forms\Components\FileUpload;
@@ -35,6 +38,7 @@ use Filament\Support\Enums\MaxWidth;
 use Filament\Tables;
 use Filament\Tables\Actions\Action;
 use Filament\Tables\Columns\Summarizers\Summarizer;
+use Filament\Tables\Columns\TextColumn\TextColumnSize;
 use Filament\Tables\Enums\FiltersLayout;
 use Filament\Tables\Filters\SelectFilter;
 use Filament\Tables\Table;
@@ -519,6 +523,15 @@ class FactoryResource extends Resource
                     })
 
                     ->searchable()
+                    ->limit(40)
+                    ->tooltip(function (TextColumn $column): ?string {
+                        $state = $column->getState();
+                        if (strlen($state) < 50) {
+                            return null;
+                        }
+                        return $state;
+                    })
+                    ->size(TextColumnSize::ExtraSmall)
                     ->sortable()
                     ->label('اسم المنتج'),
                 Tables\Columns\ImageColumn::make('Product.image')
@@ -585,7 +598,39 @@ class FactoryResource extends Resource
                     ->label('اجمالي السعر'),
             ])
             ->filters([
-               //
+                SelectFilter::make('status')
+                    ->options(Status::class)
+                    ->searchable()
+                    ->label('جاهز او تحت التصنيع'),
+                Tables\Filters\Filter::make('created_at')
+                    ->form([
+                        Forms\Components\DatePicker::make('Date1')
+                            ->label('من تاريخ'),
+                        Forms\Components\DatePicker::make('Date2')
+                            ->label('إلي تاريخ'),
+                    ])
+                    ->indicateUsing(function (array $data): ?string {
+                        if (! $data['Date1'] && ! $data['Date2']) { return null;   }
+                        if ( $data['Date1'] && !$data['Date2'])
+                            return 'ادخلت بتاريخ  ' . Carbon::parse($data['Date1'])->toFormattedDateString();
+                        if ( !$data['Date1'] && $data['Date2'])
+                            return 'حتي تاريخ  ' . Carbon::parse($data['Date2'])->toFormattedDateString();
+                        if ( $data['Date1'] && $data['Date2'])
+                            return 'ادخلت في الفترة من  ' . Carbon::parse($data['Date1'])->toFormattedDateString()
+                                .' إلي '. Carbon::parse($data['Date1'])->toFormattedDateString();
+
+                    })
+                    ->query(function (Builder $query, array $data): Builder {
+                        return $query
+                            ->when(
+                                $data['Date1'],
+                                fn (Builder $query, $date): Builder => $query->whereDate('process_date', '>=', $date),
+                            )
+                            ->when(
+                                $data['Date2'],
+                                fn (Builder $query, $date): Builder => $query->whereDate('process_date', '<=', $date),
+                            );
+                    })
             ])
             ->actions([
                 Tables\Actions\EditAction::make()
@@ -657,7 +702,7 @@ class FactoryResource extends Resource
                             'cus'=>$cus,'RepDate'=>$RepDate,
                         ])
                         ->footerView('PrnView.footer')
-                        ->margins(10, 40, 40, 10, Unit::Pixel)
+                        ->margins(10, 10, 20, 10, Unit::Pixel)
                         ->save(Auth::user()->company.'/invoice-2023-04-10.pdf');
                     $file= public_path().'/'.Auth::user()->company.'/invoice-2023-04-10.pdf';
 

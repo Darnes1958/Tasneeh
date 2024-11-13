@@ -1,25 +1,19 @@
-@extends('PrnView.PrnMaster3')
+@extends('PrnView.PrnMaster4')
 
 @section('mainrep')
 
 <div  >
 
-  <div >
 
-
-
-
-  </div>
-
-
-  <table style="width: 100% ;float: right;">
-      <caption style="font-size: 12pt; margin: 8px;text-align: right;font-weight: bold;font-family: Amiri;">كشف بالمنتجات </caption>
+    <div class="flex justify-center">
+  <table style="width: 90% ;float: right;">
+      <caption style="font-size: 12pt; margin: 8px;text-align: center;font-weight: bold;font-family: Amiri;"> {{$title}} </caption>
 
 
     <thead style=" font-family: DejaVu Sans, sans-serif; margin-top: 8px;" >
     <tr  style="background: #9dc1d3;" >
         <th >اسم المنتج</th>
-        <th style="width: 6%">الحالة</th>
+        <th style="width: 8%">الحالة</th>
         <th style="width: 8%">تاريخ التصنيع</th>
         <th style="width: 8%"> تاريخ الانتاج</th>
         <th style="width: 4%">العدد</th>
@@ -66,7 +60,7 @@
     </tbody>
 
   </table>
-
+    </div>
 </div>
 </div>
 
