@@ -12,6 +12,7 @@ use App\Models\Customer;
 use App\Models\Hall_stock;
 use App\Models\Item;
 use App\Models\Item_type;
+use App\Models\OurCompany;
 use App\Models\Place_stock;
 use App\Models\Product;
 use App\Models\Sell;
@@ -42,6 +43,7 @@ use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\SoftDeletingScope;
 use Illuminate\Support\Facades\Auth;
+use Illuminate\Support\Facades\Response;
 
 class SellResource extends Resource
 {
@@ -300,7 +302,9 @@ class SellResource extends Resource
                     ->sortable()
                     ->label('اجمالي الفاتورة'),
                 TextColumn::make('pay')
-                    ->summarize(Sum::make()->label('')->numeric(
+                    ->summarize(Sum::make()->label('')
+
+                        ->numeric(
                         decimalPlaces: 2,
                         decimalSeparator: '.',
                         thousandsSeparator: ',',
@@ -318,6 +322,7 @@ class SellResource extends Resource
                         thousandsSeparator: ',',
                     )
                     ->summarize(Tables\Columns\Summarizers\Summarizer::make()
+                        ->label('')
                         ->numeric(
                             decimalPlaces: 2,
                             decimalSeparator: '.',
@@ -374,6 +379,29 @@ class SellResource extends Resource
                         'view-sell-tran-widget',
                         ['sell_id' => $record->id],
                     )),
+                Action::make('print')
+                    ->iconButton()
+                    ->icon('heroicon-o-printer')
+                    ->color('info')
+                    ->action(function (Model $record) {
+
+                        $RepDate=date('Y-m-d');
+                        $cus=OurCompany::where('Company',Auth::user()->company)->first();
+
+                        \Spatie\LaravelPdf\Facades\Pdf::view('PrnView.pdf-sell-order',
+                            ['res'=>$record,
+                                'cus'=>$cus,'RepDate'=>$RepDate,
+                            ])
+                            ->footerView('PrnView.footer')
+                            ->margins(10, 40, 40, 10, \Spatie\LaravelPdf\Enums\Unit::Pixel)
+                            ->save(Auth::user()->company.'/invoice-2023-04-10.pdf');
+                        $file= public_path().'/'.Auth::user()->company.'/invoice-2023-04-10.pdf';
+
+                        $headers = [
+                            'Content-Type' => 'application/pdf',
+                        ];
+                        return Response::download($file, 'filename.pdf', $headers);
+                    })
             ])
             ->bulkActions([
                 Tables\Actions\BulkActionGroup::make([

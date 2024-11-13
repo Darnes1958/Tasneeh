@@ -657,7 +657,7 @@ class FactoryResource extends Resource
                             'cus'=>$cus,'RepDate'=>$RepDate,
                         ])
                         ->footerView('PrnView.footer')
-                        ->margins(10, 10, 40, 10, Unit::Pixel)
+                        ->margins(10, 40, 40, 10, Unit::Pixel)
                         ->save(Auth::user()->company.'/invoice-2023-04-10.pdf');
                     $file= public_path().'/'.Auth::user()->company.'/invoice-2023-04-10.pdf';
 

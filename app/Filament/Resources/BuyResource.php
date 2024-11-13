@@ -17,6 +17,7 @@ use App\Models\Costtype;
 use App\Models\Item;
 use App\Models\Item_type;
 use App\Models\Kazena;
+use App\Models\OurCompany;
 use App\Models\Place;
 use App\Models\Place_stock;
 use App\Models\Sell_tran;
@@ -54,6 +55,7 @@ use Illuminate\Database\Eloquent\SoftDeletingScope;
 use Illuminate\Support\Arr;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\DB;
+use Illuminate\Support\Facades\Response;
 
 class BuyResource extends Resource
 {
@@ -521,6 +523,7 @@ class BuyResource extends Resource
             ])->columns(12);
     }
 
+    protected static ?string $pluralLabel='فواتير المشتريات';
     public static function table(Table $table): Table
     {
         return $table
@@ -569,7 +572,7 @@ class BuyResource extends Resource
                         decimalSeparator: '.',
                         thousandsSeparator: ',',
                     )
-                    ->summarize(Summarizer::make()
+                    ->summarize(Summarizer::make()->label('')
                         ->numeric(
                             decimalPlaces: 2,
                             decimalSeparator: '.',
@@ -596,7 +599,7 @@ class BuyResource extends Resource
                         decimalSeparator: '.',
                         thousandsSeparator: ',',
                     )
-                    ->summarize(Summarizer::make()
+                    ->summarize(Summarizer::make()->label('')
                         ->numeric(
                             decimalPlaces: 2,
                             decimalSeparator: '.',
@@ -687,6 +690,29 @@ class BuyResource extends Resource
                         'view-cost-widget',
                         ['buy_id' => $record->id],
                     )),
+                Action::make('print')
+                    ->iconButton()
+                    ->icon('heroicon-o-printer')
+                    ->color('info')
+                    ->action(function (Model $record) {
+
+                        $RepDate=date('Y-m-d');
+                        $cus=OurCompany::where('Company',Auth::user()->company)->first();
+
+                        \Spatie\LaravelPdf\Facades\Pdf::view('PrnView.pdf-buy-order',
+                            ['res'=>$record,
+                                'cus'=>$cus,'RepDate'=>$RepDate,
+                            ])
+                            ->footerView('PrnView.footer')
+                            ->margins(10, 40, 40, 10, \Spatie\LaravelPdf\Enums\Unit::Pixel)
+                            ->save(Auth::user()->company.'/invoice-2023-04-10.pdf');
+                        $file= public_path().'/'.Auth::user()->company.'/invoice-2023-04-10.pdf';
+
+                        $headers = [
+                            'Content-Type' => 'application/pdf',
+                        ];
+                        return Response::download($file, 'filename.pdf', $headers);
+                    })
 
 
             ]);

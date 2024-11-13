@@ -4,7 +4,7 @@
 
 <div  >
 
-  <div >
+  <div style="margin-right: 40px;">
 
     <label >كشف بمحتويات المنتج : </label>
       <br>
@@ -18,7 +18,7 @@
 
   </div>
 
-  <table style="width: 70% ;float: right;">
+  <table style="width: 70% ;float: right;margin-right: 40px;">
       <caption style="font-size: 12pt; margin: 8px;text-align: right;font-weight: bold;font-family: Amiri;">الاصناف</caption>
     <thead style=" font-family: DejaVu Sans, sans-serif; margin-top: 8px;" >
         <tr  style="background: #9dc1d3;" >
@@ -54,7 +54,7 @@
 
     <br>
 
-  <table style="width: 70% ;float: right;">
+  <table style="width: 70% ;float: right;margin-right: 40px;">
       <caption style="font-size: 12pt; margin: 8px;text-align: right;font-weight: bold;font-family: Amiri;">عمل اليد </caption>
         <thead style=" font-family: DejaVu Sans, sans-serif; margin-top: 8px;" >
         <tr  style="background: #9dc1d3;" >
