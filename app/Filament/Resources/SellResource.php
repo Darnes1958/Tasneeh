@@ -393,7 +393,7 @@ class SellResource extends Resource
                                 'cus'=>$cus,'RepDate'=>$RepDate,
                             ])
                             ->footerView('PrnView.footer')
-                            ->margins(10, 40, 40, 10, \Spatie\LaravelPdf\Enums\Unit::Pixel)
+                            ->margins(40, 40, 40, 40, \Spatie\LaravelPdf\Enums\Unit::Pixel)
                             ->save(Auth::user()->company.'/invoice-2023-04-10.pdf');
                         $file= public_path().'/'.Auth::user()->company.'/invoice-2023-04-10.pdf';
 

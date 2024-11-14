@@ -14,6 +14,18 @@
       html {
           -webkit-print-color-adjust: exact;
       }
+      @page {
+          size:  21cm 29.7cm ;
+          margin: 4px;
+      }
+      #pageborder {
+          position:fixed;
+          left: 0;
+          right: 0;
+          top: 40px;
+          bottom: 40px;
+          border: 2px solid ;color: #bf800c;
+      }
       .order-td {
           border-left: none;
           border-top: none;
@@ -92,22 +104,25 @@
   </style>
 </head>
 <body  >
-<div class="header">
- <div>
-  <label style="font-size: 20pt; margin-right: 12px;margin-bottom: 0;margin-top: 0;padding: 0;" >{{$cus->CompanyName}}</label>
- </div>
- <div >
-  <label style="font-size: 16pt; margin-right: 12px;margin-bottom: 0;margin-top: 0;padding: 0;">{{$cus->CompanyNameSuffix}}</label>
- </div>
-
+<div id="pageborder">
 </div>
 <br>
-<div >
+<br>
+         <div>
+          <label style="font-size: 20pt; margin-right: 12px;margin-bottom: 0;margin-top: 0;padding: 0;" >{{$cus->CompanyName}}</label>
+         </div>
+         <div >
+          <label style="font-size: 16pt; margin-right: 12px;margin-bottom: 0;margin-top: 0;padding: 0;">{{$cus->CompanyNameSuffix}}</label>
+         </div>
+<br>
+<br>
 
-  @yield('mainrep')
+    <div >
+
+      @yield('mainrep')
 
 
-</div>
+    </div>
 </body>
 </html>
 
