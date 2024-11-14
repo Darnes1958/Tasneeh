@@ -92,7 +92,6 @@
           display:none;
       }
 
-
        footer {
            font-size: 12px;
        }
@@ -100,12 +99,10 @@
           font-size: 12px;
       }
 
-
   </style>
 </head>
 <body  >
-<div id="pageborder">
-</div>
+
 <br>
 <br>
          <div>

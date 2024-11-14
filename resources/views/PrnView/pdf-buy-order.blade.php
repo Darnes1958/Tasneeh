@@ -3,7 +3,8 @@
 @section('mainrep')
 
 <div  >
-
+    <div id="pageborder">
+    </div>
 
 
     <div class="flex mr-20">

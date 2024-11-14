@@ -59,6 +59,7 @@ class ListItems extends ListRecords
                      ['res'=>$this->getTableQueryForExport()->get(),
                          'cus'=>$cus,'RepDate'=>$RepDate,
                      ])
+                     ->headerHtml('<div>My header</div>')
                      ->footerView('PrnView.footer')
                      ->margins(10, 10, 40, 10, Unit::Pixel)
                      ->save(Auth::user()->company.'/invoice-2023-04-10.pdf');

@@ -4,15 +4,12 @@
 
 <div  >
 
-  <div >
 
 
+    <div class="flex justify-center pb-40">
+        <br>
+        <table style="width: 80% ;">
 
-
-  </div>
-
-
-  <table style="width: 70% ;float: right;">
       <caption style="font-size: 12pt; margin: 8px;text-align: right;font-weight: bold;font-family: Amiri;">كشف بالأصنـــــــــاف </caption>
 
 
@@ -53,6 +50,7 @@
     </tbody>
 
   </table>
+    </div>
 
 </div>
 </div>

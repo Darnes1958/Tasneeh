@@ -3,7 +3,8 @@
 @section('mainrep')
 
 <div >
-
+    <div id="pageborder">
+    </div>
      <div class="flex mr-20">
         <label class="text-lg font-extrabold">فاتورة مبيعات رقم :   </label>
         <label class="text-lg font-extrabold text-blue-700 mr-4"> {{$res->id}} </label>
