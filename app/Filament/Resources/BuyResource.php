@@ -22,6 +22,7 @@ use App\Models\Place;
 use App\Models\Place_stock;
 use App\Models\Sell_tran;
 
+use App\Models\Setting;
 use App\Models\Supplier;
 use App\Models\Unit;
 use Awcodes\TableRepeater\Components\TableRepeater;
@@ -56,6 +57,7 @@ use Illuminate\Support\Arr;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Response;
+use Spatie\Browsershot\Browsershot;
 
 class BuyResource extends Resource
 {
@@ -705,6 +707,12 @@ class BuyResource extends Resource
                             ])
                             ->footerView('PrnView.footer')
                             ->margins(10, 40, 40, 10, \Spatie\LaravelPdf\Enums\Unit::Pixel)
+                            ->withBrowsershot(function (Browsershot $shot) {
+                                $shot->setOption('gnoreDefaultArgs', ['--disable-extensions'])
+                                    ->ignoreHttpsErrors()
+                                    ->noSandbox()
+                                    ->setChromePath(Setting::first()->exePath);
+                            })
                             ->save(Auth::user()->company.'/invoice-2023-04-10.pdf');
                         $file= public_path().'/'.Auth::user()->company.'/invoice-2023-04-10.pdf';
 

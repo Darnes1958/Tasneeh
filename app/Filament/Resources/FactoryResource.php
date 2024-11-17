@@ -21,6 +21,7 @@ use App\Models\Place;
 use App\Models\Place_stock;
 use App\Models\Product;
 
+use App\Models\Setting;
 use App\Models\Tran;
 use Awcodes\TableRepeater\Header;
 use Carbon\Carbon;
@@ -56,6 +57,7 @@ use Filament\Tables\Columns\TextColumn;
 use Filament\Tables\Columns\Summarizers\Sum;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Response;
+use Spatie\Browsershot\Browsershot;
 use Spatie\LaravelPdf\Enums\Unit;
 
 
@@ -702,6 +704,12 @@ class FactoryResource extends Resource
                             'cus'=>$cus,'RepDate'=>$RepDate,
                         ])
                         ->footerView('PrnView.footer')
+                        ->withBrowsershot(function (Browsershot $shot) {
+                            $shot->setOption('gnoreDefaultArgs', ['--disable-extensions'])
+                                ->ignoreHttpsErrors()
+                                ->noSandbox()
+                                ->setChromePath(Setting::first()->exePath);
+                        })
                         ->margins(10, 10, 20, 10, Unit::Pixel)
                         ->save(Auth::user()->company.'/invoice-2023-04-10.pdf');
                     $file= public_path().'/'.Auth::user()->company.'/invoice-2023-04-10.pdf';

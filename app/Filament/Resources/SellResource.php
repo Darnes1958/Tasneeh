@@ -16,6 +16,7 @@ use App\Models\OurCompany;
 use App\Models\Place_stock;
 use App\Models\Product;
 use App\Models\Sell;
+use App\Models\Setting;
 use App\Models\Unit;
 use Awcodes\TableRepeater\Components\TableRepeater;
 use Awcodes\TableRepeater\Header;
@@ -44,6 +45,7 @@ use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\SoftDeletingScope;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Response;
+use Spatie\Browsershot\Browsershot;
 
 class SellResource extends Resource
 {
@@ -393,7 +395,14 @@ class SellResource extends Resource
                                 'cus'=>$cus,'RepDate'=>$RepDate,
                             ])
                             ->footerView('PrnView.footer')
-                            ->margins(40, 40, 40, 40, \Spatie\LaravelPdf\Enums\Unit::Pixel)
+                            ->margins(10, 10, 20, 10, \Spatie\LaravelPdf\Enums\Unit::Pixel)
+                            ->withBrowsershot(function (Browsershot $shot) {
+                                $shot->setOption('gnoreDefaultArgs', ['--disable-extensions'])
+                                    ->ignoreHttpsErrors()
+                                    ->noSandbox()
+                                    ->setChromePath(Setting::first()->exePath);
+                            })
+
                             ->save(Auth::user()->company.'/invoice-2023-04-10.pdf');
                         $file= public_path().'/'.Auth::user()->company.'/invoice-2023-04-10.pdf';
 

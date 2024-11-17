@@ -34,7 +34,7 @@
   <div class="flex justify-center">
       <br>
       <table style="width: 80% ;">
-          <caption>' '</caption>
+          <caption>&nbsp;</caption>
           <thead style=" font-family: DejaVu Sans, sans-serif; margin-top: 8px;" >
           <tr  style="background: #9dc1d3;" >
               <th >البيان</th>

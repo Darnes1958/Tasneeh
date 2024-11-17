@@ -1,4 +1,4 @@
-@extends('PrnView.PrnMaster4')
+@extends('PrnView.PrnMaster3')
 
 @section('mainrep')
 

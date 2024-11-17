@@ -10,6 +10,7 @@ use App\Models\Item;
 use App\Models\Man;
 use App\Models\OurCompany;
 use App\Models\Place;
+use App\Models\Setting;
 use Barryvdh\DomPDF\Facade\Pdf;
 use Filament\Actions;
 use Filament\Resources\Pages\ListRecords;
@@ -59,9 +60,14 @@ class ListItems extends ListRecords
                      ['res'=>$this->getTableQueryForExport()->get(),
                          'cus'=>$cus,'RepDate'=>$RepDate,
                      ])
-                     ->headerHtml('<div>My header</div>')
                      ->footerView('PrnView.footer')
-                     ->margins(10, 10, 40, 10, Unit::Pixel)
+                     ->withBrowsershot(function (Browsershot $shot) {
+                         $shot->setOption('gnoreDefaultArgs', ['--disable-extensions'])
+                             ->ignoreHttpsErrors()
+                             ->noSandbox()
+                             ->setChromePath(Setting::first()->exePath);
+                     })
+                     ->margins(10, 10, 20, 10, )
                      ->save(Auth::user()->company.'/invoice-2023-04-10.pdf');
                  $file= public_path().'/'.Auth::user()->company.'/invoice-2023-04-10.pdf';
 

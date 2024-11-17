@@ -8,7 +8,7 @@
 
     <div class="flex justify-center pb-40">
         <br>
-        <table style="width: 80% ;">
+        <table style="width: 80% ;margin-bottom: 40px;">
 
       <caption style="font-size: 12pt; margin: 8px;text-align: right;font-weight: bold;font-family: Amiri;">كشف بالأصنـــــــــاف </caption>
 
@@ -27,7 +27,7 @@
     @php $sumbuy=0; @endphp
 
     @foreach($res as $key => $item)
-      <tr >
+      <tr style="font-family: Amiri;font-size: 12px">
           <td style="text-align: center;"> {{ $item->id }} </td>
           <td> {{ $item->name }} </td>
           <td> {{ number_format($item->balance,2, '.', ',') }} </td>
@@ -38,7 +38,7 @@
       @php $sumbuy+=$item->buy_tot;@endphp
 
     @endforeach
-    <tr class="font-size-12 " style="font-weight: bold">
+    <tr  style="font-weight: bold;font-size: 12px;">
 
         <td>   </td>
         <td style="font-family: DejaVu Sans, sans-serif;font-weight:bold;">الإجمــــــــالي  </td>

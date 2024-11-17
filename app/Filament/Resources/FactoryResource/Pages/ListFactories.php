@@ -4,10 +4,12 @@ namespace App\Filament\Resources\FactoryResource\Pages;
 
 use App\Filament\Resources\FactoryResource;
 use App\Models\OurCompany;
+use App\Models\Setting;
 use Filament\Actions;
 use Filament\Resources\Pages\ListRecords;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Response;
+use Spatie\Browsershot\Browsershot;
 use Spatie\LaravelPdf\Enums\Unit;
 use function Symfony\Component\Translation\t;
 
@@ -40,7 +42,14 @@ class ListFactories extends ListRecords
                             'cus'=>$cus,'RepDate'=>$RepDate,'title'=>$title
                         ])
                         ->footerView('PrnView.footer')
-                        ->margins(10, 40, 40, 40, Unit::Pixel)
+                        ->landscape()
+                        ->withBrowsershot(function (Browsershot $shot) {
+                            $shot->setOption('gnoreDefaultArgs', ['--disable-extensions'])
+                                ->ignoreHttpsErrors()
+                                ->noSandbox()
+                                ->setChromePath(Setting::first()->exePath);
+                        })
+                        ->margins(10, 10, 20, 10, Unit::Pixel)
                         ->save(Auth::user()->company.'/invoice-2023-04-10.pdf');
                     $file= public_path().'/'.Auth::user()->company.'/invoice-2023-04-10.pdf';
 

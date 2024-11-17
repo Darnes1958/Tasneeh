@@ -4,7 +4,7 @@
         bottom: 0;
         left: 0;
         width: 100%;
-        padding: 10px;
+        padding: 20px;
         box-sizing: border-box;
         background-color: #ffffff;
         opacity: 0.6;
