@@ -706,7 +706,7 @@ class BuyResource extends Resource
                                 'cus'=>$cus,'RepDate'=>$RepDate,
                             ])
                             ->footerView('PrnView.footer')
-                            ->margins(10, 40, 40, 10, \Spatie\LaravelPdf\Enums\Unit::Pixel)
+                            ->margins(10, 10, 20, 10)
                             ->withBrowsershot(function (Browsershot $shot) {
                                 $shot->setOption('gnoreDefaultArgs', ['--disable-extensions'])
                                     ->ignoreHttpsErrors()

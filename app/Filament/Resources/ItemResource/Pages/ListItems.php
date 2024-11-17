@@ -31,18 +31,7 @@ class ListItems extends ListRecords
     {
         return  new HtmlString('<div class="leading-3 h-4 py-0 text-base text-primary-400 py-0">أصناف</div>');
     }
-    public  function convertToArabic($html, int $line_length = 100, bool $hindo = false, $forcertl = false): string
-    {
-        $Arabic = new \ArPHP\I18N\Arabic();
-        $p = $Arabic->arIdentify($html);
 
-        for ($i = count($p) - 1; $i >= 0; $i -= 2) {
-            $utf8ar = $Arabic->utf8Glyphs(substr($html, $p[$i - 1], $p[$i] - $p[$i - 1]), $line_length, $hindo, $forcertl);
-            $html   = substr_replace($html, $utf8ar, $p[$i - 1], $p[$i] - $p[$i - 1]);
-        }
-
-        return $html;
-    }
     protected function getHeaderActions(): array
     {
         return [

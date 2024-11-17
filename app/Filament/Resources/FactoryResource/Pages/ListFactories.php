@@ -49,7 +49,7 @@ class ListFactories extends ListRecords
                                 ->noSandbox()
                                 ->setChromePath(Setting::first()->exePath);
                         })
-                        ->margins(10, 10, 20, 10, Unit::Pixel)
+                        ->margins(10, 10, 20, 10)
                         ->save(Auth::user()->company.'/invoice-2023-04-10.pdf');
                     $file= public_path().'/'.Auth::user()->company.'/invoice-2023-04-10.pdf';
 
