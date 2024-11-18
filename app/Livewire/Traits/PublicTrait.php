@@ -10,9 +10,24 @@ use App\Models\Salarytran;
 
 use Carbon\Carbon;
 use DateTime;
+use Illuminate\Support\Facades\Auth;
 
 trait PublicTrait {
 
+  public static function ret_spatie_header(){
+      return       $headers = [
+          'Content-Type' => 'application/pdf',
+      ];
+
+  }
+  public static function ret_spatie($res,$blade,$arr=[])
+  {
+      \Spatie\LaravelPdf\Facades\Pdf::view($blade,
+          ['res'=>$res,'arr'=>$arr])
+          ->save(Auth::user()->company.'/invoice-2023-04-10.pdf');
+      return public_path().'/'.Auth::user()->company.'/invoice-2023-04-10.pdf';
+
+  }
   public function RetMonthName($month){
       switch ($month) {
           case 1:

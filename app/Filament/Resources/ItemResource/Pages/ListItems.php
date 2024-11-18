@@ -5,6 +5,7 @@ namespace App\Filament\Resources\ItemResource\Pages;
 use App\Enums\AccRef;
 use App\Filament\Resources\ItemResource;
 use App\Livewire\Traits\AccTrait;
+use App\Livewire\Traits\PublicTrait;
 use App\Models\Hand;
 use App\Models\Item;
 use App\Models\Man;
@@ -24,7 +25,7 @@ use Spatie\LaravelPdf\Enums\Unit;
 
 class ListItems extends ListRecords
 {
-    use AccTrait;
+    use AccTrait,PublicTrait;
     protected static string $resource = ItemResource::class;
 
     public function getTitle():  string|Htmlable
@@ -42,28 +43,8 @@ class ListItems extends ListRecords
              ->icon('heroicon-s-printer')
              ->color('success')
              ->action(function (){
-                 $RepDate=date('Y-m-d');
-                 $cus=OurCompany::where('Company',Auth::user()->company)->first();
-
-                 \Spatie\LaravelPdf\Facades\Pdf::view('PrnView.pdf-items',
-                     ['res'=>$this->getTableQueryForExport()->get(),
-                         'cus'=>$cus,'RepDate'=>$RepDate,
-                     ])
-                     ->footerView('PrnView.footer')
-                     ->withBrowsershot(function (Browsershot $shot) {
-                         $shot->setOption('gnoreDefaultArgs', ['--disable-extensions'])
-                             ->ignoreHttpsErrors()
-                             ->noSandbox()
-                             ->setChromePath(Setting::first()->exePath);
-                     })
-                     ->margins(10, 10, 20, 10, )
-                     ->save(Auth::user()->company.'/invoice-2023-04-10.pdf');
-                 $file= public_path().'/'.Auth::user()->company.'/invoice-2023-04-10.pdf';
-
-                 $headers = [
-                     'Content-Type' => 'application/pdf',
-                 ];
-                 return Response::download($file, 'filename.pdf', $headers);
+                 return Response::download(self::ret_spatie($this->getTableQueryForExport()->get(),
+                     'PrnView.pdf-items'), 'filename.pdf', self::ret_spatie_header());
              }),
             Actions\Action::make('acc')
                 ->label('add acc')
@@ -75,7 +56,6 @@ class ListItems extends ListRecords
                         {
                             $place=Place::find($item->place_id);
                             $this->AddKyde($place->account->id,AccRef::makzoone->value,$item,$item->price_buy*$item->balance,now(),'مخزون بداية المدة');
-
                         }
                     }
 

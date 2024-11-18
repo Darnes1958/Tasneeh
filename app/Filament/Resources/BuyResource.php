@@ -706,7 +706,8 @@ class BuyResource extends Resource
                                 'cus'=>$cus,'RepDate'=>$RepDate,
                             ])
                             ->footerView('PrnView.footer')
-                            ->margins(10, 10, 20, 10)
+                           ->headerView('PrnView.header',['cus'=>$cus,])
+                            ->margins(40, 10, 20, 10)
                             ->withBrowsershot(function (Browsershot $shot) {
                                 $shot->setOption('gnoreDefaultArgs', ['--disable-extensions'])
                                     ->ignoreHttpsErrors()

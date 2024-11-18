@@ -2,6 +2,7 @@
 
 namespace App\Providers;
 
+use App\Models\Setting;
 use BezhanSalleh\FilamentLanguageSwitch\LanguageSwitch;
 use Filament\Support\Colors\Color;
 use Filament\Support\Facades\FilamentAsset;
@@ -9,10 +10,14 @@ use Filament\Support\Facades\FilamentColor;
 use Filament\Support\Facades\FilamentView;
 use Filament\Tables\Table;
 use Illuminate\Database\Eloquent\Model;
+use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Gate;
 use Illuminate\Support\Number;
 use Illuminate\Support\ServiceProvider;
 use Illuminate\View\View;
+use Spatie\Browsershot\Browsershot;
+use Spatie\LaravelPdf\Facades\Pdf;
+use Spatie\LaravelPdf\Enums\Format;
 
 class AppServiceProvider extends ServiceProvider
 {
@@ -29,6 +34,13 @@ class AppServiceProvider extends ServiceProvider
      */
     public function boot(): void
     {
+        Pdf::default()
+            ->footerView('PrnView.footer')
+            ->withBrowsershot(function (Browsershot $shot) {
+                $shot->noSandbox()
+                    ->setChromePath(Setting::first()->exePath);
+            })
+            ->margins(10, 10, 20, 10, );
         Table::$defaultNumberLocale = 'nl';
         Gate::before(function ($user, $ability) {
             return $user->hasRole('admin') ? true : null;

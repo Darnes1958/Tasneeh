@@ -44,17 +44,24 @@
   </style>
 </head>
 <body  >
+<div class="header">
+    <div>
+        @php
+         $customer=\App\Models\OurCompany::where('Company',\Illuminate\Support\Facades\Auth::user()->company)->first();
+        @endphp
+        <label style="font-size: 20pt; margin-right: 60px;margin-bottom: 20px;margin-top: 20px;padding: 0;" >
+            {{ $customer->CompanyName}}
+        </label>
+    </div>
+    <div >
+        <label style="font-size: 16pt; margin-right: 60px;margin-bottom: 20px;margin-top: 20px;padding: 0;">
+            {{$customer->CompanyNameSuffix}}
+        </label>
+    </div>
 
+</div>
 <br>
-<br>
-         <div>
-          <label style="font-size: 20pt; margin-right: 12px;margin-bottom: 0;margin-top: 0;padding: 0;" >{{$cus->CompanyName}}</label>
-         </div>
-         <div >
-          <label style="font-size: 16pt; margin-right: 12px;margin-bottom: 0;margin-top: 0;padding: 0;">{{$cus->CompanyNameSuffix}}</label>
-         </div>
-<br>
-<br>
+
 
     <div >
 
