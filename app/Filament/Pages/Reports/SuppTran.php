@@ -89,18 +89,17 @@ class SuppTran extends Page implements HasForms,HasTable
                 \Filament\Tables\Actions\Action::make('عرض')
                     ->visible(function (Model $record) {return $record->rec_who->value==8;})
                     ->modalHeading(false)
-                    ->action(fn (Supp_tran2 $record) =>  $record->idd)
+
                     ->modalSubmitActionLabel('طباعة')
                     ->modalSubmitAction(
                         fn (\Filament\Actions\StaticAction $action,Supp_tran2 $record) =>
                         $action->color('blue')
                             ->icon('heroicon-o-printer')
-                            ->action(function () use ($record) {
-                                return Response::download(self::ret_spatie(Buy::find($record->id),
-                                    'PrnView.pdf-buy-order',
-                                    ), 'filename.pdf', self::ret_spatie_header());
-
+                            ->url(function () use($record){
+                                $this->order_no=$record->id;
+                                return route('pdfbuy', ['id' => $record->id]);
                             })
+
 
                     )
                     ->modalCancelAction(fn (StaticAction $action) => $action->label('عودة'))
