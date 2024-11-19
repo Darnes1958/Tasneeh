@@ -260,9 +260,11 @@ class FactoryResource extends Resource
                                        )
                                    ->live()
                                    ->afterStateUpdated(function ($state,Forms\Set $set,Get $get){
-                                       $set('price',Item::find($state)->price_cost);
-                                       $set('stock',Place_stock::where('place_id',$get('../../place_id'))
-                                           ->where('item_id',$state)->first()->stock);
+                                       if ($state){
+                                           $set('price',Item::find($state)->price_cost);
+                                           $set('stock',Place_stock::where('place_id',$get('../../place_id'))
+                                               ->where('item_id',$state)->first()->stock);
+                                       }
                                    })
                                    ->disableOptionWhen(function ($value, $state, Get $get) {
                                        return collect($get('../*.item_id'))
@@ -412,6 +414,8 @@ class FactoryResource extends Resource
     {
         return $table
             ->columns([
+                TextColumn::make('id')
+                 ->label('الرقم الألي'),
                 TextColumn::make('status')
                  ->searchable()
                  ->sortable()
@@ -646,6 +650,7 @@ class FactoryResource extends Resource
                     ->color('danger')
                     ->iconButton()
                     ->action(function (Model $record){
+
                         foreach ($record->Tran as $tran) {
                             $place=Place_stock::where('item_id',$tran->item_id)
                                 ->where('place_id',$record->place_id)->first();

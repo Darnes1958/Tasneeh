@@ -55,6 +55,7 @@ class EditSell extends EditRecord
             }
         }
         foreach ($last as $item){
+            if ($last->where('product_id',$item->product_id)->first()) {
             $res=Product::find($item->product_id);
             $res->stock+=$item->q;
             $res->save();
@@ -62,6 +63,7 @@ class EditSell extends EditRecord
                 ->where('product_id',$item->product_id)->first();
             $res->stock+=$item->q;
             $res->save();
+            }
         }
 
         foreach ($cuurent as $key => $tran) {
