@@ -2,7 +2,9 @@
 
 namespace App\Livewire\widgets;
 
+use App\Livewire\Traits\PublicTrait;
 use App\Models\Buy;
+use App\Models\Sell;
 use Filament\Actions\StaticAction;
 use Filament\Tables;
 use Filament\Tables\Actions\Action;
@@ -11,11 +13,13 @@ use Filament\Tables\Columns\TextColumn\TextColumnSize;
 use Filament\Tables\Table;
 use Filament\Widgets\TableWidget as BaseWidget;
 use Illuminate\Contracts\View\View;
+use Illuminate\Support\Facades\Response;
 use Illuminate\Support\HtmlString;
 use Livewire\Attributes\On;
 
 class RepBuy extends BaseWidget
 {
+    use PublicTrait;
 
     public $repDate1;
     public $repDate2;
@@ -116,7 +120,14 @@ class RepBuy extends BaseWidget
                       ['buy_id' => $record->id]  ,
                   ))
                   ->icon('heroicon-o-eye')
-                  ->iconButton()
+                  ->iconButton(),
+                  Action::make('print')
+                      ->icon('heroicon-o-printer')
+                      ->iconButton()
+                      ->color('blue')
+                      ->action(function (Buy $record){
+                          return Response::download(self::ret_spatie($record,'PrnView.pdf-buy-order' ));
+                      })
               ])
 
                 ->emptyStateHeading('لا توجد بيانات')

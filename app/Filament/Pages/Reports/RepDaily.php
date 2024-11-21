@@ -116,7 +116,7 @@ class RepDaily extends Page implements HasForms
             ->button()
             ->color('danger')
             ->icon('heroicon-m-printer')
-            ->color('info');
-          //  ->url(fn (): string => route('pdfdaily', ['repDate1'=>$this->repDate1,'repDate2'=>$this->repDate2,]));
+            ->color('info')
+           ->url(fn (): string => route('pdfdaily', ['repDate1'=>$this->repDate1,'repDate2'=>$this->repDate2,]));
     }
 }
