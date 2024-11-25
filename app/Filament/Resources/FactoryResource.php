@@ -660,6 +660,7 @@ class FactoryResource extends Resource
             ->filtersFormColumns(6)
             ->actions([
                 Tables\Actions\EditAction::make()
+                    ->visible(function (Model $record) {return $record->status->value=='manufacturing';})
                 ->iconButton(),
                 Action::make('del')
                     ->icon('heroicon-o-trash')
