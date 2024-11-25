@@ -191,6 +191,46 @@
           </tbody>
       </table>
       @endif
+
+      <br>
+      @if($masr->count()>0)
+
+          <label style="font-size: 14pt;margin-right: 12px;" >المصروفات</label>
+          <table style=" width:80%"   >
+              <thead style="  margin-top: 8px;">
+              <tr style="background:lightgray">
+                  <th style="width: 20%;">التاريخ</th>
+                  <th style="width: 20%;">البيان</th>
+                  <th style="width: 20%;">دفعت من</th>
+                  <th style="width: 14%;">المبلغ</th>
+              </tr>
+              </thead>
+              <tbody >
+              @php $sumval=0; @endphp
+              @foreach($masr as $key=>$item)
+                  <tr class="font-size-12">
+                      <td> {{$item->masr_date}}  </td>
+                      <td> {{$item->Masr_type->name}}  </td>
+                      @if( $item->Acc)
+                          <td> {{$item->Acc->name}}  </td>
+                      @else
+                          <td> {{$item->Kazena->name}}  </td>
+                      @endif
+                      <td> {{number_format($item->val, 2, '.', ',')}} </td>
+                  </tr>
+
+                  @php $sumval+=$item->val; @endphp
+              @endforeach
+              <tr class="font-size-12 " style="font-weight: bold">
+                  <td style="font-weight:normal;">الإجمــــــــالي  </td>
+                  <td>   </td>
+                  <td>   </td>
+                  <td> {{number_format($sumval, 2, '.', ',')}} </td>
+              </tr>
+
+              </tbody>
+          </table>
+      @endif
   </div>
 
 

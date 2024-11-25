@@ -29,8 +29,9 @@ class SupplierResource extends Resource
     use AccTrait;
     protected static ?string $model = Supplier::class;
   protected static ?string $navigationLabel='موردين';
-  protected static ?string $navigationGroup='زبائن وموردين';
+    protected static ?string $navigationGroup='زبائن وموردين ومشغلين';
     protected static ?string $navigationIcon = 'heroicon-o-rectangle-stack';
+    protected static ?int $navigationSort=2;
 
     public static function shouldRegisterNavigation(): bool
     {

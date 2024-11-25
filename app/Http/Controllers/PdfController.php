@@ -5,6 +5,7 @@ namespace App\Http\Controllers;
 use App\Livewire\Traits\PublicTrait;
 use App\Models\Buy;
 use App\Models\Buy_tran;
+use App\Models\Masrofat;
 use App\Models\OurCompany;
 use App\Models\Receipt;
 use App\Models\Recsupp;
@@ -60,9 +61,11 @@ class PdfController extends Controller
         if ($request->repDate1 && $request->repDate2)
             $cust=Receipt::whereBetween('receipt_date',[$request->repDate1,$request->repDate2])->get();
 
+        $masr=Masrofat::whereBetween('masr_date',[$request->repDate1,$request->repDate2])->get();
+
         \Spatie\LaravelPdf\Facades\Pdf::view('PrnView.pdf-daily',
             ['BuyTable'=>$buy,'SellTable'=>$sell,'SuppTable'=>$supp,'CustTable'=>$cust,
-                'cus'=>$cus,'RepDate1'=>$request->repDate1,'RepDate2'=>$request->repDate2])
+                'cus'=>$cus,'masr'=>$masr,'RepDate1'=>$request->repDate1,'RepDate2'=>$request->repDate2])
             ->save(Auth::user()->company.'/invoice-2023-04-10.pdf');
 
         return Response::download(public_path().'/'.Auth::user()->company.'/invoice-2023-04-10.pdf');

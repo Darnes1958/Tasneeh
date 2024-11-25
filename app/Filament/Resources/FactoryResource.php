@@ -527,7 +527,6 @@ class FactoryResource extends Resource
                     ->description(function (Model $record) {
                         return $record->Product->description;
                     })
-
                     ->searchable()
                     ->limit(40)
                     ->tooltip(function (TextColumn $column): ?string {
@@ -540,6 +539,8 @@ class FactoryResource extends Resource
                     ->size(TextColumnSize::ExtraSmall)
                     ->sortable()
                     ->label('اسم المنتج'),
+                TextColumn::make('Product.stock')
+                 ->label('رصيد المنتج'),
                 Tables\Columns\ImageColumn::make('Product.image')
                  ->circular()
                  ->label(''),
@@ -604,6 +605,20 @@ class FactoryResource extends Resource
                     ->label('اجمالي السعر'),
             ])
             ->filters([
+                Tables\Filters\Filter::make('raseed')
+                    ->form([
+                        Forms\Components\Checkbox::make('showZero')
+                            ->label('عرض الارصدة الصفرية'),
+                    ])
+
+                    ->query(function (Builder $query, array $data): Builder {
+                        return $query
+                            ->when(
+                                ! $data['showZero'],
+                                fn (Builder $query, $date): Builder => $query->whereIn('product_id', Product::where('stock','>',0)->pluck('id')),
+                            );
+
+                    }),
                 SelectFilter::make('status')
                     ->options(Status::class)
                     ->searchable()
@@ -615,6 +630,9 @@ class FactoryResource extends Resource
                         Forms\Components\DatePicker::make('Date2')
                             ->label('إلي تاريخ'),
                     ])
+                    ->columns(2)
+                    ->columnSpan(2)
+
                     ->indicateUsing(function (array $data): ?string {
                         if (! $data['Date1'] && ! $data['Date2']) { return null;   }
                         if ( $data['Date1'] && !$data['Date2'])
@@ -637,7 +655,8 @@ class FactoryResource extends Resource
                                 fn (Builder $query, $date): Builder => $query->whereDate('process_date', '<=', $date),
                             );
                     })
-            ])
+            ], layout: FiltersLayout::AboveContent)
+            ->filtersFormColumns(6)
             ->actions([
                 Tables\Actions\EditAction::make()
                 ->iconButton(),
