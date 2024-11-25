@@ -540,6 +540,7 @@ class FactoryResource extends Resource
                     ->sortable()
                     ->label('اسم المنتج'),
                 TextColumn::make('Product.stock')
+                 ->color(function (Model $record) {if ($record->Product->stock==0) return 'danger' ;})
                  ->label('رصيد المنتج'),
                 Tables\Columns\ImageColumn::make('Product.image')
                  ->circular()
