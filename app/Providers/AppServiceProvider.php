@@ -9,8 +9,10 @@ use Filament\Support\Facades\FilamentAsset;
 use Filament\Support\Facades\FilamentColor;
 use Filament\Support\Facades\FilamentView;
 use Filament\Tables\Table;
+use Filament\View\PanelsRenderHook;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Support\Facades\Auth;
+use Illuminate\Support\Facades\Blade;
 use Illuminate\Support\Facades\Gate;
 use Illuminate\Support\Number;
 use Illuminate\Support\ServiceProvider;
@@ -42,6 +44,10 @@ class AppServiceProvider extends ServiceProvider
             })
             ->margins(10, 10, 20, 10, );
         Table::$defaultNumberLocale = 'nl';
+        FilamentView::registerRenderHook(
+            PanelsRenderHook::GLOBAL_SEARCH_BEFORE,
+            fn (): string => Blade::render('@livewire(\'top-bar\')'),
+        );
         Gate::before(function ($user, $ability) {
             return $user->hasRole('admin') ? true : null;
         });
