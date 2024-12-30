@@ -11,6 +11,7 @@ use Carbon\Carbon;
 use Carbon\Exceptions\InvalidFormatException;
 use Filament\Actions\StaticAction;
 use Filament\Forms\Components\DatePicker;
+use Filament\Forms\Components\Grid;
 use Filament\Forms\Components\Section;
 use Filament\Forms\Components\Select;
 use Filament\Forms\Components\TextInput;
@@ -135,39 +136,73 @@ class Hand_tran extends Page implements HasForms,HasTable
         return [
             Section::make()
                 ->schema([
-                    Select::make('man_id')
-                        ->options(Man::all()->pluck('name','id'))
-                        ->searchable()
-                        ->preload()
-                        ->live()
-                        ->afterStateUpdated(function ($state,Set $set){
-                            $this->man_id=$state;
-                            if ($this->repDate) {
-                                $mden=Hand::where('man_id',$this->man_id)->where('val_date','>=',$this->repDate)
-                                    ->whereIn('pay_who',[1,2])->sum('val');
-                                $daen=Hand::where('man_id',$this->man_id)->where('val_date','>=',$this->repDate)
-                                    ->whereIn('pay_who',[0,3])->sum('val');
-                                $set('mden',number_format($mden, 2, '.', ','));
-                                $set('daen',number_format($daen, 2, '.', ','));
-                                $set('raseed',number_format($mden-$daen, 2, '.', ','));
-                            }
-                        })
-                        ->label('المشغل'),
-                    DatePicker::make('repDate')
-                        ->live()
-                        ->afterStateUpdated(function ($state,Set $set){
-                            $this->repDate=$state;
-                            if ($this->repDate && $this->man_id) {
-                                $mden=Hand::where('man_id',$this->man_id)->where('val_date','>=',$this->repDate)
-                                    ->whereIn('pay_who',[1,2])->sum('val');
-                                $daen=Hand::where('man_id',$this->man_id)->where('val_date','>=',$this->repDate)
-                                    ->whereIn('pay_who',[0,3])->sum('val');
-                                $set('mden',number_format($mden, 2, '.', ','));
-                                $set('daen',number_format($daen, 2, '.', ','));
-                                $set('raseed',number_format($mden-$daen, 2, '.', ','));
-                            }
-                        })
-                        ->label('من تاريخ'),
+                    Grid::make()
+                        ->schema([
+                            Select::make('man_id')
+                                ->options(Man::all()->pluck('name','id'))
+                                ->searchable()
+                                ->preload()
+                                ->live()
+                                ->afterStateUpdated(function ($state,Set $set){
+                                    $this->man_id=$state;
+                                    if ($this->repDate) {
+                                        $mden=Hand::where('man_id',$this->man_id)->where('val_date','>=',$this->repDate)
+                                            ->whereIn('pay_who',[1,2])->sum('val');
+                                        $daen=Hand::where('man_id',$this->man_id)->where('val_date','>=',$this->repDate)
+                                            ->whereIn('pay_who',[0,3])->sum('val');
+                                        $balance=Man::find($this->man_id)->balance;
+                                        $last=Hand::where('man_id',$this->man_id)->where('val_date','<',$this->repDate)
+                                                ->whereIn('pay_who',[1,2])->sum('val')
+                                            -
+                                            Hand::where('man_id',$this->man_id)->where('val_date','<',$this->repDate)
+                                                ->whereIn('pay_who',[0,3])->sum('val');
+                                        $set('balance',number_format($balance, 2, '.', ','));
+                                        $set('last',number_format($last, 2, '.', ','));
+                                        $set('raseed',number_format($mden-$daen-$balance+$last, 2, '.', ','));
+
+                                        $set('mden',number_format($mden, 2, '.', ','));
+                                        $set('daen',number_format($daen, 2, '.', ','));
+
+                                    }
+                                })
+                                ->label('المشغل'),
+                            DatePicker::make('repDate')
+                                ->live()
+                                ->afterStateUpdated(function ($state,Set $set){
+                                    $this->repDate=$state;
+                                    if ($this->repDate && $this->man_id) {
+                                        $mden=Hand::where('man_id',$this->man_id)->where('val_date','>=',$this->repDate)
+                                            ->whereIn('pay_who',[1,2])->sum('val');
+                                        $daen=Hand::where('man_id',$this->man_id)->where('val_date','>=',$this->repDate)
+                                            ->whereIn('pay_who',[0,3])->sum('val');
+                                        $balance=Man::find($this->man_id)->balance;
+                                        $last=Hand::where('man_id',$this->man_id)->where('val_date','<',$this->repDate)
+                                                ->whereIn('pay_who',[1,2])->sum('val')
+                                            -
+                                            Hand::where('man_id',$this->man_id)->where('val_date','<',$this->repDate)
+                                                ->whereIn('pay_who',[0,3])->sum('val');
+                                        $set('balance',number_format($balance, 2, '.', ','));
+                                        $set('last',number_format($last, 2, '.', ','));
+                                        $set('raseed',number_format($mden-$daen-$balance+$last, 2, '.', ','));
+                                        $set('mden',number_format($mden, 2, '.', ','));
+                                        $set('daen',number_format($daen, 2, '.', ','));
+
+                                    }
+                                })
+                                ->label('من تاريخ'),
+                            ])->columns(6)->columnSpan('full'),
+
+
+                    TextInput::make('balance')
+                        ->prefixIcon('heroicon-m-minus')
+                        ->prefixIconColor('danger')
+                        ->readOnly()
+                        ->label('بداية المدة'),
+                    TextInput::make('last')
+                        ->prefixIcon('heroicon-m-plus')
+                        ->prefixIconColor('info')
+                        ->readOnly()
+                        ->label('رصيد سابق'),
 
                     TextInput::make('mden')
                         ->readOnly()
@@ -195,7 +230,9 @@ class Hand_tran extends Page implements HasForms,HasTable
                                     ['tran_date'=>$this->repDate,
                                         'raseed'=>$get('raseed'),
                                         'mden'=>$get('mden'),
-                                        'daen'=>$get('daen')]), 'filename.pdf', self::ret_spatie_header());
+                                        'daen'=>$get('daen'),
+                                    'last'=>$get('last'),
+                                  'balance'=>$get('balance'),]), 'filename.pdf', self::ret_spatie_header());
 
                             }),
 

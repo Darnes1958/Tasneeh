@@ -15,6 +15,7 @@ use Filament\Resources\Resource;
 use Filament\Tables;
 use Filament\Tables\Table;
 use Illuminate\Database\Eloquent\Builder;
+use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\SoftDeletingScope;
 use Illuminate\Support\Facades\Auth;
 
@@ -77,12 +78,22 @@ class KazenaResource extends Resource
             ])
             ->actions([
                 Tables\Actions\EditAction::make(),
-                Tables\Actions\DeleteAction::make()
+                Tables\Actions\Action::make('del')
                     ->hidden(fn(Kazena $record)=>
                         Receipt::where('kazena_id',$record->id)->count()>0
                         || Recsupp::where('kazena_id',$record->id)->count()>0
                         || !Auth::user()->can('الغاء خزينة'))
-                ,
+
+                    ->icon('heroicon-o-trash')
+                    ->color('danger')
+                    ->iconButton()
+                    ->requiresConfirmation()
+                    ->action(function (Model $record){
+                        if ($record->kyde) foreach ($record->kyde as $rec) $rec->delete();
+                        if ($record->account) $record->account->delete();
+                        $record->delete();
+                    }),
+
             ])
             ->bulkActions([
                    //

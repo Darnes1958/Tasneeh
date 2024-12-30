@@ -5,6 +5,7 @@ namespace App\Filament\Resources;
 use App\Filament\Resources\AccResource\Pages;
 use App\Filament\Resources\AccResource\RelationManagers;
 use App\Models\Acc;
+use App\Models\Kazena;
 use App\Models\Receipt;
 use App\Models\Recsupp;
 use Filament\Forms;
@@ -14,6 +15,7 @@ use Filament\Tables;
 use Filament\Tables\Table;
 use http\Client\Curl\User;
 use Illuminate\Database\Eloquent\Builder;
+use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\SoftDeletingScope;
 use Filament\Forms\Components\TextInput;
 use Filament\Tables\Columns\TextColumn;
@@ -53,7 +55,7 @@ class AccResource extends Resource
                     ->validationMessages([
                         'unique' => ' :attribute مخزون مسبقا ',
                     ])  ,
-                TextInput::make('raseed')
+                TextInput::make('balance')
                  ->label('رصيد بداية المدة')
                  ->numeric()
                  ->required()
@@ -71,18 +73,30 @@ class AccResource extends Resource
                 ->label('الرقم الألي'),
               TextColumn::make('name')
                     ->label('اسم المصرف'),
-              TextColumn::make('raseed')
-                    ->label('الرصيد الافتتاحي'),
+              TextColumn::make('balance')
+                    ->label('بداية المدة'),
             ])
             ->filters([
                 //
             ])
             ->actions([
                 Tables\Actions\EditAction::make(),
-                Tables\Actions\DeleteAction::make()
-                 ->hidden(fn(Acc $records): bool => Receipt::where('acc_id',$records->id)->count()>0
-                                                 || Recsupp::where('acc_id',$records->id)->count()>0
-                                                 || !Auth::user()->can('الغاء مصارف')),
+                Tables\Actions\Action::make('del')
+                    ->hidden(fn(Kazena $record)=>
+                        Receipt::where('acc_id',$record->id)->count()>0
+                        || Recsupp::where('acc_id',$record->id)->count()>0
+                        || !Auth::user()->can('الغاء مصارف'))
+
+                    ->icon('heroicon-o-trash')
+                    ->color('danger')
+                    ->iconButton()
+                    ->requiresConfirmation()
+                    ->action(function (Model $record){
+                        if ($record->kyde) foreach ($record->kyde as $rec) $rec->delete();
+                        if ($record->account) $record->account->delete();
+                        $record->delete();
+                    }),
+
             ]);
 
     }

@@ -15,8 +15,10 @@ class CreateCustomer extends CreateRecord
     protected static string $resource = CustomerResource::class;
     protected function afterCreate(): void
     {
-        $hall=Customer::find(Customer::max('id'));
+        $customer=Customer::find(Customer::max('id'));
 
-        $this->AddAcc(AccRef::customers,$hall);
+        $this->AddAcc(AccRef::customers,$customer);
+        if ($customer->balance!=0)
+            self::inputKyde($customer);
     }
 }

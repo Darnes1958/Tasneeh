@@ -23,8 +23,11 @@ class CreateMan extends CreateRecord
     }
     protected function afterCreate(): void
     {
-        $hall=Man::find(Man::max('id'));
+        $man=Man::find(Man::max('id'));
 
-        $this->AddAcc(AccRef::mans,$hall);
+        $this->AddAcc(AccRef::mans,$man);
+
+        if ($man->balance!=0)
+            self::inputKyde($man);
     }
 }

@@ -109,13 +109,9 @@ class RepProduct extends Page implements HasTable
                     ->options(Product::all()->pluck('name','id'))
                     ->preload(),
                 Filter::make('anyfilter')
-
                     ->form([
                         Checkbox::make('showZero')
-
                             ->label('اطهار الاصفار'),
-
-
                     ])
                     ->query(function (Builder $query, array $data): Builder {
                         return $query
@@ -123,7 +119,6 @@ class RepProduct extends Page implements HasTable
                                 ! $data['showZero'],
                                 fn (Builder $query, $date): Builder => $query->where('stock','!=',0),
                             );
-
                     })
                     ,
 

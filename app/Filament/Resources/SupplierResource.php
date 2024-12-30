@@ -51,6 +51,11 @@ class SupplierResource extends Resource
           ->label('مدار'),
         TextInput::make('libyana')
           ->label('لبيانا'),
+          TextInput::make('balance')
+              ->label('رصيد بداية المدة')
+              ->default(0)
+              ->numeric()
+              ->required(),
         Hidden::make('user_id')
           ->default(Auth::id()),
 
@@ -60,6 +65,7 @@ class SupplierResource extends Resource
   public static function table(Table $table): Table
   {
     return $table
+      ->pluralModelLabel('الموردين')
       ->columns([
         TextColumn::make('id')
           ->sortable()
@@ -83,6 +89,18 @@ class SupplierResource extends Resource
           ->icon('heroicon-o-phone')
           ->label('لبيانا')
           ->iconColor('Fuchsia'),
+        TextColumn::make('balance')
+            ->numeric(
+                decimalPlaces: 2,
+                decimalSeparator: '.',
+                thousandsSeparator: ',',
+            )
+              ->summarize(Tables\Columns\Summarizers\Sum::make()->numeric(
+                  decimalPlaces: 2,
+                  decimalSeparator: '.',
+                  thousandsSeparator: ',',
+              )->label(''))
+              ->label('رصيد بداية المدة'),
       ])
       ->striped()
       ->filters([
@@ -104,8 +122,9 @@ class SupplierResource extends Resource
             || Recsupp::where('supplier_id',$record->id)->exists()
             )
             ->action(function (Model $record){
-
+                if ($record->kyde) foreach ($record->kyde as $rec) $rec->delete();
                 if ($record->account) $record->account->delete();
+
                 $record->delete();
             }),
       ]);

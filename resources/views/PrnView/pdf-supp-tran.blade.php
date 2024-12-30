@@ -12,11 +12,15 @@
     </div>
 
     <div style="text-align: center ; margin-bottom: 5px;">
-        <label style="font-size: 14pt;margin-right: 12px;" >مدين : </label>
+        <label style="font-size: 12pt;margin-right: 12px;" >بداية المدة : </label>
+        <label style="font-size: 10pt;">{{$arr['balance']}}</label>
+        <label style="font-size: 12pt;margin-right: 12px;" >رصيد سابق : </label>
+        <label style="font-size: 10pt;">{{$arr['last']}}</label>
+        <label style="font-size: 12pt;margin-right: 12px;" >مدين : </label>
         <label style="font-size: 10pt;">{{$arr['mden']}}</label>
-        <label style="font-size: 14pt;margin-right: 12px;" >دائن : </label>
+        <label style="font-size: 12pt;margin-right: 12px;" >دائن : </label>
         <label style="font-size: 10pt;">{{$arr['daen']}}</label>
-        <label style="font-size: 14pt;margin-right: 12px;" >الرصيد </label>
+        <label style="font-size: 12pt;margin-right: 12px;" >الرصيد </label>
         <label style="font-size: 10pt;">{{$arr['raseed']}}</label>
     </div>
 
