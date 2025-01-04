@@ -10,6 +10,11 @@ class Man extends Model
 {
     protected $connection = 'other';
 
+    public function kyde()
+    {
+        return $this->morphMany(Kyde::class, 'kydeable');
+    }
+
     public function account()
     {
         return $this->morphOne(Account::class, 'accountable');

@@ -7,6 +7,7 @@ use App\Livewire\Traits\AccTrait;
 use App\Models\Factory;
 use App\Models\Item;
 use App\Models\Place_stock;
+use App\Models\Tran;
 use Filament\Actions;
 use Filament\Actions\Action;
 use Filament\Notifications\Notification;
@@ -32,7 +33,9 @@ class EditFactory extends EditRecord
     }
     protected function beforeSave(): void {
         $last=$this->getRecord()->tran;
+
         $cuurent=$this->data['Tran'];
+
         foreach ($last as $item){
             $last_quant=$item->quant;
             $current_quant=0;
@@ -60,13 +63,15 @@ class EditFactory extends EditRecord
         }
 
         foreach ($cuurent as $key => $tran) {
-            $item=Item::find($tran['item_id']);
-            $item->stock -= $tran['quant'];
-            $item->save();
-            $place=Place_stock::where('item_id',$tran['item_id'])
-                ->where('place_id',$this->data['place_id'])->first();
-            $place->stock-= $tran['quant'];
-            $place->save();
+            if ($last->where('item_id',$tran['item_id'])->first()) {
+                $item=Item::find($tran['item_id']);
+                $item->stock -= $tran['quant'];
+                $item->save();
+                $place=Place_stock::where('item_id',$tran['item_id'])
+                    ->where('place_id',$this->data['place_id'])->first();
+                $place->stock-= $tran['quant'];
+                $place->save();
+            }
         }
         $fac=Factory::find($this->data['id']);
         if ($fac->Hand) foreach ($fac->Hand as $hand) { foreach ($hand->kyde as $kyde) $kyde->delete();}

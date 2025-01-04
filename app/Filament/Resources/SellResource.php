@@ -386,7 +386,6 @@ class SellResource extends Resource
                     ->icon('heroicon-o-printer')
                     ->color('info')
                     ->action(function (Model $record) {
-
                         $RepDate=date('Y-m-d');
                         $cus=OurCompany::where('Company',Auth::user()->company)->first();
 

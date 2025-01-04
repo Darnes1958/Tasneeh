@@ -15,8 +15,10 @@ class CreateKazena extends CreateRecord
     protected static string $resource = KazenaResource::class;
     protected function afterCreate(): void
     {
-        $hall=Kazena::find(Kazena::max('id'));
+        $kazena=Kazena::find(Kazena::max('id'));
 
-        $this->AddAcc(AccRef::kazena,$hall);
+        $this->AddAcc(AccRef::kazena,$kazena);
+        if ($kazena->balance!=0)
+            self::inputKyde($kazena);
     }
 }

@@ -15,6 +15,10 @@ class Kazena extends Model
     {
         return $this->morphOne(Account::class, 'accountable');
     }
+    public function kyde()
+    {
+        return $this->morphMany(Kyde::class, 'kydeable');
+    }
     public function Receipt(){
         return $this->hasMany(Receipt::class);
     }

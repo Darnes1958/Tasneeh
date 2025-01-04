@@ -7,6 +7,7 @@ use Filament\Support\Contracts\HasColor;
 
 enum AccRef: string implements HasLabel
 {
+    case rasmal = '3-1';
   case halls = '2-5';
   case places = '2-4';
   case factories = '2-6';

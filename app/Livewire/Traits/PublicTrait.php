@@ -28,6 +28,16 @@ trait PublicTrait {
       return public_path().'/'.Auth::user()->company.'/invoice-2023-04-10.pdf';
 
   }
+    public static function ret_spatie_land($res,$blade,$arr=[])
+    {
+        \Spatie\LaravelPdf\Facades\Pdf::view($blade,
+            ['res'=>$res,'arr'=>$arr])
+            ->landscape()
+            ->save(Auth::user()->company.'/invoice-2023-04-10.pdf');
+        return public_path().'/'.Auth::user()->company.'/invoice-2023-04-10.pdf';
+
+    }
+
   public function RetMonthName($month){
       switch ($month) {
           case 1:

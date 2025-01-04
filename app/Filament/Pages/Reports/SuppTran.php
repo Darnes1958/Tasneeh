@@ -14,6 +14,7 @@ use Carbon\Carbon;
 use Carbon\Exceptions\InvalidFormatException;
 use Filament\Actions\StaticAction;
 use Filament\Forms\Components\DatePicker;
+use Filament\Forms\Components\Grid;
 use Filament\Forms\Components\Section;
 use Filament\Forms\Components\Select;
 use Filament\Forms\Components\TextInput;
@@ -23,6 +24,7 @@ use Filament\Forms\Get;
 use Filament\Forms\Set;
 use Filament\Pages\Page;
 use Filament\Support\Enums\VerticalAlignment;
+use Filament\Tables\Columns\Summarizers\Sum;
 use Filament\Tables\Columns\TextColumn;
 use Filament\Tables\Concerns\InteractsWithTable;
 use Filament\Tables\Contracts\HasTable;
@@ -38,8 +40,8 @@ class SuppTran extends Page implements HasForms,HasTable
     use PublicTrait;
     protected static ?string $navigationIcon = 'heroicon-o-document-text';
     protected static ?string $navigationLabel='حركة مورد';
-    protected static ?string $navigationGroup='زبائن وموردين';
-  protected static ?int $navigationSort=7;
+    protected static ?string $navigationGroup='زبائن وموردين ومشغلين';
+  protected static ?int $navigationSort=6;
     protected ?string $heading="";
     protected static string $view = 'filament.pages.reports.supp-tran';
 
@@ -56,7 +58,7 @@ class SuppTran extends Page implements HasForms,HasTable
     public function mount(){
         $this->repDate=now();
 
-        $this->myForm->fill(['repDate'=>$this->repDate,'raseed'=>0,'mden'=>0,'daen'=>0]);
+        $this->myForm->fill(['repDate'=>$this->repDate,'raseed'=>0,'mden'=>0,'daen'=>0,'balance'=>0,]);
     }
 
     protected function getForms(): array
@@ -89,18 +91,17 @@ class SuppTran extends Page implements HasForms,HasTable
                 \Filament\Tables\Actions\Action::make('عرض')
                     ->visible(function (Model $record) {return $record->rec_who->value==8;})
                     ->modalHeading(false)
-                    ->action(fn (Supp_tran2 $record) =>  $record->idd)
+
                     ->modalSubmitActionLabel('طباعة')
                     ->modalSubmitAction(
                         fn (\Filament\Actions\StaticAction $action,Supp_tran2 $record) =>
                         $action->color('blue')
                             ->icon('heroicon-o-printer')
-                            ->action(function () use ($record) {
-                                return Response::download(self::ret_spatie(Buy::find($record->id),
-                                    'PrnView.pdf-buy-order',
-                                    ), 'filename.pdf', self::ret_spatie_header());
-
+                            ->url(function () use($record){
+                                $this->order_no=$record->id;
+                                return route('pdfbuy', ['id' => $record->id]);
                             })
+
 
                     )
                     ->modalCancelAction(fn (StaticAction $action) => $action->label('عودة'))
@@ -139,10 +140,11 @@ class SuppTran extends Page implements HasForms,HasTable
                         decimalSeparator: '.',
                         thousandsSeparator: ',',
                     )
+                    ->summarize(Sum::make()->label('')->numeric(decimalPlaces: 2,decimalSeparator: '.',thousandsSeparator: ','))
                     ->label('مدين'),
                 TextColumn::make('daen')
                     ->color('info')
-
+                    ->summarize(Sum::make()->label('')->numeric(decimalPlaces: 2,decimalSeparator: '.',thousandsSeparator: ','))
                     ->searchable()
                     ->numeric(
                         decimalPlaces: 2,
@@ -162,6 +164,8 @@ class SuppTran extends Page implements HasForms,HasTable
         return [
             Section::make()
                 ->schema([
+                    Grid::make()
+                ->schema([
                     Select::make('cust_id')
                         ->prefixIcon('heroicon-m-user-circle')
                         ->prefixIconColor('Fuchsia')
@@ -175,10 +179,14 @@ class SuppTran extends Page implements HasForms,HasTable
                             if ($this->repDate) {
                                 $mden=Supp_tran::where('supplier_id',$this->cust_id)->where('repDate','>=',$this->repDate)->sum('mden');
                                 $daen=Supp_tran::where('supplier_id',$this->cust_id)->where('repDate','>=',$this->repDate)->sum('daen');
+                                $balance=Supplier::find($this->cust_id)->balance;
+                                $last=Supp_tran::where('supplier_id',$this->cust_id)->where('repDate','<',$this->repDate)->sum('mden')
+                                    -Supp_tran::where('supplier_id',$this->cust_id)->where('repDate','<',$this->repDate)->sum('daen');
+                                $set('balance',number_format($balance, 2, '.', ','));
+                                $set('last',number_format($last, 2, '.', ','));
+                                $set('raseed',number_format($mden-$daen-$balance+$last, 2, '.', ','));
                                 $set('mden',number_format($mden, 2, '.', ','));
                                 $set('daen',number_format($daen, 2, '.', ','));
-                                $set('raseed',number_format($mden-$daen, 2, '.', ','));
-
 
                             }
                         })
@@ -190,14 +198,31 @@ class SuppTran extends Page implements HasForms,HasTable
                             if ($this->repDate && $this->cust_id) {
                                 $mden=Supp_tran::where('supplier_id',$this->cust_id)->where('repDate','>=',$this->repDate)->sum('mden');
                                 $daen=Supp_tran::where('supplier_id',$this->cust_id)->where('repDate','>=',$this->repDate)->sum('daen');
+                                $balance=Supplier::find($this->cust_id)->balance;
+                                $last=Supp_tran::where('supplier_id',$this->cust_id)->where('repDate','<',$this->repDate)->sum('mden')
+                                    -Supp_tran::where('supplier_id',$this->cust_id)->where('repDate','<',$this->repDate)->sum('daen')
+                                ;
+                                $set('balance',number_format($balance, 2, '.', ','));
+                                $set('last',number_format($last, 2, '.', ','));
                                 $set('mden',number_format($mden, 2, '.', ','));
                                 $set('daen',number_format($daen, 2, '.', ','));
-                                $set('raseed',number_format($mden-$daen, 2, '.', ','));
-
-
+                                $set('raseed',number_format($mden-$daen-$balance+$last, 2, '.', ','));
                             }
                         })
                         ->label('من تاريخ'),
+                ])->columns(6)->columnSpan('full'),
+
+
+                    TextInput::make('balance')
+                        ->prefixIcon('heroicon-m-minus')
+                        ->prefixIconColor('danger')
+                        ->readOnly()
+                        ->label('بداية المدة'),
+                    TextInput::make('last')
+                        ->prefixIcon('heroicon-m-plus')
+                        ->prefixIconColor('info')
+                        ->readOnly()
+                        ->label('رصيد سابق'),
 
                     TextInput::make('mden')
                         ->prefixIcon('heroicon-m-minus')
@@ -232,7 +257,9 @@ class SuppTran extends Page implements HasForms,HasTable
                               ['tran_date'=>$this->repDate,
                                   'raseed'=>$get('raseed'),
                                   'mden'=>$get('mden'),
-                                  'daen'=>$get('daen')]), 'filename.pdf', self::ret_spatie_header());
+                                  'daen'=>$get('daen'),
+                                  'last'=>$get('last'),
+                                  'balance'=>$get('balance'),]), 'filename.pdf', self::ret_spatie_header());
 
                       })
 

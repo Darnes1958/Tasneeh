@@ -184,14 +184,21 @@ class ItemResource extends Resource
                     ->sortable()
                     ->searchable(),
 
-
-                TextColumn::make('stock')
+                TextColumn::make('price_buy')
                     ->numeric(
                         decimalPlaces: 2,
                         decimalSeparator: '.',
                         thousandsSeparator: ',',
                     )
-                    ->label('الرصيد'),
+                    ->label('سعر الشراء'),
+                TextColumn::make('price_cost')
+                    ->numeric(
+                        decimalPlaces: 2,
+                        decimalSeparator: '.',
+                        thousandsSeparator: ',',
+                    )
+                    ->label('سعر التكلفة'),
+
                 TextColumn::make('balance')
                     ->numeric(
                         decimalPlaces: 2,
@@ -277,20 +284,32 @@ class ItemResource extends Resource
                                 }
                             })
                     ),
-                TextColumn::make('price_buy')
+                TextColumn::make('balance_tot')
+                    ->state(function (Model $record){
+                        return $record->balance*$record->price_buy;
+                    })
+                    ->summarize(Summarizer::make()
+                        ->numeric(
+                            decimalPlaces: 2,
+                            decimalSeparator: '.',
+                            thousandsSeparator: ',',
+                        )
+                        ->using(fn ($query): string => $query->sum(DB::Raw('balance*price_buy')))
+                    )
                     ->numeric(
                         decimalPlaces: 2,
                         decimalSeparator: '.',
                         thousandsSeparator: ',',
                     )
-                ->label('سعر الشراء'),
-                TextColumn::make('price_cost')
+                    ->label('الاجمالي'),
+
+                TextColumn::make('stock')
                     ->numeric(
                         decimalPlaces: 2,
                         decimalSeparator: '.',
                         thousandsSeparator: ',',
                     )
-                    ->label('سعر التكلفة'),
+                    ->label('الرصيد'),
                 TextColumn::make('buy_tot')
                     ->summarize(Summarizer::make()
                         ->numeric(

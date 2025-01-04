@@ -10,6 +10,7 @@ use Filament\Forms\Components\TextInput;
 use Filament\Forms\Form;
 use Filament\Resources\Resource;
 use Filament\Tables;
+use Filament\Tables\Columns\TextColumn;
 use Filament\Tables\Table;
 use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Database\Eloquent\Model;
@@ -21,7 +22,8 @@ class ManResource extends Resource
 
     protected static ?string $navigationIcon = 'heroicon-o-rectangle-stack';
     protected static ?string $navigationLabel='مشغلين';
-    protected static ?string $navigationGroup='زبائن وموردين';
+    protected static ?string $navigationGroup='زبائن وموردين ومشغلين';
+    protected static ?int $navigationSort=3;
 
 
     public static function form(Form $form): Form
@@ -36,17 +38,36 @@ class ManResource extends Resource
                     ->unique(ignoreRecord: true)
                     ->validationMessages([
                         'unique' => ' :attribute مخزون مسبقا ',
-                    ])
+                    ]),
+                TextInput::make('balance')
+                    ->label('رصيد بداية المدة')
+                    ->default(0)
+                    ->numeric()
+                    ->required(),
+
             ]);
     }
 
     public static function table(Table $table): Table
     {
         return $table
+            ->pluralModelLabel('المشغلين')
             ->columns([
-                Tables\Columns\TextColumn::make('name')
+                TextColumn::make('name')
                 ->searchable()
-                ->label('الاسم')
+                ->label('الاسم'),
+                TextColumn::make('balance')
+                    ->numeric(
+                        decimalPlaces: 2,
+                        decimalSeparator: '.',
+                        thousandsSeparator: ',',
+                    )
+                    ->summarize(Tables\Columns\Summarizers\Sum::make()->numeric(
+                        decimalPlaces: 2,
+                        decimalSeparator: '.',
+                        thousandsSeparator: ',',
+                    )->label(''))
+                    ->label('رصيد بداية المدة'),
             ])
             ->filters([
                 //
@@ -60,6 +81,7 @@ class ManResource extends Resource
                     ->hidden(fn($record) => $record->Hand)
                     ->requiresConfirmation()
                     ->action(function (Model $record){
+                        if ($record->kyde) foreach ($record->kyde as $rec) $rec->delete();
                         if ($record->account) $record->account->delete();
                         $record->delete();
                     }),

@@ -6,6 +6,7 @@ use App\Enums\AccRef;
 use App\Filament\Resources\SupplierResource;
 
 use App\Livewire\Traits\AccTrait;
+use App\Models\Item;
 use App\Models\Supplier;
 use Filament\Actions;
 use Filament\Resources\Pages\CreateRecord;
@@ -18,8 +19,10 @@ class CreateSupplier extends CreateRecord
 
     protected function afterCreate(): void
     {
-        $hall=Supplier::find(Supplier::max('id'));
+        $supplier=Supplier::find(Supplier::max('id'));
 
-        $this->AddAcc(AccRef::suppliers,$hall);
+        $this->AddAcc(AccRef::suppliers,$supplier);
+        if ($supplier->balance!=0)
+         self::inputKyde($supplier);
     }
 }

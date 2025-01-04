@@ -132,6 +132,83 @@ trait AccTrait {
     {
         $arr=[];
         switch ($model->getTable()) {
+            case 'suppliers': {
+                $arr['kyde_date']=$model->created_at;
+                if ($model->balance>0){
+                    $arr['mden']=AccRef::rasmal;
+                    $arr['daen']=$model->account->id;
+                } else
+                {
+                    $arr['daen']=AccRef::rasmal;
+                    $arr['mden']=$model->account->id;
+                }
+
+                $arr['data']='رصيد بداية المدة';
+                $arr['val']=abs($model->balance);
+                break;
+            }
+            case 'kazenas': {
+                $arr['kyde_date']=$model->created_at;
+                if ($model->balance>0){
+                    $arr['mden']=AccRef::rasmal;
+                    $arr['daen']=$model->account->id;
+                } else
+                {
+                    $arr['daen']=AccRef::rasmal;
+                    $arr['mden']=$model->account->id;
+                }
+
+                $arr['data']='رصيد بداية المدة';
+                $arr['val']=abs($model->balance);
+                break;
+            }
+            case 'accs': {
+                $arr['kyde_date']=$model->created_at;
+                if ($model->balance>0){
+                    $arr['mden']=AccRef::rasmal;
+                    $arr['daen']=$model->account->id;
+                } else
+                {
+                    $arr['daen']=AccRef::rasmal;
+                    $arr['mden']=$model->account->id;
+                }
+
+                $arr['data']='رصيد بداية المدة';
+                $arr['val']=abs($model->balance);
+                break;
+            }
+            case 'customers': {
+                $arr['kyde_date']=$model->created_at;
+                if ($model->balance>0){
+                    $arr['mden']=AccRef::rasmal;
+                    $arr['daen']=$model->account->id;
+                } else
+                {
+                    $arr['daen']=AccRef::rasmal;
+                    $arr['mden']=$model->account->id;
+                }
+
+                $arr['data']='رصيد بداية المدة';
+                $arr['val']=abs($model->balance);
+                break;
+            }
+            case 'men': {
+                $arr['kyde_date']=$model->created_at;
+                if ($model->balance>0){
+                    $arr['mden']=AccRef::rasmal;
+                    $arr['daen']=$model->account->id;
+                } else
+                {
+                    $arr['daen']=AccRef::rasmal;
+                    $arr['mden']=$model->account->id;
+                }
+
+                $arr['data']='رصيد بداية المدة';
+
+                $arr['val']=abs($model->balance);
+
+                break;
+            }
             case 'buys': {
                 if ($spacial=='buyCosts'){
                     $arr['kyde_date']=$model->order_date;
