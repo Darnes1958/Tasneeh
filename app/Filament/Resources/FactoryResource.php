@@ -184,10 +184,14 @@ class FactoryResource extends Resource
                     TextInput::make('quantity')
                         ->columnSpan(2)
                         ->required()
+                        ->numeric()
+                        ->minValue(1)
                         ->label('الكمية'),
                     TextInput::make('price')
                         ->columnSpan(2)
                         ->label('السعر')
+                        ->numeric()
+                        ->minValue(.1)
                         ->required(),
                     TextInput::make('tot')
                         ->columnSpan(2)
@@ -274,9 +278,17 @@ class FactoryResource extends Resource
 
                                    ->live(onBlur: true)
                                    ->numeric()
-
+                                   ->minValue(.1)
                                    ->extraInputAttributes(['tabindex' => 1])
                                    ->afterStateUpdated(function ($state,Forms\Set $set,Get $get,$old,$operation){
+                                       if ($state <=0) {
+                                           $set('quant',$old);
+                                           Notification::make()
+                                               ->title('لا تجوز هذه الكمية')
+                                               ->color('danger')
+                                               ->send();
+                                       }
+
                                        if ($operation=='edit') {
                                            $tran=Tran::where('factory_id',$get('../../id'))
                                                  ->where('item_id',$get('item_id'))
