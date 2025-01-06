@@ -50,12 +50,12 @@
                    <td style="text-align: center;"> {{ $item->val_date }} </td>
                    <td style="text-align: center;"> {{ $item->id }} </td>
                    <td style="text-align: center;"> {{ $item->pay_type->name }} </td>
-                   @if($item->pay_who->value==1 || $item->pay_who->value==2)
+                   @if($item->pay_who->value!=0 )
                        <td > {{ $item->val }} </td>
                    @else
                        <td >  </td>
                    @endif
-                   @if($item->pay_who->value==0 || $item->pay_who->value==3)
+                   @if($item->pay_who->value==0)
                        <td > {{ $item->val }} </td>
                    @else
                        <td >  </td>

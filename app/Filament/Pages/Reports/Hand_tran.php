@@ -99,26 +99,26 @@ class Hand_tran extends Page implements HasForms,HasTable
 
                 TextColumn::make('mden')
                     ->state(function ($record){
-                        if ($record->pay_who->value==1 || $record->pay_who->value==2){
+                        if ($record->pay_who->value!=0){
                             return $record->val;
                         } else return 0;
                     })
                     ->summarize(Summarizer::make()
                         ->label('')
-                        ->using(fn (Builder $query): string => $query->whereIn('pay_who',[1,2])->sum('val')))
+                        ->using(fn (Builder $query): string => $query->where('pay_who','!=',0)->sum('val')))
                     ->searchable()
                     ->sortable()
                     ->label('مدين'),
 
                 TextColumn::make('daen')
                     ->state(function ($record){
-                        if ($record->pay_who->value==0 || $record->pay_who->value==3){
+                        if ($record->pay_who->value==0){
                             return $record->val;
                         } else return 0;
                     })
                     ->summarize(Summarizer::make()
                         ->label('')
-                        ->using(fn (Builder $query): string => $query->whereIn('pay_who',[0,3])->sum('val')))
+                        ->using(fn (Builder $query): string => $query->where('pay_who',0)->sum('val')))
                     ->searchable()
                     ->sortable()
                     ->label('دائن'),
@@ -147,15 +147,15 @@ class Hand_tran extends Page implements HasForms,HasTable
                                     $this->man_id=$state;
                                     if ($this->repDate) {
                                         $mden=Hand::where('man_id',$this->man_id)->where('val_date','>=',$this->repDate)
-                                            ->whereIn('pay_who',[1,2])->sum('val');
+                                            ->where('pay_who','!=',0)->sum('val');
                                         $daen=Hand::where('man_id',$this->man_id)->where('val_date','>=',$this->repDate)
-                                            ->whereIn('pay_who',[0,3])->sum('val');
+                                            ->where('pay_who',0)->sum('val');
                                         $balance=Man::find($this->man_id)->balance;
                                         $last=Hand::where('man_id',$this->man_id)->where('val_date','<',$this->repDate)
-                                                ->whereIn('pay_who',[1,2])->sum('val')
+                                                ->where('pay_who','!=',0)->sum('val')
                                             -
                                             Hand::where('man_id',$this->man_id)->where('val_date','<',$this->repDate)
-                                                ->whereIn('pay_who',[0,3])->sum('val');
+                                                ->where('pay_who',0)->sum('val');
                                         $set('balance',number_format($balance, 2, '.', ','));
                                         $set('last',number_format($last, 2, '.', ','));
                                         $set('raseed',number_format($mden-$daen-$balance+$last, 2, '.', ','));
@@ -172,21 +172,20 @@ class Hand_tran extends Page implements HasForms,HasTable
                                     $this->repDate=$state;
                                     if ($this->repDate && $this->man_id) {
                                         $mden=Hand::where('man_id',$this->man_id)->where('val_date','>=',$this->repDate)
-                                            ->whereIn('pay_who',[1,2])->sum('val');
+                                            ->where('pay_who','!=',0)->sum('val');
                                         $daen=Hand::where('man_id',$this->man_id)->where('val_date','>=',$this->repDate)
-                                            ->whereIn('pay_who',[0,3])->sum('val');
+                                            ->where('pay_who',0)->sum('val');
                                         $balance=Man::find($this->man_id)->balance;
                                         $last=Hand::where('man_id',$this->man_id)->where('val_date','<',$this->repDate)
-                                                ->whereIn('pay_who',[1,2])->sum('val')
+                                                ->where('pay_who','!=',0)->sum('val')
                                             -
                                             Hand::where('man_id',$this->man_id)->where('val_date','<',$this->repDate)
-                                                ->whereIn('pay_who',[0,3])->sum('val');
+                                                ->where('pay_who',0)->sum('val');
                                         $set('balance',number_format($balance, 2, '.', ','));
                                         $set('last',number_format($last, 2, '.', ','));
                                         $set('raseed',number_format($mden-$daen-$balance+$last, 2, '.', ','));
                                         $set('mden',number_format($mden, 2, '.', ','));
                                         $set('daen',number_format($daen, 2, '.', ','));
-
                                     }
                                 })
                                 ->label('من تاريخ'),
