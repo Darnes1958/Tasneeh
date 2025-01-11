@@ -49,7 +49,7 @@ class AppServiceProvider extends ServiceProvider
             fn (): string => Blade::render('@livewire(\'top-bar\')'),
         );
         Gate::before(function ($user, $ability) {
-            return $user->hasRole('admin') ? true : null;
+            return ($user->hasRole('admin') || $user->hasRole('supper') ) ? true : null;
         });
         LanguageSwitch::configureUsing(function (LanguageSwitch $switch) {
             $switch
