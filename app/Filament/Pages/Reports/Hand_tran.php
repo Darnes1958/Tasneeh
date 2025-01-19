@@ -158,7 +158,7 @@ class Hand_tran extends Page implements HasForms,HasTable
                                                 ->where('pay_who','!=',0)->sum('val');
                                         $set('balance',number_format($balance, 2, '.', ','));
                                         $set('last',number_format($last, 2, '.', ','));
-                                        $raseed=($daen+$last)-($mden+$balance);
+                                        $raseed=($daen+$balance+$last)-($mden);
                                         $set('raseed',number_format($raseed, 2, '.', ','));
 
                                         $set('mden',number_format($mden, 2, '.', ','));
@@ -184,7 +184,7 @@ class Hand_tran extends Page implements HasForms,HasTable
                                                 ->where('pay_who','!=',0)->sum('val');
                                         $set('balance',number_format($balance, 2, '.', ','));
                                         $set('last',number_format($last, 2, '.', ','));
-                                        $raseed=($daen+$last)-($mden+$balance);
+                                        $raseed=($daen+$balance+$last)-($mden);
                                         $set('raseed',number_format($raseed, 2, '.', ','));
                                         $set('mden',number_format($mden, 2, '.', ','));
                                         $set('daen',number_format($daen, 2, '.', ','));
