@@ -3,6 +3,7 @@
 namespace App\Filament\Resources\SellResource\Pages;
 
 use App\Filament\Resources\SellResource;
+use App\Livewire\Traits\AccTrait;
 use App\Models\Buy;
 use App\Models\Hall_stock;
 use App\Models\Item;
@@ -16,6 +17,7 @@ use Filament\Resources\Pages\EditRecord;
 
 class EditSell extends EditRecord
 {
+    use AccTrait;
     protected static string $resource = SellResource::class;
 
     protected function getHeaderActions(): array
