@@ -20,10 +20,7 @@ class EditSell extends EditRecord
     use AccTrait;
     protected static string $resource = SellResource::class;
 
-    protected function getHeaderActions(): array
-    {
-       //
-    }
+
     protected function getRedirectUrl(): string
     {
         return static::getResource()::getUrl('index');
