@@ -356,6 +356,12 @@ class BuyResource extends Resource
                              TextInput::make('quant')
                                  ->live(onBlur: true)
                                  ->extraInputAttributes(['tabindex' => 1])
+                                 ->afterStateUpdated(function (Get $get,Forms\Set $set,$state){
+                                     if ($get('sub_sub')!=null){
+                                         $set('price_input',round($get('sub_sub')/$state,3));
+                                         $set('price_cost',round($get('sub_sub')/$state,3));
+                                     }
+                                 })
                                  ->columnSpan(1)
                                  ->required(),
                              TextInput::make('sub_sub')
@@ -410,8 +416,10 @@ class BuyResource extends Resource
                                      / ($item->stock+$data['quant']);
                                  $item->price_cost=$pc;
                                  $item->price_buy=$p;
-                                 $item->stock += $data['quant'];
+                                 if ($operation=='create')
+                                    $item->stock += $data['quant'];
                                  $item->save();
+                             if ($operation=='create') {
                                  $place=Place_stock::where('item_id',$data['item_id'])
                                      ->where('place_id',$get('place_id'))->first();
                                  if ($place) {
@@ -424,6 +432,8 @@ class BuyResource extends Resource
                                          'stock'=>$data['quant'],
                                      ]);
                                  }
+                             }
+
 
 
                              return $data;
@@ -625,6 +635,7 @@ class BuyResource extends Resource
                 TextColumn::make('notes')
                     ->label('ملاحظات'),
             ])
+            ->defaultSort('id','desc')
             ->filters([
                 //
             ])
