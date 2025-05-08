@@ -20,7 +20,7 @@ class EditSell extends EditRecord
     use AccTrait;
     protected static string $resource = SellResource::class;
 
-
+    protected ?string $heading='تعديل فاتورة مبيعات';
     protected function getRedirectUrl(): string
     {
         return static::getResource()::getUrl('index');

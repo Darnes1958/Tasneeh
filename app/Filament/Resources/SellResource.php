@@ -9,6 +9,7 @@ use App\Filament\Resources\SellResource\RelationManagers;
 use App\Livewire\Traits\AccTrait;
 use App\Models\Buy;
 use App\Models\Customer;
+use App\Models\Hall;
 use App\Models\Hall_stock;
 use App\Models\Item;
 use App\Models\Item_type;
@@ -16,6 +17,7 @@ use App\Models\OurCompany;
 use App\Models\Place_stock;
 use App\Models\Product;
 use App\Models\Sell;
+use App\Models\Sell_tran;
 use App\Models\Setting;
 use App\Models\Unit;
 use Awcodes\TableRepeater\Components\TableRepeater;
@@ -95,6 +97,7 @@ class SellResource extends Resource
                                 return $thekey;
                             }),
                         Select::make('hall_id')
+                            ->default(Hall::min('id'))
                             ->disabled(function ($operation){
                                 return $operation=='edit';
                             })
@@ -178,7 +181,9 @@ class SellResource extends Resource
                             ->schema([
                                 Select::make('product_id')
                                     ->required()
+                                    ->live()
                                     ->searchable()
+
                                     ->options(function (Get $get){
                                         return
                                         Product::query()
@@ -197,23 +202,50 @@ class SellResource extends Resource
                                             ->contains($value);
                                     })
                                    ->afterStateUpdated(function ($state,  Forms\Set $set,Get $get) {
+
                                        $prod=Product::find($state);
-                                       $set('p',$prod->price);
-                                       $set('c',$prod->cost);
-                                       $set('stock',Hall_stock::where('product_id',$state)
-                                           ->where('hall_id',$get('../../hall_id'))
-                                           ->first()->stock);
+                                       if ($prod)
+                                       {
+                                           $set('p',$prod->price);
+                                           $set('c',$prod->cost);
+                                           $set('stock',Hall_stock::where('product_id',$state)
+                                               ->where('hall_id',$get('../../hall_id'))
+                                               ->first()->stock);
+
+                                       } else {
+                                           $set('q',null);
+                                           $set('p',null);
+                                           $set('c',null);
+                                           $set('stock',null);
+                                       }
                                    }),
                                 TextInput::make('q')
                                     ->live(onBlur: true)
-                                    ->afterStateUpdated(function ($state,Forms\Set $set,Get $get,$operation){
-                                        if ($state){
-                                            if (Hall_stock::where('product_id',$get('product_id'))
-                                            ->where('hall_id',$get('../../hall_id'))->first()->stock<$state){
-                                                Notification::make()
-                                                    ->title('رصيد الصنفلا يكفي')
-                                                    ->send();
-                                                $set('q',0);
+                                    ->afterStateUpdated(function ($state,Forms\Set $set,Get $get,$operation,$record){
+                                        if ($state) {
+                                            if ($operation == 'create')
+                                                if (Hall_stock::where('product_id', $get('product_id'))
+                                                        ->where('hall_id', )->first()->stock < $state) {
+                                                    Notification::make()
+                                                        ->title('رصيد الصنفلا يكفي')
+                                                        ->send();
+                                                    $set('q', 0);
+                                                }
+                                            if ($operation == 'edit')
+                                            {
+                                                $old_q=0;
+                                                $res=null;
+                                                if ($record)
+                                                    $res=Sell_tran::where('sell_id',$record->sell_id)->where('product_id', $get('product_id'))->first();
+
+                                                if ($res) $old_q=$res->q;
+                                                if (Hall_stock::where('product_id', $get('product_id'))
+                                                        ->where('hall_id', $get('../../hall_id'))->first()->stock+$old_q < $state) {
+                                                    Notification::make()
+                                                        ->title('رصيد الصنف لا يكفي  '.$old_q)
+                                                        ->send();
+                                                    $set('q', 0);
+                                                }
 
                                             }
                                         }
@@ -241,7 +273,6 @@ class SellResource extends Resource
                                         $total +=$item['p'] * $item['q'];
 
                                     }
-
                                 }
                                 $set('tot',$total);
                             })
@@ -276,6 +307,7 @@ class SellResource extends Resource
     public static function table(Table $table): Table
     {
         return $table
+            ->defaultSort('created_at','desc')
             ->columns([
                 TextColumn::make('id')
                     ->searchable()
