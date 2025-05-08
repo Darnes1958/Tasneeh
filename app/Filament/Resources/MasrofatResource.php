@@ -174,9 +174,7 @@ class MasrofatResource extends Resource
                 Tables\Actions\EditAction::make(),
                 Tables\Actions\DeleteAction::make()
                     ->visible(Auth::user()->can('الغاء مصروفات'))
-                    ->after(function (Model $record) {
-                        if ($record->kyde) foreach ($record->kyde as $kyde) {$kyde->delete();}
-                    }),
+                    ,
             ])
             ->bulkActions([
                 Tables\Actions\BulkActionGroup::make([

@@ -265,9 +265,6 @@ class RecsuppResource extends Resource
               $buy->pay=$sub-$sum;
               $buy->save();
 
-                  if ($record->kyde)
-                      foreach ($record->kyde as $rec) $rec->delete();
-
 
               }
 

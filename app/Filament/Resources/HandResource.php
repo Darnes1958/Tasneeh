@@ -262,10 +262,7 @@ class HandResource extends Resource
                  ->hidden(fn($record) => $record->pay_who->value==0),
                 Tables\Actions\DeleteAction::make()
                  ->hidden(fn($record) => $record->pay_who->value==0)
-                    ->after(function (Hand $record) {
-                       if ($record->kyde)
-                         foreach ($record->kyde as $rec) $rec->delete();
-                    }),
+                    ,
             ])
            ;
     }

@@ -282,9 +282,7 @@ class ListSalaries extends ListRecords
                     ->options(Salarytran::where('month','!=','0')->distinct()->pluck('month', 'month'))
                 ])
                 ->action(function (array $data) {
-                        foreach (Salarytran::where('month',$data['month'])->get() as $salary){
-                            if ($salary->kyde) foreach ($salary->kyde as $kyde){$kyde->delete();}
-                        }
+
                         Salarytran::where('month',$data['month'])->delete();
                         $this->TarseedTrans();
 

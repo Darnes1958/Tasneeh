@@ -502,8 +502,7 @@ class FactoryResource extends Resource
                                  $prod=Product::find($record->product_id);
                                  $prod->stock -=$record->quantity;
                                  $prod->save();
-                                 if ($record->kyde)
-                                     foreach ($record->kyde as $kyde) $kyde->delete();
+
 
 
                              } else {
@@ -696,12 +695,8 @@ class FactoryResource extends Resource
 
 
                         }
-                        if ($record->Hand)
-                            foreach ($record->Hand as $hand) {
-                                    foreach ($hand->kyde as $rec) $rec->delete();
-                            }
-                        if ($record->kyde)
-                            foreach ($record->kyde as $rec) $rec->delete();
+
+
 
                         $record->delete();
                     }),

@@ -92,7 +92,7 @@ class RentTranView extends Page implements HasTable, HasForms
                     ->color('danger')
                     ->iconButton()
                     ->action(function (Model $record) {
-                        if ($record->kyde) foreach ($record->kyde as $kyde) {$kyde->delete();}
+
                         $record->delete();
                     })
 

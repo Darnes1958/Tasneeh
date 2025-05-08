@@ -364,8 +364,7 @@ class SellResource extends Resource
                             $item->stock+=$tran->q;
                             $item->save();
                         }
-                        if ($record->kyde)
-                            foreach ($record->kyde as $rec) $rec->delete();
+
 
                         $record->delete();
                     }),

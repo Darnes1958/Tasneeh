@@ -674,8 +674,7 @@ class BuyResource extends Resource
                          $item->stock-=$tran->quant;
                          $item->save();
                      }
-                     if ($record->kyde)
-                        foreach ($record->kyde as $rec) $rec->delete();
+
                       $record->delete();
                  }),
                 Action::make('buytran')

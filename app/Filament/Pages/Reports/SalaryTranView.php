@@ -115,7 +115,7 @@ class SalaryTranView extends Page implements HasTable, HasForms
              ->icon('heroicon-o-trash')
              ->iconButton()
             ->action(function (Model $record){
-                if ($record->kyde) foreach ($record->kyde as $kyde) {$kyde->delete();}
+
               $record->delete();
               $this->TarseedTrans();
             })
