@@ -12,10 +12,5 @@ class EditRent extends EditRecord
 {
     protected static string $resource = RentResource::class;
     protected ?string $heading='';
-    protected function beforeSave(): void
-    {
-        $res=Rent::find($this->data['id']);
-        if ($res->account)
-            $res->account->update(['name'=>$this->data['name']]);
-    }
+
 }

@@ -20,10 +20,5 @@ class CreateHall extends CreateRecord
     {
         return static::getResource()::getUrl('index');
     }
-    protected function afterCreate(): void
-    {
-        $hall=Hall::find(Hall::max('id'));
 
-        $this->AddAcc(AccRef::halls,$hall);
-    }
 }

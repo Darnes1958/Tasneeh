@@ -62,7 +62,7 @@ class ListRents extends ListRecords
                             $tran->notes='إيجار شهر '.$data['month'];
                             $tran->month=$data['month'];
                             $tran->save();
-                            self::inputKyde($tran);
+
                         }
                         $this->TarseedRents();
                         Notification::make()
@@ -143,7 +143,7 @@ class ListRents extends ListRecords
                     $tran->notes=$data['notes'];
                     $tran->month='0';
                     $tran->save();
-                    self::inputKyde($tran);
+
 
                     $this->TarseedRents();
                     Notification::make()

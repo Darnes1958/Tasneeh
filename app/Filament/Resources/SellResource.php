@@ -91,7 +91,7 @@ class SellResource extends Resource
                             ->createOptionUsing(function (array $data): int {
                                 $thekey=Customer::create($data)->getKey();
                                 $hall=Customer::find($thekey);
-                                self::AddAcc2(AccRef::customers,$hall);
+
                                 return $thekey;
                             }),
                         Select::make('hall_id')

@@ -73,19 +73,10 @@ class EditFactory extends EditRecord
                 $place->save();
             }
         }
-        $fac=Factory::find($this->data['id']);
-        if ($fac->Hand) foreach ($fac->Hand as $hand) { foreach ($hand->kyde as $kyde) $kyde->delete();}
+
 
     }
 
-    protected function afterSave(): void{
-        $fac=Factory::find($this->data['id']);
-        self::inputKydewithDelete($fac);
-        if ($fac->Hand){
-            foreach ($fac->Hand as $hand){
-                self::inputKyde($hand);
-            }
-        }
-    }
+
 
 }

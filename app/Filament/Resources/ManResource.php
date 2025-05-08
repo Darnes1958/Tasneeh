@@ -45,6 +45,8 @@ class ManResource extends Resource
                     ->numeric()
                     ->required(),
 
+
+
             ]);
     }
 
@@ -52,7 +54,7 @@ class ManResource extends Resource
     {
         return $table
             ->pluralModelLabel('المشغلين')
-            ->columns([
+            ->columns(components: [
                 TextColumn::make('name')
                 ->searchable()
                 ->label('الاسم'),
@@ -68,6 +70,13 @@ class ManResource extends Resource
                         thousandsSeparator: ',',
                     )->label(''))
                     ->label('رصيد بداية المدة'),
+                Tables\Columns\IconColumn::make('visible')
+                 ->label('الظهور')
+                    ->action(function ($record){
+                       $record->visible = !$record->visible;
+                        $record->save();
+                    })
+                ->boolean(),
             ])
             ->filters([
                 //
@@ -81,8 +90,7 @@ class ManResource extends Resource
                     ->hidden(fn($record) => $record->Hand)
                     ->requiresConfirmation()
                     ->action(function (Model $record){
-                        if ($record->kyde) foreach ($record->kyde as $rec) $rec->delete();
-                        if ($record->account) $record->account->delete();
+
                         $record->delete();
                     }),
             ])

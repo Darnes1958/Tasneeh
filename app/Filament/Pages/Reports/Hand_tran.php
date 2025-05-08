@@ -139,7 +139,7 @@ class Hand_tran extends Page implements HasForms,HasTable
                     Grid::make()
                         ->schema([
                             Select::make('man_id')
-                                ->options(Man::all()->pluck('name','id'))
+                                ->options(Man::where('visible',1)->pluck('name','id'))
                                 ->searchable()
                                 ->preload()
                                 ->live()

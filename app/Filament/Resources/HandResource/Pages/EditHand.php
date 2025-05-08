@@ -19,8 +19,5 @@ class EditHand extends EditRecord
 
 
 
-    protected function afterSave(): void
-    {
-        self::inputKydewithDelete(Hand::find($this->data['id']));
-    }
+
 }

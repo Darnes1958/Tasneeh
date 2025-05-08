@@ -21,17 +21,7 @@ class ListHalls extends ListRecords
     {
         return [
             Actions\CreateAction::make()->label('ادخال'),
-            Actions\Action::make('acc')
-                ->label('add acc')
-                ->visible(fn(): bool=>Auth::id()==1)
-                ->action(function (){
-                    $places = Hall::all();
-                    foreach ($places as $place){
-                        if (!$place->account){
-                            $this->AddAcc(AccRef::halls,$place);
-                        }
-                    }
-                }),
+
 
         ];
     }

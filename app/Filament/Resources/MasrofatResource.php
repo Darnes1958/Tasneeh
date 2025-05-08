@@ -66,7 +66,7 @@ class MasrofatResource extends Resource
                    ->createOptionUsing(function (array $data): int {
                        $thekey=Masr_type::create($data)->getKey();
                        $model=Masr_type::find($thekey);
-                       self::AddAcc2(AccRef::masrofats,$model);
+
                        return $thekey;
                    })
                 ->label('نوع المصروفات'),

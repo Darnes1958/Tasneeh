@@ -9,6 +9,30 @@ use Illuminate\Support\Facades\Auth;
 class Man extends Model
 {
     protected $connection = 'other';
+    protected $casts=['visible'=>'boolean',];
+
+
+
+    public function visibleonly(): Attribute
+    {
+        return new Attribute(
+            get: function( $originalValue ){
+               return $originalValue->where('visible',1);
+            });
+
+        /**
+         * Or alternatively:-
+         *
+         * return Attribute::get( function( $originalValue ){
+         *    // do whatever you want to do
+         *    // return $modifiedValue;
+         * });
+         */
+    }
+
+    public function getVisibleonlyAttribute() {
+        return $this->where('visible',1);
+    }
 
     public function kyde()
     {

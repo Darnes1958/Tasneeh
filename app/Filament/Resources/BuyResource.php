@@ -104,7 +104,7 @@ class BuyResource extends Resource
                             ->createOptionUsing(function (array $data): int {
                                 $thekey=Supplier::create($data)->getKey();
                                 $hall=Supplier::find($thekey);
-                                self::AddAcc2(AccRef::suppliers,$hall);
+
                                 return $thekey;
                             }),
                         DatePicker::make('order_date')
@@ -152,7 +152,7 @@ class BuyResource extends Resource
                             ->createOptionUsing(function (array $data): int {
                                 $thekey=Place::create($data)->getKey();
                                 $place=Place::find($thekey);
-                                self::AddAcc2(AccRef::places,$place);
+
                                 return $thekey;
                             }),
                         TextInput::make('ksm')

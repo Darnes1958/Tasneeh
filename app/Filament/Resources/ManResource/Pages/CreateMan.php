@@ -21,13 +21,5 @@ class CreateMan extends CreateRecord
     {
         return static::getResource()::getUrl('index');
     }
-    protected function afterCreate(): void
-    {
-        $man=Man::find(Man::max('id'));
 
-        $this->AddAcc(AccRef::mans,$man);
-
-        if ($man->balance!=0)
-            self::inputKyde($man);
-    }
 }

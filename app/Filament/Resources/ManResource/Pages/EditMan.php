@@ -14,18 +14,7 @@ class EditMan extends EditRecord
     use AccTrait;
     protected static string $resource = ManResource::class;
 
-    protected function beforeSave(): void
-    {
-        $res=Man::find($this->data['id']);
-        if ($res->account)
-            $res->account->update(['name'=>$this->data['name']]);
 
-    }
-    protected function afterSave(): void{
-        $res=Man::find($this->data['id']);
-        if ($res->kyde) foreach ($res->kyde as $rec) $rec->delete();
-        if ($this->data['balance']!=0)
-            self::inputKyde($res);
-    }
+
 
 }

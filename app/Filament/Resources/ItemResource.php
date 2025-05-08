@@ -280,7 +280,7 @@ class ItemResource extends Resource
 
                                     }
 
-                                    self::inputKydewithDelete(Item::find($record['id']));
+
                                 }
                             })
                     ),

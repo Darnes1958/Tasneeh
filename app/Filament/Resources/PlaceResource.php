@@ -61,7 +61,7 @@ class PlaceResource extends Resource
                     ->iconButton()
                     ->requiresConfirmation()
                     ->action(function (Model $record){
-                        if ($record->account) $record->account->delete();
+
                         $record->delete();
                     })
                     ->hidden(fn(Model $record): bool => Place_stock::where('place_id',$record->id)

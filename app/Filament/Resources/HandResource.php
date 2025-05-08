@@ -77,7 +77,7 @@ class HandResource extends Resource
                          ->live()
                          ->preload()
                          ->searchable()
-                         ->options(Man::all()->pluck('name','id'))
+                         ->options(Man::where('visible',1)->pluck('name','id'))
                          ->createOptionForm([
                              Section::make('ادخال مشغل')
                                  ->schema([

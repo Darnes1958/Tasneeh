@@ -46,20 +46,7 @@ class ListItems extends ListRecords
                  return Response::download(self::ret_spatie($this->getTableQueryForExport()->get(),
                      'PrnView.pdf-items'), 'filename.pdf', self::ret_spatie_header());
              }),
-            Actions\Action::make('acc')
-                ->label('add acc')
-                ->visible(fn(): bool=>Auth::id()==1)
-                ->action(function (){
-                    $items=Item::all();
-                    foreach ($items as $item){
-                        if ($item->balance>0 && $item->price_buy>0)
-                        {
-                            $place=Place::find($item->place_id);
-                            $this->AddKyde($place->account->id,AccRef::makzoone->value,$item,$item->price_buy*$item->balance,now(),'مخزون بداية المدة');
-                        }
-                    }
 
-                }),
         ];
     }
 }

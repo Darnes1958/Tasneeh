@@ -15,9 +15,5 @@ class EditMasrofat extends EditRecord
     protected static string $resource = MasrofatResource::class;
     protected ?string $heading='';
 
-   protected function afterSave(): void {
-       $masrofat=Masrofat::find($this->data['id']);
-       if ($masrofat->kyde) foreach ($masrofat->kyde as $kyde) {$kyde->delete();}
-       self::inputKyde($masrofat);
-   }
+
 }

@@ -16,16 +16,6 @@ class EditCustomer extends EditRecord
 
     protected ?string $heading="";
 
-    protected function beforeSave(): void
-    {
-        $res=Customer::find($this->data['id']);
-        if ($res->account)
-            $res->account->update(['name'=>$this->data['name']]);
-    }
-    protected function afterSave(): void{
-        $res=Customer::find($this->data['id']);
-        if ($res->kyde) foreach ($res->kyde as $rec) $rec->delete();
-        if ($this->data['balance']!=0)
-            self::inputKyde($res);
-    }
+
+
 }

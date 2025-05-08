@@ -19,10 +19,6 @@ class CreateMasrofat extends CreateRecord
     {
         return $this->getResource()::getUrl('index');
     }
-    protected function afterCreate(): void
-    {
-        $masrofat=Masrofat::find(Masrofat::max('id'));
-        self::inputKyde($masrofat);
-    }
+
 
 }

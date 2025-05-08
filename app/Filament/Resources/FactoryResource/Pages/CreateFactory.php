@@ -46,14 +46,5 @@ class CreateFactory extends CreateRecord
         }
     }
 
-    protected function afterCreate(): void{
 
-        $fac=Factory::find(Factory::max('id'));
-        self::inputKyde($fac);
-        if ($fac->Hand){
-            foreach ($fac->Hand as $hand){
-                self::inputKyde($hand);
-            }
-        }
-    }
 }

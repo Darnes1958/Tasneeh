@@ -89,8 +89,7 @@ class KazenaResource extends Resource
                     ->iconButton()
                     ->requiresConfirmation()
                     ->action(function (Model $record){
-                        if ($record->kyde) foreach ($record->kyde as $rec) $rec->delete();
-                        if ($record->account) $record->account->delete();
+
                         $record->delete();
                     }),
 

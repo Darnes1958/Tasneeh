@@ -15,16 +15,6 @@ class EditAcc extends EditRecord
     protected static string $resource = AccResource::class;
 
     protected ?string $heading='';
-    protected function beforeSave(): void
-    {
-        $res=Acc::find($this->data['id']);
-        if ($res->account)
-            $res->account->update(['name'=>$this->data['name']]);
-    }
-    protected function afterSave(): void{
-        $res=Acc::find($this->data['id']);
-        if ($res->kyde) foreach ($res->kyde as $rec) $rec->delete();
-        if ($this->data['balance']!=0)
-            self::inputKyde($res);
-    }
+
+
 }

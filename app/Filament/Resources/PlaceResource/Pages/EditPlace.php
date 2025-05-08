@@ -16,10 +16,5 @@ class EditPlace extends EditRecord
     {
         return static::getResource()::getUrl('index');
     }
-    protected function beforeSave(): void
-    {
-        $res=Place::find($this->data['id']);
-        if ($res->account)
-            $res->account->update(['name'=>$this->data['name']]);
-    }
+
 }

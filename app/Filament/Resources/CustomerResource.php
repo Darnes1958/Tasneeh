@@ -113,8 +113,7 @@ class CustomerResource extends Resource
                         || Receipt::where('customer_id',$record->id)->exists()
                     )
                     ->action(function (Model $record){
-                        if ($record->kyde) foreach ($record->kyde as $rec) $rec->delete();
-                        if ($record->account) $record->account->delete();
+
                         $record->delete();
                     }),
             ]);

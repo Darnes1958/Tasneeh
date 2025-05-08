@@ -42,12 +42,6 @@ class CreateSell extends CreateRecord
                 }
             }
     }
-    protected function afterCreate(): void
-    {
-        $sell=Sell::find(Sell::max('id'));
-        self::inputKyde($sell);
 
-
-    }
 
 }

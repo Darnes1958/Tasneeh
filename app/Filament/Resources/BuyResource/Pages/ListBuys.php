@@ -21,10 +21,7 @@ class ListBuys extends ListRecords
         return [
             Actions\CreateAction::make()
              ->label('ادخال فاتورة جديدة'),
-            Actions\Action::make('any')
-             ->action(function (){
-                self::inputKyde(Hand::first());
-             })
+
         ];
     }
 

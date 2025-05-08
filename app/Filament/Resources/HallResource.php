@@ -70,7 +70,7 @@ class HallResource extends Resource
                     ->where('stock','>',0)->exists() || Sell::where('hall_id',$record->id)->exists())
                  ->requiresConfirmation()
                 ->action(function (Model $record){
-                    if ($record->account) $record->account->delete();
+
                     $record->delete();
                 }),
             ])

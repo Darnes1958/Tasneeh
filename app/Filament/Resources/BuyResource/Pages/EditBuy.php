@@ -104,15 +104,6 @@ class EditBuy extends EditRecord
 
 
     }
- /**   protected function afterSave(): void{
-        $buy=Buy::find($this->data['id']);
 
-        if ($buy->kyde)
-            foreach ($buy->kyde as $rec) $rec->delete();
-
-        self::inputKyde($buy,'order');
-        self::inputKyde($buy,'store');
-        if ($buy->costs) self::inputKyde($buy,'buyCosts');
-    } **/
 
 }

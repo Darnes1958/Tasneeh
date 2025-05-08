@@ -8,7 +8,9 @@ use App\Livewire\Traits\AccTrait;
 use App\Models\Hand;
 use App\Models\Man;
 use Filament\Actions;
+use Filament\Resources\Components\Tab;
 use Filament\Resources\Pages\ListRecords;
+use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Support\Facades\Auth;
 
 class ListMen extends ListRecords
@@ -22,23 +24,18 @@ class ListMen extends ListRecords
     {
         return [
             Actions\CreateAction::make()->label('اضافة مشغل'),
-            Actions\Action::make('acc')
-                ->label('add acc')
-                ->visible(fn(): bool=>Auth::id()==1)
-                ->action(function (){
-                    $places = Man::all();
-                    foreach ($places as $place){
-                        if (!$place->account){
-                            $this->AddAcc(AccRef::mans,$place);
-                        }
-                    }
-                    $hands=Hand::all();
-                    foreach ($hands as $hand){
-                        if (!$hand->kyde){
 
-                        }
-                    }
-                }),
+        ];
+    }
+
+    public function getTabs(): array
+    {
+        return [
+            'visible' => Tab::make('مرئي')
+                ->modifyQueryUsing(fn (Builder $query) => $query->where('visible', 1)),
+            'hidden' => Tab::make('مخفي')
+                ->modifyQueryUsing(fn (Builder $query) => $query->where('visible', 0)),
+            'all' => Tab::make('الجميع') ,
         ];
     }
 }

@@ -21,16 +21,6 @@ class EditKazena extends EditRecord
             Actions\DeleteAction::make()->visible( Auth::user()->can('الغاء مصارف')),
         ];
     }
-    protected function beforeSave(): void
-    {
-        $res=Kazena::find($this->data['id']);
-        if ($res->account)
-            $res->account->update(['name'=>$this->data['name']]);
-    }
-    protected function afterSave(): void{
-        $res=Kazena::find($this->data['id']);
-        if ($res->kyde) foreach ($res->kyde as $rec) $rec->delete();
-        if ($this->data['balance']!=0)
-            self::inputKyde($res);
-    }
+
+
 }

@@ -17,10 +17,6 @@ class CreateHand extends CreateRecord
    use AccTrait;
     protected static string $resource = HandResource::class;
 
-    protected function afterCreate(): void
-    {
-
-        self::inputKyde(Hand::find(Hand::max('id')));
-    }
+protected ?string $heading='دفع مبالغ للمشغلين';
 
 }

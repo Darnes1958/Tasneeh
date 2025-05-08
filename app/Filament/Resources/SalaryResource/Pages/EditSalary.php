@@ -19,11 +19,5 @@ class EditSalary extends EditRecord
     {
         return $this->getResource()::getUrl('index');
     }
-    protected function beforeSave(): void
-    {
-        $res=Salary::find($this->data['id']);
-        if ($res->account)
-            $res->account->update(['name'=>$this->data['name']]);
-        else $this->AddAcc(AccRef::salaries,$res);
-    }
+
 }

@@ -33,17 +33,7 @@ class ListSalaries extends ListRecords
     protected function getHeaderActions(): array
     {
         return [
-            Actions\Action::make('acc')
-                ->label('add acc')
-                ->visible(fn(): bool=>Auth::id()==1)
-                ->action(function (){
-                    $places = Salary::all();
-                    foreach ($places as $place){
-                        if (!$place->account){
-                            $this->AddAcc(AccRef::salaries,$place);
-                        }
-                    }
-                }),
+
             Actions\CreateAction::make()
             ->label('إضافة مرتب جديد'),
             Actions\Action::make('إدارج_مرتبات')
@@ -77,7 +67,7 @@ class ListSalaries extends ListRecords
                           $tran->notes='مرتب شهر '.$data['month'];
                           $tran->month=$data['month'];
                           $tran->save();
-                          self::inputKyde($tran);
+
 
                       }
                       $this->TarseedTrans();
@@ -160,7 +150,7 @@ class ListSalaries extends ListRecords
                   $tran->notes=$data['notes'];
                   $tran->month='0';
                   $tran->save();
-                 self::inputKyde($tran);
+
 
                 $this->TarseedTrans();
                 Notification::make()
@@ -200,7 +190,7 @@ class ListSalaries extends ListRecords
               $tran->notes=$data['notes'];
               $tran->month='0';
               $tran->save();
-                self::inputKyde($tran);
+
 
               $this->TarseedTrans();
               Notification::make()
@@ -240,7 +230,7 @@ class ListSalaries extends ListRecords
               $tran->notes=$data['notes'];
               $tran->month='0';
               $tran->save();
-                self::inputKyde($tran);
+
 
               $this->TarseedTrans();
               Notification::make()

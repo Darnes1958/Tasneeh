@@ -31,15 +31,7 @@ class CreateBuy extends CreateRecord
     }
     protected static bool $canCreateAnother = false;
 
-    protected function afterCreate(): void
-    {
-        $buy=Buy::find(Buy::max('id'));
-        self::inputKyde($buy,'order');
-        self::inputKyde($buy,'store');
 
-        if ($buy->costs->count()>0)   self::inputKyde($buy,'buyCosts');
-
-    }
 
 
 

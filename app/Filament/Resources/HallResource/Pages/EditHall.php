@@ -15,10 +15,5 @@ class EditHall extends EditRecord
     {
         return static::getResource()::getUrl('index');
     }
-    protected function beforeSave(): void
-    {
-        $res=Hall::find($this->data['id']);
-        if ($res->account)
-        $res->account->update(['name'=>$this->data['name']]);
-    }
+
 }

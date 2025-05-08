@@ -96,7 +96,7 @@ class RecsuppResource extends Resource
             ->createOptionUsing(function (array $data): int {
                 $thekey=Supplier::create($data)->getKey();
                 $hall=Supplier::find($thekey);
-                self::AddAcc2(AccRef::suppliers,$hall);
+
                 return $thekey;
             }),
 

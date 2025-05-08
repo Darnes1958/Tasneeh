@@ -17,12 +17,5 @@ class CreateSupplier extends CreateRecord
   protected ?string $heading="";
     protected static string $resource = SupplierResource::class;
 
-    protected function afterCreate(): void
-    {
-        $supplier=Supplier::find(Supplier::max('id'));
 
-        $this->AddAcc(AccRef::suppliers,$supplier);
-        if ($supplier->balance!=0)
-         self::inputKyde($supplier);
-    }
 }

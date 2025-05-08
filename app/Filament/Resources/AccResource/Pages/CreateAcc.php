@@ -23,12 +23,5 @@ class CreateAcc extends CreateRecord
     {
         return $this->getResource()::getUrl('create');
     }
-    protected function afterCreate(): void
-    {
-        $acc=Acc::find(Acc::max('id'));
 
-        $this->AddAcc(AccRef::msarf,$acc);
-        if ($acc->balance!=0)
-            self::inputKyde($acc);
-    }
 }

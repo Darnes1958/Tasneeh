@@ -13,12 +13,5 @@ class CreateCustomer extends CreateRecord
 {
     use AccTrait;
     protected static string $resource = CustomerResource::class;
-    protected function afterCreate(): void
-    {
-        $customer=Customer::find(Customer::max('id'));
 
-        $this->AddAcc(AccRef::customers,$customer);
-        if ($customer->balance!=0)
-            self::inputKyde($customer);
-    }
 }

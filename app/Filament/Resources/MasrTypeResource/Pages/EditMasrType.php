@@ -11,10 +11,5 @@ class EditMasrType extends EditRecord
 {
     protected static string $resource = MasrTypeResource::class;
 
-    protected function beforeSave(): void
-    {
-        $res=Masr_type::find($this->data['id']);
-        if ($res->account)
-            $res->account->update(['name'=>$this->data['name']]);
-    }
+
 }

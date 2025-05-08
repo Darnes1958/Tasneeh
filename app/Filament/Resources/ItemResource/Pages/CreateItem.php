@@ -41,7 +41,7 @@ class CreateItem extends CreateRecord
                 'place_id'=> $this->data['place_id'],
                 'stock'=>$this->data['balance'],
             ]);
-            self::inputKyde(Item::find(Item::max('id')));
+
         }
     }
     protected function getRedirectUrl(): string

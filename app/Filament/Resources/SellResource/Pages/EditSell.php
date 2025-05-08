@@ -77,14 +77,6 @@ class EditSell extends EditRecord
 
     }
 
-        protected function afterSave(): void{
-            $sell=Sell::find($this->data['id']);
 
-            if ($sell->kyde)
-                foreach ($sell->kyde as $rec) $rec->delete();
-
-            self::inputKyde($sell);
-
-        }
 
 }

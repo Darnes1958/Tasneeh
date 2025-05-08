@@ -14,9 +14,5 @@ class CreateMasrType extends CreateRecord
     use AccTrait;
     protected static string $resource = MasrTypeResource::class;
 
-    protected function afterCreate(){
-        $model=Masr_type::find(Masr_type::max('id'));
 
-        $this->AddAcc(AccRef::masrofats,$model);
-    }
 }

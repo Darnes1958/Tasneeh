@@ -13,12 +13,5 @@ class CreateKazena extends CreateRecord
 {
     use AccTrait;
     protected static string $resource = KazenaResource::class;
-    protected function afterCreate(): void
-    {
-        $kazena=Kazena::find(Kazena::max('id'));
 
-        $this->AddAcc(AccRef::kazena,$kazena);
-        if ($kazena->balance!=0)
-            self::inputKyde($kazena);
-    }
 }

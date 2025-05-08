@@ -374,7 +374,8 @@ class FactoryResource extends Resource
                                   ->required()
                                   ->preload()
                                   ->searchable()
-                                  ->relationship('Man','name')
+                                  ->relationship('Man','name',modifyQueryUsing:fn (Builder $query) => $query->where('visible',1), )
+
                                   ->disableOptionWhen(function ($value, $state, Get $get) {
                                       return collect($get('../*.man_id'))
                                           ->reject(fn($id) => $id == $state)
@@ -400,7 +401,7 @@ class FactoryResource extends Resource
                                   ->createOptionUsing(function (array $data): int {
                                       $thekey=Man::create($data)->getKey();
                                       $place=Man::find($thekey);
-                                      self::AddAcc2(AccRef::mans,$place);
+
                                       return $thekey;
                                   }),
                               DatePicker::make('val_date')
@@ -529,7 +530,7 @@ class FactoryResource extends Resource
                                  $prod->price=$record->price;
 
                                  $prod->save();
-                                 self::inputKyde($record,'yes');
+
                              }
 
                          })

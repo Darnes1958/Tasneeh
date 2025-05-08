@@ -18,10 +18,5 @@ class CreatePlace extends CreateRecord
     {
         return static::getResource()::getUrl('index');
     }
-    protected function afterCreate(): void
-    {
-        $hall=Place::find(Place::max('id'));
 
-        $this->AddAcc(AccRef::places,$hall);
-    }
 }
