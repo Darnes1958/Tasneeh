@@ -44,8 +44,9 @@ class EditSell extends EditRecord
             if ((Hall_stock::where('product_id',$item->product_id)
                         ->where('hall_id',$this->data['hall_id'])
                         ->first()->stock+$last_quant-$current_quant) <0) {
-                Notification::make()->warning()->title('يوجد صنف او اصناف لا يمكن تعديلها لانها ستصبح بالسالب')
-                    ->body('يجب مراجعة الكميات')
+                Notification::make()->warning()
+                    ->title('يوجد صنف او اصناف لا يمكن تعديلها لانها ستصبح بالسالب ')
+                    ->body(Product::find($item->product_id)->name)
                     ->persistent()
                     ->send();
                 $this->halt();
