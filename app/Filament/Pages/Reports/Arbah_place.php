@@ -40,7 +40,8 @@ class Arbah_place extends Page implements HasForms,HasActions
   }
   public static function shouldRegisterNavigation(): bool
   {
-    return Auth::user()->hasRole('admin');
+      if (Auth::user()->company=='Bokreah') {} return  Auth::user()->id==1 || Auth::user()->id==2;
+    return  Auth::user()->hasRole('admin');
   }
 
     protected static string $view = 'filament.pages.reports.arbah-place';
