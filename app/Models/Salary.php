@@ -12,11 +12,12 @@ class Salary extends Model
   protected $casts = [
     'status' => 'boolean',
   ];
-    public function account()
-    {
-        return $this->morphOne(Account::class, 'accountable');
+
+    public function Hall(){
+        return $this->belongsTo(Hall::class);
     }
-  public function Salarytran(){
+
+    public function Salarytran(){
         return $this->hasMany(Salarytran::class);
     }
 

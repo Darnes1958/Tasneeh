@@ -4,9 +4,11 @@ namespace App\Filament\Resources;
 
 use App\Filament\Resources\RentResource\Pages;
 use App\Filament\Resources\RentResource\RelationManagers;
+use App\Models\Hall;
 use App\Models\Rent;
 use App\Models\Renttran;
 use Filament\Forms;
+use Filament\Forms\Components\Select;
 use Filament\Forms\Components\TextInput;
 use Filament\Forms\Form;
 use Filament\Resources\Resource;
@@ -40,6 +42,16 @@ class RentResource extends Resource
                     ->label('الاسم'),
                 TextInput::make('amount')
                     ->label('الإيجار'),
+                Select::make('hall_id')
+                    ->label('الصالة أو المحزن')
+                    ->relationship('Place', 'name')
+                    ->searchable()
+                    ->required()
+                    ->live()
+                    ->default(function (){
+                        return Hall::first()->id;
+                    })
+                    ->preload(),
             ]);
     }
 

@@ -9,10 +9,8 @@ use Illuminate\Support\Facades\Auth;
 class Masrofat extends Model
 {
     protected $connection = 'other';
-    public function kyde()
-    {
-        return $this->morphMany(Kyde::class, 'kydeable');
-    }
+
+
     public function Masr_type(){
         return $this->belongsTo(Masr_type::class);
     }
@@ -20,7 +18,11 @@ class Masrofat extends Model
         return $this->belongsTo(Acc::class);
     } public function Kazena(){
     return $this->belongsTo(Kazena::class);
-}
+    }
+    public function Hall(){
+        return $this->belongsTo(Hall::class);
+    }
+
 
     public function __construct(array $attributes = [])
     {

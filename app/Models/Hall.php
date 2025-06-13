@@ -20,6 +20,19 @@ class Hall extends Model
     {
         return $this->hasMany(Sell::class);
     }
+    public function Salary()
+    {
+        return $this->hasMany(Salary::class);
+    }
+    public function Rent()
+    {
+        return $this->hasMany(Rent::class);
+    }
+    public function Masrofat()
+    {
+        return $this->hasMany(Masrofat::class);
+    }
+
     public function Hall_Stock()
     {
         return $this->hasMany(Hall_Stock::class);

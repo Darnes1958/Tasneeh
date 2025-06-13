@@ -6,6 +6,7 @@ use App\Filament\Resources\SalaryResource\Pages;
 use App\Filament\Resources\SalaryResource\RelationManagers;
 use App\Models\Salary;
 use Filament\Forms;
+use Filament\Forms\Components\Select;
 use Filament\Forms\Form;
 use Filament\Resources\Resource;
 use Filament\Tables;
@@ -44,6 +45,13 @@ class SalaryResource extends Resource
                     ->required()
                     ->numeric()
                     ->label('المرتب'),
+                Select::make('hall_id')
+                    ->label('مكان العمل')
+                    ->relationship('Hall', 'name')
+                    ->searchable()
+                    ->placeholder('قم باختيار مكان العمل .. او اتركه كما هو اذا كان العمل بالادارة')
+                    ->live()
+                    ->preload(),
             ]);
     }
     public static function table(Table $table): Table

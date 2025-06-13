@@ -7,6 +7,7 @@ use App\Enums\PayType;
 use App\Filament\Resources\MasrofatResource\Pages;
 use App\Filament\Resources\MasrofatResource\RelationManagers;
 use App\Livewire\Traits\AccTrait;
+use App\Models\Hall;
 use App\Models\Item;
 use App\Models\Masr_type;
 use App\Models\Masrofat;
@@ -20,6 +21,7 @@ use Filament\Forms\Form;
 use Filament\Resources\Resource;
 use Filament\Support\Enums\MaxWidth;
 use Filament\Tables;
+use Filament\Tables\Columns\Summarizers\Sum;
 use Filament\Tables\Table;
 use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Database\Eloquent\Model;
@@ -76,8 +78,7 @@ class MasrofatResource extends Resource
                     ->inline()
                     ->inlineLabel(false)
                     ->live()
-                    ->label('طريقة الدفع')
-                    ,
+                    ->label('طريقة الدفع') ,
                 Select::make('acc_id')
                     ->relationship('Acc','name')
                     ->label('المصرف')
@@ -102,8 +103,17 @@ class MasrofatResource extends Resource
                  ->numeric()
                  ->required()
                  ->label('المبلغ'),
+                Select::make('hall_id')
+                    ->relationship('Place','name')
+                    ->label('المكان')
+                    ->placeholder('غير محدد')
+                    ->preload()
+                    ->default(function (){
+                        return Hall::first()->id;
+                    }),
                 TextInput::make('notes')
                     ->label('ملاحظات'),
+
             ]);
     }
 
@@ -131,6 +141,16 @@ class MasrofatResource extends Resource
                 Tables\Columns\TextColumn::make('val')
                     ->label('المبلغ')
                     ->searchable()
+                    ->summarize(Sum::make()->label('')->numeric(
+                        decimalPlaces: 2,
+                        decimalSeparator: '.',
+                        thousandsSeparator: ',',
+                    ))
+                    ->numeric(
+                        decimalPlaces: 2,
+                        decimalSeparator: '.',
+                        thousandsSeparator: ',',
+                    )
                     ->sortable(),
                 Tables\Columns\TextColumn::make('notes')
                     ->label('ملاحظات')
