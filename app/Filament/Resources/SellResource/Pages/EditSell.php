@@ -65,15 +65,17 @@ class EditSell extends EditRecord
         }
 
         foreach ($cuurent as $key => $tran) {
-            $item=Product::find($tran['product_id']);
-            $item->price=$tran['p'];
-            $item->stock -= $tran['q'];
-            $item->save();
-            $place=Hall_stock::where('product_id',$tran['product_id'])
-                ->where('hall_id',$this->data['hall_id'])->first();
-            $place->stock -= $tran['q'];
-            $place->save();
+            if ($last->where('product_id',$tran['product_id'])->first()) {
+                $item = Product::find($tran['product_id']);
+                $item->price = $tran['p'];
+                $item->stock -= $tran['q'];
+                $item->save();
+                $place = Hall_stock::where('product_id', $tran['product_id'])
+                    ->where('hall_id', $this->data['hall_id'])->first();
+                $place->stock -= $tran['q'];
+                $place->save();
 
+            }
         }
 
     }

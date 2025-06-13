@@ -224,13 +224,16 @@ class SellResource extends Resource
                                     ->afterStateUpdated(function ($state,Forms\Set $set,Get $get,$operation,$record){
                                         if ($state) {
                                             if ($operation == 'create')
+                                            {
+
                                                 if (Hall_stock::where('product_id', $get('product_id'))
-                                                        ->where('hall_id', )->first()->stock < $state) {
+                                                        ->where('hall_id', $get('../../hall_id'))->first()->stock < $state) {
                                                     Notification::make()
-                                                        ->title('رصيد الصنفلا يكفي')
+                                                        ->title('رصيد الصنف لا يكفي')
                                                         ->send();
                                                     $set('q', 0);
                                                 }
+                                            }
                                             if ($operation == 'edit')
                                             {
                                                 $old_q=0;
@@ -442,11 +445,7 @@ class SellResource extends Resource
                         return Response::download($file, 'filename.pdf', $headers);
                     })
             ])
-            ->bulkActions([
-                Tables\Actions\BulkActionGroup::make([
-                    Tables\Actions\DeleteBulkAction::make(),
-                ]),
-            ]);
+            ;
     }
 
     public static function getRelations(): array
