@@ -104,7 +104,7 @@ class MasrofatResource extends Resource
                  ->required()
                  ->label('المبلغ'),
                 Select::make('hall_id')
-                    ->relationship('Place','name')
+                    ->relationship('Hall','name')
                     ->label('المكان')
                     ->placeholder('غير محدد')
                     ->preload()
