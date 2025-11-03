@@ -27,8 +27,11 @@ use Filament\Forms\Components\Select;
 use Filament\Forms\Components\TextInput;
 use Filament\Forms\Concerns\InteractsWithForms;
 use Filament\Forms\Contracts\HasForms;
-use Filament\Forms\Form;
+
 use Filament\Pages\Page;
+use Filament\Schemas\Concerns\InteractsWithSchemas;
+use Filament\Schemas\Contracts\HasSchemas;
+use Filament\Schemas\Schema;
 use Filament\Support\Enums\VerticalAlignment;
 use Filament\Support\RawJs;
 use Filament\Tables\Columns\TextColumn;
@@ -41,9 +44,10 @@ use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Response;
 
-class CustTran extends Page implements HasForms,HasTable
+
+class CustTran extends Page implements HasSchemas,HasTable
 {
-  use InteractsWithTable,InteractsWithForms;
+  use InteractsWithTable,InteractsWithSchemas;
   use PublicTrait;
   protected static string | \BackedEnum | null $navigationIcon = 'heroicon-o-document-text';
   protected static ?string $navigationLabel='حركة زبون';
@@ -71,22 +75,12 @@ class CustTran extends Page implements HasForms,HasTable
     $this->myForm->fill(['repDate'=>$this->repDate,'raseed'=>0,'mden'=>0,'daen'=>0]);
   }
 
-    protected function getForms(): array
-    {
-        return array_merge(parent::getForms(), [
-            "myForm" => $this->makeForm()
-                ->components($this->getMyFormSchema())
-                ->statePath('formData'),
 
-        ]);
-    }
 
   public function getTableRecordKey(Model|array $record): string
   {
     return $record->idd;
   }
-
-
   public function table(Table $table): Table
   {
     return $table
@@ -164,114 +158,119 @@ class CustTran extends Page implements HasForms,HasTable
       ])
         ->emptyStateHeading('لا توجد بيانات')
       ->defaultSort('idd')
+      ->defaultKeySort(false)
       ->striped();
   }
 
-    protected function getMyFormSchema(): array
+    protected function myForm(Schema $schema): Schema
   {
-    return [
-       Section::make()
-      ->schema([
-          Grid::make()
-              ->schema([
-                  Select::make('cust_id')
-                      ->options(Customer::all()->pluck('name','id'))
-                      ->searchable()
-                      ->preload()
-                      ->live()
-                      ->afterStateUpdated(function ($state,Set $set){
-                          $this->cust_id=$state;
-                          if ($this->repDate) {
-                              $mden=Cust_tran2::where('customer_id',$this->cust_id)->where('repDate','>=',$this->repDate)->sum('mden');
-                              $daen=Cust_tran2::where('customer_id',$this->cust_id)->where('repDate','>=',$this->repDate)->sum('daen');
-                              $balance=Customer::find($this->cust_id)->balance;
-                              $last=Cust_tran::where('customer_id',$this->cust_id)->where('repDate','<',$this->repDate)->sum('mden')
-                                  -Cust_tran::where('customer_id',$this->cust_id)->where('repDate','<',$this->repDate)->sum('daen');
-                              $set('balance',number_format($balance, 2, '.', ','));
-                              $set('last',number_format($last, 2, '.', ','));
-                              $set('raseed',number_format($mden-$daen-$balance+$last, 2, '.', ','));
-                              $set('mden',number_format($mden, 2, '.', ','));
-                              $set('daen',number_format($daen, 2, '.', ','));
+    return $schema
+        ->statePath('formData')
+        ->components([
+            Section::make()
+                ->schema([
+                    Grid::make()
+                        ->schema([
+                            Select::make('cust_id')
+                                ->options(Customer::all()->pluck('name','id'))
+                                ->searchable()
+                                ->preload()
+                                ->live()
+                                ->afterStateUpdated(function ($state,Set $set){
+                                    $this->cust_id=$state;
+                                    if ($this->repDate) {
+                                        $mden=Cust_tran2::where('customer_id',$this->cust_id)->where('repDate','>=',$this->repDate)->sum('mden');
+                                        $daen=Cust_tran2::where('customer_id',$this->cust_id)->where('repDate','>=',$this->repDate)->sum('daen');
+                                        $balance=Customer::find($this->cust_id)->balance;
+                                        $last=Cust_tran::where('customer_id',$this->cust_id)->where('repDate','<',$this->repDate)->sum('mden')
+                                            -Cust_tran::where('customer_id',$this->cust_id)->where('repDate','<',$this->repDate)->sum('daen');
+                                        $set('balance',number_format($balance, 2, '.', ','));
+                                        $set('last',number_format($last, 2, '.', ','));
+                                        $set('raseed',number_format($mden-$daen-$balance+$last, 2, '.', ','));
+                                        $set('mden',number_format($mden, 2, '.', ','));
+                                        $set('daen',number_format($daen, 2, '.', ','));
 
 
 
-                          }
-                      })
-                      ->label('الزبون'),
-                  DatePicker::make('repDate')
-                      ->live()
-                      ->afterStateUpdated(function ($state,Set $set){
-                          $this->repDate=$state;
-                          if ($this->repDate && $this->cust_id) {
-                              $mden=Cust_tran2::where('customer_id',$this->cust_id)->where('repDate','>=',$this->repDate)->sum('mden');
-                              $daen=Cust_tran2::where('customer_id',$this->cust_id)->where('repDate','>=',$this->repDate)->sum('daen');
-                              $balance=Customer::find($this->cust_id)->balance;
-                              $last=Cust_tran::where('customer_id',$this->cust_id)->where('repDate','<',$this->repDate)->sum('mden')
-                                  -Cust_tran::where('customer_id',$this->cust_id)->where('repDate','<',$this->repDate)->sum('daen');
-                              $set('balance',number_format($balance, 2, '.', ','));
-                              $set('last',number_format($last, 2, '.', ','));
-                              $set('raseed',number_format($mden-$daen-$balance+$last, 2, '.', ','));
-                              $set('mden',number_format($mden, 2, '.', ','));
-                              $set('daen',number_format($daen, 2, '.', ','));
+                                    }
+                                })
+                                ->label('الزبون'),
+                            DatePicker::make('repDate')
+                                ->live()
+                                ->afterStateUpdated(function ($state,Set $set){
+                                    $this->repDate=$state;
+                                    if ($this->repDate && $this->cust_id) {
+                                        $mden=Cust_tran2::where('customer_id',$this->cust_id)->where('repDate','>=',$this->repDate)->sum('mden');
+                                        $daen=Cust_tran2::where('customer_id',$this->cust_id)->where('repDate','>=',$this->repDate)->sum('daen');
+                                        $balance=Customer::find($this->cust_id)->balance;
+                                        $last=Cust_tran::where('customer_id',$this->cust_id)->where('repDate','<',$this->repDate)->sum('mden')
+                                            -Cust_tran::where('customer_id',$this->cust_id)->where('repDate','<',$this->repDate)->sum('daen');
+                                        $set('balance',number_format($balance, 2, '.', ','));
+                                        $set('last',number_format($last, 2, '.', ','));
+                                        $set('raseed',number_format($mden-$daen-$balance+$last, 2, '.', ','));
+                                        $set('mden',number_format($mden, 2, '.', ','));
+                                        $set('daen',number_format($daen, 2, '.', ','));
 
 
 
-                          }
-                      })
-                      ->label('من تاريخ'),
-                  ])->columns(6)->columnSpan('full'),
+                                    }
+                                })
+                                ->label('من تاريخ'),
+                        ])->columns(6)->columnSpan('full'),
 
-          TextInput::make('balance')
-              ->prefixIcon('heroicon-m-minus')
-              ->prefixIconColor('danger')
-              ->readOnly()
-              ->label('بداية المدة'),
-          TextInput::make('last')
-              ->prefixIcon('heroicon-m-plus')
-              ->prefixIconColor('info')
-              ->readOnly()
-              ->label('رصيد سابق'),
-
-
-        TextInput::make('mden')
-         ->readOnly()
-         ->label('مدين'),
-        TextInput::make('daen')
-              ->readOnly()
-              ->label('دائن'),
-       TextInput::make('raseed')
-              ->readOnly()
-              ->label('الرصيد'),
-        Actions::make([
-          Action::make('printorder')
-          ->label('طباعة')
-            ->visible(function (){
-              return $this->chkDate($this->repDate) && $this->cust_id;
-            })
-
-            ->button()
-
-          ->icon('heroicon-m-printer')
-          ->color('info')
-          ->action(function (Get $get){
-                  $res=$this->getTableQueryForExport()->get();
-                  if ($res->count()==0) return ;
-                  return Response::download(self::ret_spatie($res,
-                      'PrnView.pdf-cust-tran',
-                      ['tran_date'=>$this->repDate,
-                          'raseed'=>$get('raseed'),
-                          'mden'=>$get('mden'),
-                          'daen'=>$get('daen'),
-                          'last'=>$get('last'),
-                          'balance'=>$get('balance'),]), 'filename.pdf', self::ret_spatie_header());
-
-              }),
+                    TextInput::make('balance')
+                        ->prefixIcon('heroicon-m-minus')
+                        ->prefixIconColor('danger')
+                        ->readOnly()
+                        ->label('بداية المدة'),
+                    TextInput::make('last')
+                        ->prefixIcon('heroicon-m-plus')
+                        ->prefixIconColor('info')
+                        ->readOnly()
+                        ->label('رصيد سابق'),
 
 
-        ])->verticalAlignment(VerticalAlignment::End),
-      ])
-      ->columns(6)
-      ];
+                    TextInput::make('mden')
+                        ->readOnly()
+                        ->label('مدين'),
+                    TextInput::make('daen')
+                        ->readOnly()
+                        ->label('دائن'),
+                    TextInput::make('raseed')
+                        ->readOnly()
+                        ->label('الرصيد'),
+                    Actions::make([
+                        Action::make('printorder')
+                            ->label('طباعة')
+                            ->visible(function (){
+                                return $this->chkDate($this->repDate) && $this->cust_id;
+                            })
+
+                            ->button()
+
+                            ->icon('heroicon-m-printer')
+                            ->color('info')
+                            ->action(function (Get $get){
+                                $res=$this->getTableQueryForExport()->get();
+                                if ($res->count()==0) return ;
+                                return Response::download(self::ret_spatie($res,
+                                    'PrnView.pdf-cust-tran',
+                                    ['tran_date'=>$this->repDate,
+                                        'raseed'=>$get('raseed'),
+                                        'mden'=>$get('mden'),
+                                        'daen'=>$get('daen'),
+                                        'last'=>$get('last'),
+                                        'balance'=>$get('balance'),]), 'filename.pdf', self::ret_spatie_header());
+
+                            }),
+
+
+                    ])->verticalAlignment(VerticalAlignment::End),
+                ])
+                ->columns(6)
+        ]);
+
+
   }
   public function chkDate($repDate){
     try {

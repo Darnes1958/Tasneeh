@@ -50,7 +50,7 @@ class KlasaSell extends BaseWidget
     public function table(Table $table): Table
     {
         return $table
-            ->query(function(Sell $rec){
+            ->query(function(){
 
                 $rec=Sell::when($this->repDate1,function ($q){
                   $q->where('order_date','>=',$this->repDate1);
@@ -71,6 +71,7 @@ class KlasaSell extends BaseWidget
             ->contentFooter(view('table.footer', $this->data_list))
           ->defaultPaginationPageOption(5)
             ->defaultSort('tot')
+            ->defaultKeySort(false)
             ->columns([
                 TextColumn::make('name')
                     ->label('نقطة البيع')

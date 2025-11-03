@@ -146,6 +146,7 @@ class AccTran extends Page  implements HasForms,HasTable
                     });
                 return $report;
             })
+            ->defaultKeySort(false)
             ->emptyStateHeading('لا توجد بيانات')
             ->header(function () {return view('table.acc_header', [
                 'last_mden' => $this->last_mden,'last_daen'=>$this->last_daen,'balance'=>$this->balance,'last_raseed'=>$this->last_raseed,

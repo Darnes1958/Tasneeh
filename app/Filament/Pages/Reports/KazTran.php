@@ -204,6 +204,7 @@ class KazTran extends Page implements HasForms,HasTable
           ->label('ملاحظات'),
 
       ])
+      ->defaultKeySort(false)
       ->defaultSort('receipt_date')
       ->striped();
   }

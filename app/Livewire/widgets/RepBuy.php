@@ -54,7 +54,7 @@ class RepBuy extends BaseWidget
     {
 
             return $table
-                ->query(function (Buy $buy){
+                ->query(function (){
 
                     if ($this->repDate1 && !$this->repDate2)
                       $buy=Buy::where('order_date','>=',$this->repDate1);

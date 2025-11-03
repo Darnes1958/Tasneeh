@@ -48,7 +48,7 @@ class KlasaMasr extends BaseWidget
   public function table(Table $table): Table
   {
     return $table
-      ->query(function(Masr_view $masr){
+      ->query(function(){
 
 
         $masr=Masr_view::when($this->repDate1,function ($q){
@@ -68,6 +68,7 @@ class KlasaMasr extends BaseWidget
       ->contentFooter(view('table.footer', $this->data_list))
       ->defaultPaginationPageOption(5)
       ->defaultSort('val')
+        ->defaultKeySort(false)
       ->columns([
         TextColumn::make('name')
           ->color('info')

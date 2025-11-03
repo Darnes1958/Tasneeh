@@ -48,7 +48,7 @@ class klasakzaen extends BaseWidget
     public function table(Table $table): Table
     {
         return $table
-            ->query(function (Acc_tran $rec){
+            ->query(function (){
 
               $rec=Acc_tran::
                 where('receipt_date','>=',$this->repDate1)
@@ -64,6 +64,7 @@ class klasakzaen extends BaseWidget
             ->heading(new HtmlString('<div class="text-danger-600 text-lg">أرصدة الخزائن</div>'))
             ->defaultPaginationPageOption(5)
             ->defaultSort('name')
+            ->defaultKeySort(false)
             ->striped()
             ->columns([
 

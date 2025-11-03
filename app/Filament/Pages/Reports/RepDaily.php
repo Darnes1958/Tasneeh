@@ -46,7 +46,7 @@ class RepDaily extends Page implements HasForms
         return [
             RepBuy::class,
             RepSell::class,
-            Recsupp::class,
+            RepResSupp::class,
             RepReceipt::class,
             RepMasr::class,
         ];

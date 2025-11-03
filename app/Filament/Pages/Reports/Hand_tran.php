@@ -22,6 +22,9 @@ use Filament\Forms\Components\TextInput;
 use Filament\Forms\Concerns\InteractsWithForms;
 use Filament\Forms\Contracts\HasForms;
 use Filament\Pages\Page;
+use Filament\Schemas\Concerns\InteractsWithSchemas;
+use Filament\Schemas\Contracts\HasSchemas;
+use Filament\Schemas\Schema;
 use Filament\Support\Enums\VerticalAlignment;
 use Filament\Tables\Columns\Summarizers\Summarizer;
 use Filament\Tables\Columns\TextColumn;
@@ -33,9 +36,9 @@ use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Query\Builder;
 use Illuminate\Support\Facades\Response;
 
-class Hand_tran extends Page implements HasForms,HasTable
+class Hand_tran extends Page implements HasSchemas,HasTable
 {
-    use InteractsWithTable,InteractsWithForms;
+    use InteractsWithTable,InteractsWithSchemas;
     use PublicTrait;
     protected static string | \BackedEnum | null $navigationIcon = 'heroicon-o-document-text';
 
@@ -54,15 +57,7 @@ class Hand_tran extends Page implements HasForms,HasTable
         $this->myForm->fill(['repDate'=>$this->repDate]);
     }
 
-    protected function getForms(): array
-    {
-        return array_merge(parent::getForms(), [
-            "myForm" => $this->makeForm()
-                ->components($this->getMyFormSchema())
-                ->statePath('formData'),
 
-        ]);
-    }
     public function table(Table $table): Table
     {
         return $table
@@ -132,10 +127,12 @@ class Hand_tran extends Page implements HasForms,HasTable
 
             ->striped();
     }
+    protected function myForm(Schema $schema): Schema
 
-    protected function getMyFormSchema(): array
     {
-        return [
+        return $schema
+            ->statePath('formData')
+            ->components([
             Section::make()
                 ->schema([
                     Grid::make()
@@ -243,7 +240,7 @@ class Hand_tran extends Page implements HasForms,HasTable
                     ])->verticalAlignment(VerticalAlignment::End),
                 ])
                 ->columns(6)
-        ];
+        ]);
     }
     public function chkDate($repDate){
         try {

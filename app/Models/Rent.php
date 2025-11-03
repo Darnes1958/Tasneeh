@@ -23,7 +23,6 @@ class Rent extends Model
         parent::__construct($attributes);
         if (Auth::check()) {
             $this->connection=Auth::user()->company;
-
         }
     }
 }

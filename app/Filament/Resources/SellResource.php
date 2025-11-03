@@ -2,6 +2,9 @@
 
 namespace App\Filament\Resources;
 
+use Filament\Forms\Components\Repeater;
+
+use Filament\Schemas\Components\Utilities\Set;
 use Filament\Schemas\Schema;
 use Filament\Schemas\Components\Section;
 use Filament\Forms\Components\Textarea;
@@ -13,27 +16,23 @@ use Spatie\LaravelPdf\Facades\Pdf;
 use App\Filament\Resources\SellResource\Pages\ListSells;
 use App\Filament\Resources\SellResource\Pages\CreateSell;
 use App\Filament\Resources\SellResource\Pages\EditSell;
-use App\Enums\AccRef;
+
 use App\Enums\PlaceType;
-use App\Filament\Resources\SellResource\Pages;
+
 use App\Filament\Resources\SellResource\RelationManagers;
 use App\Livewire\Traits\AccTrait;
-use App\Models\Buy;
+
 use App\Models\Customer;
 use App\Models\Hall;
 use App\Models\Hall_stock;
-use App\Models\Item;
-use App\Models\Item_type;
+
 use App\Models\OurCompany;
-use App\Models\Place_stock;
+
 use App\Models\Product;
 use App\Models\Sell;
 use App\Models\Sell_tran;
 use App\Models\Setting;
-use App\Models\Unit;
-use Awcodes\TableRepeater\Components\TableRepeater;
-use Awcodes\TableRepeater\Header;
-use Filament\Forms;
+
 use Filament\Forms\Components\DatePicker;
 use Filament\Forms\Components\Hidden;
 use Filament\Forms\Components\Radio;
@@ -42,15 +41,14 @@ use Filament\Forms\Components\TextInput;
 use Filament\Notifications\Notification;
 use Filament\Resources\Resource;
 use Filament\Support\Enums\IconSize;
-use Filament\Tables;
 use Filament\Tables\Columns\Summarizers\Sum;
 use Filament\Tables\Columns\TextColumn;
 use Filament\Tables\Table;
-use Hamcrest\Core\Set;
+
 use Illuminate\Contracts\View\View;
-use Illuminate\Database\Eloquent\Builder;
+
 use Illuminate\Database\Eloquent\Model;
-use Illuminate\Database\Eloquent\SoftDeletingScope;
+
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Response;
 use Spatie\Browsershot\Browsershot;
@@ -170,18 +168,18 @@ class SellResource extends Resource
                     ->columnSpan(4),
                 Section::make()
                     ->schema([
-                        TableRepeater::make('Sell_tran')
+                        Repeater::make('Sell_tran')
                             ->hiddenLabel()
                             ->required()
                             ->relationship()
-                            ->headers([
-                                Header::make('المنتج')
+                            ->table([
+                                Repeater\TableColumn::make('المنتج')
                                     ->width('40%'),
-                                Header::make('الكمية')
+                                Repeater\TableColumn::make('الكمية')
                                     ->width('20%'),
-                                Header::make('السعر')
+                                Repeater\TableColumn::make('السعر')
                                     ->width('20%'),
-                                Header::make('الرصيد')
+                                Repeater\TableColumn::make('الرصيد')
                                     ->width('20%'),
                             ])
                             ->schema([
@@ -207,7 +205,7 @@ class SellResource extends Resource
                                             ->filter()
                                             ->contains($value);
                                     })
-                                   ->afterStateUpdated(function ($state,  \Filament\Schemas\Components\Utilities\Set $set,Get $get) {
+                                   ->afterStateUpdated(function ($state,  Set $set,Get $get) {
 
                                        $prod=Product::find($state);
                                        if ($prod)
@@ -227,7 +225,7 @@ class SellResource extends Resource
                                    }),
                                 TextInput::make('q')
                                     ->live(onBlur: true)
-                                    ->afterStateUpdated(function ($state,\Filament\Schemas\Components\Utilities\Set $set,Get $get,$operation,$record){
+                                    ->afterStateUpdated(function ($state,Set $set,Get $get,$operation,$record){
                                         if ($state) {
                                             if ($operation == 'create')
                                             {
@@ -275,7 +273,7 @@ class SellResource extends Resource
                                 Hidden::make('user_id')->default(Auth::id()),
                             ])
                             ->live()
-                            ->afterStateUpdated(function ($state,\Filament\Schemas\Components\Utilities\Set $set,Get $get){
+                            ->afterStateUpdated(function ($state,Set $set,Get $get){
                                 $total=0;
                                 foreach ($state as $item){
                                     if ($item['p'] && $item['q']) {

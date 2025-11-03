@@ -18,13 +18,13 @@ class CreateBuy extends CreateRecord
     use AccTrait;
     protected static string $resource = BuyResource::class;
     protected ?string $heading='';
-    protected function getCreateFormAction(): Action
-    {
-        return parent::getCreateFormAction()
+  // protected function getCreateFormAction(): Action
+  // {
+  //     return parent::getCreateFormAction()
 
-            ->extraAttributes(['type' => 'button', 'wire:click' => 'create'])
-            ;
-    }
+  //         ->extraAttributes(['type' => 'button', '@click' => 'create'])
+  //         ;
+  // }
     protected function getRedirectUrl(): string
     {
         return static::getResource()::getUrl('index');

@@ -45,7 +45,11 @@ class AppServiceProvider extends ServiceProvider
                     ->setChromePath(Setting::first()->exePath);
             })
             ->margins(10, 10, 20, 10, );
-        Table::configureUsing(fn(Table $table) => $table->defaultNumberLocale('nl'));
+        Table::configureUsing(fn(Table $table) => $table->defaultNumberLocale('nl')
+            ->pluralModelLabel('الصفحات')
+            ->emptyStateHeading('لا توجد بيانات')
+            ->defaultKeySort(false)
+        );
         FilamentView::registerRenderHook(
             PanelsRenderHook::GLOBAL_SEARCH_BEFORE,
             fn (): string => Blade::render('@livewire(\'top-bar\')'),

@@ -56,6 +56,7 @@ class RepMakzoon extends Page implements HasTable
                 return $place_stock;
             })
             ->defaultSort('item_id')
+            ->defaultKeySort(false)
             ->columns([
                 TextColumn::make('placeName')
                     ->sortable()

@@ -119,7 +119,7 @@ class ReceiptResource extends Resource
                   ->pluck('name', 'id'))
                 ->searchable()
                 ->requiredIf('rec_who',[3,4])
-                ->visible(fn(Get $get): bool =>($get('rec_who')==3 || $get('rec_who') ==4))
+                ->visible(fn(Get $get): bool =>($get('rec_who')->value==3 || $get('rec_who')->value ==4))
                 ->preload(),
 
                 Select::make('pay_type')
@@ -136,7 +136,7 @@ class ReceiptResource extends Resource
                    ->label('المبلغ')
                     ->live(onBlur: true)
                     ->afterStateUpdated(function ($state,Get $get,Set $set){
-                        if ($get('pay_type'==1) && $get('rate') && $state) {
+                        if ($get('pay_type')->value==1 && $get('rate') && $state) {
                             $set('differ',$get('rate')*$state/100);
                         }
                     })
@@ -144,12 +144,12 @@ class ReceiptResource extends Resource
                    ->numeric(),
                 Select::make('acc_id')
                     ->label('المصرف')
-                    ->relationship('AccRef','name')
+                    ->relationship('Acc','name')
                     ->searchable()
                     ->required()
                     ->live()
                     ->preload()
-                    ->visible(fn(Get $get): bool =>($get('pay_type')==1 ))
+                    ->visible(fn(Get $get): bool =>($get('pay_type')->value==1 ))
                     ->createOptionForm([
                         Section::make('ادخال حساب مصرفي جديد')
                             ->schema([
@@ -214,7 +214,7 @@ class ReceiptResource extends Resource
                         if ($res) return $res->id;
                         else return null;
                     })
-                    ->visible(fn(Get $get): bool =>($get('pay_type')==0 ))
+                    ->visible(fn(Get $get): bool =>($get('pay_type')->value==0 ))
                     ->createOptionForm([
                         Section::make('ادخال حساب خزينة جديد')
                             ->schema([
@@ -269,7 +269,7 @@ class ReceiptResource extends Resource
                             ])->columns(2)
                     ]),
                 Fieldset::make('فرق عملة')
-                  ->visible(fn(Get $get)=>$get('pay_type')==1)
+                  ->visible(fn(Get $get)=>$get('pay_type')->value==1)
                   ->columnSpan(2)
                   ->schema([
                       TextInput::make('rate')

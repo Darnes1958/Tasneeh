@@ -2,6 +2,7 @@
 
 namespace App\Filament\Resources;
 
+use Filament\Forms\Components\Repeater;
 use Filament\Schemas\Schema;
 use Filament\Schemas\Components\Section;
 use Filament\Schemas\Components\Utilities\Set;
@@ -17,19 +18,18 @@ use Spatie\LaravelPdf\Facades\Pdf;
 use App\Filament\Resources\FactoryResource\Pages\ListFactories;
 use App\Filament\Resources\FactoryResource\Pages\CreateFactory;
 use App\Filament\Resources\FactoryResource\Pages\EditFactory;
-use App\Enums\AccRef;
+
 use App\Enums\PlaceType;
 use App\Enums\Status;
-use App\Filament\Resources\FactoryResource\Pages;
+
 use App\Filament\Resources\FactoryResource\RelationManagers;
 use App\Livewire\Traits\AccTrait;
-use App\Models\Buy;
-use App\Models\Customer;
+
 use App\Models\Factory;
 use App\Models\Hall;
 use App\Models\Hall_stock;
 use App\Models\Item;
-use App\Models\Item_type;
+
 use App\Models\Man;
 use App\Models\OurCompany;
 use App\Models\Place;
@@ -38,16 +38,16 @@ use App\Models\Product;
 
 use App\Models\Setting;
 use App\Models\Tran;
-use Awcodes\TableRepeater\Header;
+
 use Carbon\Carbon;
-use Filament\Forms;
+
 use Filament\Forms\Components\FileUpload;
 use Filament\Forms\Components\Hidden;
 use Filament\Forms\Components\Textarea;
 use Filament\Notifications\Notification;
 use Filament\Resources\Resource;
 use Filament\Support\Enums\IconSize;
-use Filament\Tables;
+
 use Filament\Tables\Columns\Summarizers\Summarizer;
 use Filament\Tables\Enums\FiltersLayout;
 use Filament\Tables\Filters\SelectFilter;
@@ -58,8 +58,8 @@ use Filament\Forms\Components\DatePicker;
 use Illuminate\Contracts\View\View;
 use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Database\Eloquent\Model;
-use Illuminate\Database\Eloquent\SoftDeletingScope;
-use Awcodes\TableRepeater\Components\TableRepeater;
+
+
 use Illuminate\Support\Facades\Auth;
 use Filament\Tables\Columns\TextColumn;
 use Filament\Tables\Columns\Summarizers\Sum;
@@ -223,19 +223,19 @@ class FactoryResource extends Resource
                     ->columnSpan(6),
                 Section::make()
                    ->schema([
-                       TableRepeater::make('Tran')
+                      Repeater::make('Tran')
                            ->hiddenLabel()
                            ->required()
                            ->relationship()
                            ->addActionLabel('اضافة صنف')
-                           ->headers([
-                               Header::make('رقم الصنف')
+                           ->table([
+                               Repeater\TableColumn::make('رقم الصنف')
                                    ->width('40%'),
-                               Header::make('الكمية')
+                               Repeater\TableColumn::make('الكمية')
                                    ->width('20%'),
-                               Header::make('الرصيد')
+                               Repeater\TableColumn::make('الرصيد')
                                    ->width('20%'),
-                               Header::make('السعر')
+                               Repeater\TableColumn::make('السعر')
                                    ->width('20%'),
                            ])
                            ->live()
@@ -258,18 +258,15 @@ class FactoryResource extends Resource
                                return $flag;
                            })
                            ->schema([
-
                                Select::make('item_id')
                                    ->required()
-
                                    ->searchable()
                                    ->options(function (Get $get){
                                        return Item::
                                        whereIn('id',Place_stock::
                                            where('place_id',$get('../../place_id'))->where('stock','>',0)->pluck('item_id'))
                                            ->pluck('name','id');
-                                   }
-                                       )
+                                   })
                                    ->live()
                                    ->afterStateUpdated(function ($state,Set $set,Get $get){
                                        if ($state){
@@ -285,7 +282,6 @@ class FactoryResource extends Resource
                                            ->contains($value);
                                    }),
                                TextInput::make('quant')
-
                                    ->live(onBlur: true)
                                    ->numeric()
                                    ->minValue(.1)
@@ -319,7 +315,6 @@ class FactoryResource extends Resource
                                    ->numeric()
                                    ->mask(0.00)
                                    ->dehydrated(false),
-
                                TextInput::make('price')
                                    ->readOnly()
                                    ->required(),
@@ -344,16 +339,16 @@ class FactoryResource extends Resource
                   ->columnSpan(6),
                 Section::make()
                   ->schema([
-                      TableRepeater::make('Hand')
+                      Repeater::make('Hand')
                           ->hiddenLabel()
                           ->relationship()
                           ->addActionLabel('اضافة مشغل')
-                          ->headers([
-                              Header::make('الاسم')
+                          ->table([
+                              Repeater\TableColumn::make('الاسم')
                                   ->width('50%'),
-                              Header::make('بتاريخ')
+                              Repeater\TableColumn::make('بتاريخ')
                                   ->width('30%'),
-                              Header::make('المبلغ')
+                              Repeater\TableColumn::make('المبلغ')
                                   ->width('20%'),
 
 

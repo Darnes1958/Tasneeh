@@ -98,7 +98,7 @@ class ListSalaries extends ListRecords
               Radio::make('pay_type')
                ->options(PayType::class)
                ->live()
-               ->default(1)
+               ->default(0)
                ->label('طريقة الدفع'),
 
               Select::make('salary_id')
@@ -114,7 +114,11 @@ class ListSalaries extends ListRecords
                  ->required()
                  ->live()
                  ->preload()
-                 ->visible(fn(Get $get): bool =>($get('pay_type')==1 )),
+                   ->visible( function (Get $get){
+                       if ($get('pay_type') && $get('pay_type')->value==1)
+                           return true;
+                       else return  false;
+                   }),
                Select::make('kazena_id')
                  ->label('الخزينة')
                  ->options(Kazena::all()->pluck('name','id'))
@@ -127,7 +131,11 @@ class ListSalaries extends ListRecords
                    if ($res) return $res->id;
                    else return null;
                  })
-                 ->visible(fn(Get $get): bool =>($get('pay_type')==0 )),
+                   ->visible( function (Get $get){
+                       if ($get('pay_type') && $get('pay_type')->value==0)
+                           return true;
+                       else return  false;
+                   }),
 
               DatePicker::make('tran_date')
                 ->required()

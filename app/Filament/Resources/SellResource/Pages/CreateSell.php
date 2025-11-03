@@ -20,13 +20,13 @@ class CreateSell extends CreateRecord
     {
         return static::getResource()::getUrl('index');
     }
-    protected function getCreateFormAction(): Action
-    {
-        return parent::getCreateFormAction()
+   //protected function getCreateFormAction(): Action
+   //{
+   //    return parent::getCreateFormAction()
 
-            ->extraAttributes(['type' => 'button', 'wire:click' => 'create'])
-            ;
-    }
+   //        ->extraAttributes(['type' => 'button', 'wire:click' => 'create'])
+   //        ;
+   //}
     protected function beforeCreate(): void
     {
         $cuurent=$this->data['Sell_tran'];

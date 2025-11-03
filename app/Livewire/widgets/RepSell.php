@@ -52,7 +52,7 @@ use PublicTrait;
     {
 
         return $table
-            ->query(function (Sell $sell){
+            ->query(function (){
 
 
               if ($this->repDate1 && !$this->repDate2)

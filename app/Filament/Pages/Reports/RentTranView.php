@@ -54,7 +54,7 @@ class RentTranView extends Page implements HasTable, HasForms
     public function table(Table $table):Table
     {
         return $table
-            ->query(function (Renttran $tran)  {
+            ->query(function ()  {
                 $tran= Renttran::where('rent_id',$this->rent_id);
                 return  $tran;
             })

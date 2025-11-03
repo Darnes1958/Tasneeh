@@ -49,7 +49,7 @@ class RentResource extends Resource
                     ->label('الإيجار'),
                 Select::make('hall_id')
                     ->label('الصالة أو المحزن')
-                    ->relationship('Place', 'name')
+                    ->relationship('Hall', 'name')
                     ->searchable()
                     ->required()
                     ->live()

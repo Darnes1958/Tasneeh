@@ -49,7 +49,7 @@ class KlasaSupp extends BaseWidget
     public function table(Table $table): Table
     {
         return $table
-            ->query(function(Recsupp $rec){
+            ->query(function(){
 
                 $first=Recsupp::
                   when($this->repDate1,function ($q){
@@ -82,6 +82,7 @@ class KlasaSupp extends BaseWidget
             ->heading(new HtmlString('<div class="text-primary-400 text-lg">الموردين</div>'))
             ->contentFooter(view('table.footer', $this->data_list))
           ->defaultPaginationPageOption(5)
+            ->defaultKeySort(false)
             ->defaultSort('val')
             ->columns([
                 TextColumn::make('rec_who')

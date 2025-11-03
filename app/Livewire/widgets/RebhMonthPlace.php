@@ -21,17 +21,11 @@ class RebhMonthPlace extends BaseWidget
   public $year;
   public $place;
 
-
-  public function mount()
-  {
-    $this->form->fill(['year'=>$this->year]);
-  }
   #[On('updateyearplace')]
   public function updateyearplace($year,$place)
   {
     $this->year=$year;
     $this->place=$place;
-
   }
 
     public array $data_list= [

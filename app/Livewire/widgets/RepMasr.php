@@ -40,7 +40,7 @@ class RepMasr extends BaseWidget
     public function table(Table $table): Table
     {
         return $table
-          ->query(function (Masrofat $tar_sell){
+          ->query(function (){
             return Masrofat::whereBetween('masr_date',[$this->repDate1,$this->repDate2]);
           }
 
@@ -59,7 +59,7 @@ class RepMasr extends BaseWidget
               TextColumn::make('acc_name')
                 ->state(function (Masrofat $record){
                   if ($record->acc_id) return $record->Acc->name;
-                  else return $record->Kazena->name;
+                  else if ($record->kazena_id) return $record->Kazena->name;
                 })
                 ->color('primary')
                 ->label('دفعت من'),

@@ -2,6 +2,8 @@
 
 namespace App\Filament\Pages\Reports;
 
+use Filament\Schemas\Concerns\InteractsWithSchemas;
+use Filament\Schemas\Contracts\HasSchemas;
 use Filament\Schemas\Schema;
 use Filament\Schemas\Components\Utilities\Set;
 use App\Livewire\widgets\ChartArbah;
@@ -22,9 +24,9 @@ use Filament\Forms\Contracts\HasForms;
 use Filament\Pages\Page;
 use Illuminate\Support\Facades\Auth;
 
-class Arbah_place extends Page implements HasForms,HasActions
+class Arbah_place extends Page implements HasSchemas,HasActions
 {
-  use InteractsWithForms,InteractsWithActions;
+  use InteractsWithSchemas,InteractsWithActions;
   protected static string | \BackedEnum | null $navigationIcon = 'heroicon-o-document-text';
   protected static ?string $navigationLabel = 'الارباح حسب الصالات';
   protected static string | \UnitEnum | null $navigationGroup = 'الارباح';

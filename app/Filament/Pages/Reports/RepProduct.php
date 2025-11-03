@@ -99,13 +99,14 @@ class RepProduct extends Page implements HasTable
                 SelectFilter::make('hall_id')
                     ->searchable()
                     ->placeholder('كل اماكن التخزين')
-                    ->label('')
+
+                    ->label('مكان التخزين')
                     ->options(Hall::all()->pluck('name','id'))
                     ->preload(),
                 SelectFilter::make('product_id')
                     ->searchable()
                     ->placeholder('كل المنتجات')
-                    ->label('')
+                    ->label('منتج معين')
                     ->options(Product::all()->pluck('name','id'))
                     ->preload(),
                 Filter::make('anyfilter')

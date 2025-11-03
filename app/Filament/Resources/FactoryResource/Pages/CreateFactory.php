@@ -17,13 +17,13 @@ class CreateFactory extends CreateRecord
     use AccTrait;
     protected static string $resource = FactoryResource::class;
     protected ?string $heading='';
-    protected function getCreateFormAction(): Action
-    {
-        return parent::getCreateFormAction()
-
-            ->extraAttributes(['type' => 'button', 'wire:click' => 'create'])
-            ;
-    }
+  //  protected function getCreateFormAction(): Action
+  //  {
+  //      return parent::getCreateFormAction()
+//
+  //          ->extraAttributes(['type' => 'button', 'wire:click' => 'create'])
+  //          ;
+  //  }
     protected function getRedirectUrl(): string
     {
         return static::getResource()::getUrl('index');

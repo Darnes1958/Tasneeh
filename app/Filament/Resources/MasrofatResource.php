@@ -97,7 +97,7 @@ class MasrofatResource extends Resource
                     ->preload()
                     ->requiredIf('pay_type', 1)
                     ->visible(function (Get $get){
-                        return $get('pay_type')==1;
+                        return $get('pay_type')->value==1;
                     }),
                 Select::make('kazena_id')
                     ->relationship('Kazena','name')
@@ -105,7 +105,7 @@ class MasrofatResource extends Resource
                     ->preload()
                     ->requiredIf('pay_type', 0)
                     ->visible(function (Get $get){
-                        return $get('pay_type')==0;
+                        return $get('pay_type')->value==0;
                     }),
                 DatePicker::make('masr_date')
                  ->required()

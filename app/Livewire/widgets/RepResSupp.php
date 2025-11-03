@@ -46,7 +46,7 @@ class RepResSupp extends BaseWidget
     {
 
         return $table
-            ->query(function (Recsupp $buy){
+            ->query(function (){
               if ($this->repDate1 && !$this->repDate2)
                 $buy=Recsupp::where('receipt_date','>=',$this->repDate1);
               if ($this->repDate2 && !$this->repDate1)

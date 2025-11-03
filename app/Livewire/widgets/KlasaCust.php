@@ -49,7 +49,7 @@ class KlasaCust extends BaseWidget
     public function table(Table $table): Table
     {
         return $table
-            ->query(function(Receipt $rec){
+            ->query(function(){
 
                 $first=Receipt::
                     when($this->repDate1,function ($q){
@@ -85,6 +85,7 @@ class KlasaCust extends BaseWidget
             ->contentFooter(view('table.footer', $this->data_list))
           ->defaultPaginationPageOption(5)
             ->defaultSort('val')
+            ->defaultKeySort(false)
             ->columns([
                 TextColumn::make('rec_who')
                     ->label('البيان'),

@@ -114,7 +114,7 @@ class RecsuppResource extends Resource
             ->pluck('name', 'id'))
           ->searchable()
           ->requiredIf('rec_who',[3,4])
-          ->visible(fn(Get $get): bool =>($get('rec_who')==3 || $get('rec_who') ==4))
+          ->visible(fn(Get $get): bool =>($get('rec_who')->value==3 || $get('rec_who')->value ==4))
           ->preload(),
         Select::make('pay_type')
           ->label('طريقة الدفع')
@@ -153,7 +153,7 @@ class RecsuppResource extends Resource
                   if ($res) return $res->id;
                   else return null;
               })
-              ->visible(fn(Get $get): bool =>($get('pay_type')==0 ))
+              ->visible(fn(Get $get): bool =>($get('pay_type')->value==0 ))
               ,
         TextInput::make('notes')
           ->columnSpan(3)

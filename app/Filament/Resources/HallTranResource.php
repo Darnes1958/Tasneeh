@@ -2,6 +2,7 @@
 
 namespace App\Filament\Resources;
 
+use Filament\Schemas\Components\Text;
 use Filament\Schemas\Schema;
 use Filament\Schemas\Components\Wizard;
 use Filament\Schemas\Components\Wizard\Step;
@@ -54,7 +55,9 @@ class HallTranResource extends Resource
                         ->schema([
                             Select::make('product_id')
                                 ->label('المنتج')
-                                ->relationship('Product', 'name')
+                                ->relationship('Product', 'name',
+                                modifyQueryUsing: fn (Builder $query): Builder =>
+                                $query->where('stock','>',0))
                                 ->afterStateUpdated(function ($livewire){
                                     $livewire->dispatch('prod-submitted');
                                 })
@@ -81,9 +84,7 @@ class HallTranResource extends Resource
                                 ->preload()
                                 ->columnSpan(3)
                                 ->live(),
-                            Placeholder::make('raseed1')
-                                ->label('الرصيد')
-                                ->inlineLabel()
+                            Text::make('الرصيد')
                                 ->content(function (Get $get): string {
                                     if ($get('hall_id1') && $get('product_id'))
                                         return Hall_stock::where('hall_id', $get('hall_id1'))
@@ -108,9 +109,7 @@ class HallTranResource extends Resource
                                 ->preload()
                                 ->columnSpan(3)
                                 ->live(),
-                            Placeholder::make('raseed2')
-                                ->label('الرصيد')
-                                ->inlineLabel()
+                            Text::make('الرصيد')
                                 ->content(function (Get $get): string {
                                     if ($get('hall_id2') && $get('product_id'))
                                     {

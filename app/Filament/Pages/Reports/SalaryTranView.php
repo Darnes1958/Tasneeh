@@ -75,7 +75,7 @@ class SalaryTranView extends Page implements HasTable, HasForms
     public function table(Table $table):Table
     {
         return $table
-            ->query(function (Salarytran $tran)  {
+            ->query(function ()  {
                 $tran= Salarytran::where('salary_id',$this->salary_id);
                 return  $tran;
             })

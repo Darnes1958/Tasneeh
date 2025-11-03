@@ -86,7 +86,7 @@ class ItemTran extends Page implements HasForms,HasTable
   public function table(Table $table): Table
   {
     return $table
-      ->query(function(\App\Models\ItemTran $rec){
+      ->query(function(){
 
        $rec=\App\Models\ItemTran::where('item_id',$this->item_id)
           ->where('order_date','>=',$this->repDate)
@@ -97,6 +97,7 @@ class ItemTran extends Page implements HasForms,HasTable
 
       )
       ->defaultSort('created_at')
+      ->defaultKeySort(false)
 
       ->columns([
         TextColumn::make('created_at')

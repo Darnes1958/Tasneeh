@@ -2,6 +2,7 @@
 
 namespace App\Filament\Resources;
 
+use Filament\Forms\Components\Repeater;
 use Filament\Schemas\Schema;
 use Filament\Schemas\Components\Section;
 use Filament\Schemas\Components\Utilities\Get;
@@ -12,32 +13,25 @@ use Spatie\LaravelPdf\Facades\Pdf;
 use App\Filament\Resources\BuyResource\Pages\ListBuys;
 use App\Filament\Resources\BuyResource\Pages\CreateBuy;
 use App\Filament\Resources\BuyResource\Pages\EditBuy;
-use App\Enums\AccRef;
-use App\Enums\PayType;
-use App\Enums\PlaceType;
 
-use App\Filament\Resources\BuyResource\Pages;
+
+
 use App\Filament\Resources\BuyResource\RelationManagers;
 
 use App\Livewire\Traits\AccTrait;
-use App\Models\Acc;
+
 use App\Models\Buy;
-use App\Models\Cost;
-use App\Models\Costtype;
+
 use App\Models\Item;
-use App\Models\Item_type;
-use App\Models\Kazena;
+
 use App\Models\OurCompany;
 use App\Models\Place;
 use App\Models\Place_stock;
-use App\Models\Sell_tran;
+
 
 use App\Models\Setting;
 use App\Models\Supplier;
-use App\Models\Unit;
-use Awcodes\TableRepeater\Components\TableRepeater;
-use Awcodes\TableRepeater\Header;
-use Filament\Forms;
+
 use Filament\Forms\Components\DatePicker;
 use Filament\Forms\Components\Hidden;
 use Filament\Forms\Components\Radio;
@@ -177,18 +171,18 @@ class BuyResource extends Resource
                     ->columnSpan(5),
                 Section::make()
                  ->schema([
-                     TableRepeater::make('Buy_tran')
+                     Repeater::make('Buy_tran')
                          ->hiddenLabel()
                          ->required()
                          ->relationship()
-                         ->headers([
-                             Header::make('رقم الصنف')
+                         ->table([
+                             Repeater\TableColumn::make('رقم الصنف')
                                  ->width('50%'),
-                             Header::make('الكمية')
+                             Repeater\TableColumn::make('الكمية')
                                  ->width('15%'),
-                             Header::make('الاجمالي')
+                             Repeater\TableColumn::make('الاجمالي')
                                  ->width('20%'),
-                             Header::make('السعر')
+                             Repeater\TableColumn::make('السعر')
                                  ->width('15%'),
                          ])
                          ->schema([
@@ -437,9 +431,6 @@ class BuyResource extends Resource
                                      ]);
                                  }
                              }
-
-
-
                              return $data;
                          })
                  ])
@@ -449,14 +440,13 @@ class BuyResource extends Resource
                     ->collapsed()
                     ->collapsible()
                     ->schema([
-
-                         TableRepeater::make('costs')
+                         Repeater::make('costs')
                              ->hiddenLabel()
                              ->relationship()
-                             ->headers([
-                                 Header::make('نوع التكلفة')
+                             ->table([
+                                 Repeater\TableColumn::make('نوع التكلفة')
                                      ->width('50%'),
-                                 Header::make('المبلغ')
+                                 Repeater\TableColumn::make('المبلغ')
                                      ->width('30%'),
 
                              ])
@@ -639,6 +629,7 @@ class BuyResource extends Resource
                 TextColumn::make('notes')
                     ->label('ملاحظات'),
             ])
+            ->defaultKeySort(false)
             ->defaultSort('id','desc')
             ->filters([
                 //
