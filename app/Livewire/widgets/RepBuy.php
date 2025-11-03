@@ -2,14 +2,13 @@
 
 namespace App\Livewire\widgets;
 
+use Filament\Support\Enums\TextSize;
+use Filament\Actions\Action;
 use App\Livewire\Traits\PublicTrait;
 use App\Models\Buy;
 use App\Models\Sell;
-use Filament\Actions\StaticAction;
 use Filament\Tables;
-use Filament\Tables\Actions\Action;
 use Filament\Tables\Columns\TextColumn;
-use Filament\Tables\Columns\TextColumn\TextColumnSize;
 use Filament\Tables\Table;
 use Filament\Widgets\TableWidget as BaseWidget;
 use Illuminate\Contracts\View\View;
@@ -75,10 +74,10 @@ class RepBuy extends BaseWidget
                 ->defaultSort('order_date','desc')
                 ->striped()
                 ->columns([
-                    Tables\Columns\TextColumn::make('id')
+                    TextColumn::make('id')
                         ->sortable()
                         ->label('رقم الفاتورة'),
-                    Tables\Columns\TextColumn::make('Supplier.name')
+                    TextColumn::make('Supplier.name')
                         ->limit(25)
                         ->tooltip(function (TextColumn $column): ?string {
                             $state = $column->getState();
@@ -87,20 +86,20 @@ class RepBuy extends BaseWidget
                             }
                             return $state;
                         })
-                        ->size(TextColumnSize::ExtraSmall)
+                        ->size(TextSize::ExtraSmall)
                         ->label('المورد'),
-                    Tables\Columns\TextColumn::make('tot')
+                    TextColumn::make('tot')
                         ->label('الإجمالي'),
-                    Tables\Columns\TextColumn::make('pay')
+                    TextColumn::make('pay')
                         ->label('المدفوع'),
-                    Tables\Columns\TextColumn::make('baky')
+                    TextColumn::make('baky')
                         ->label('المتبقي'),
-                    Tables\Columns\TextColumn::make('notes')
+                    TextColumn::make('notes')
                         ->label('ملاحظات'),
 
                 ])
 
-                ->actions([
+                ->recordActions([
                     Action::make('print')
                         ->icon('heroicon-o-printer')
                         ->iconButton()
@@ -108,13 +107,13 @@ class RepBuy extends BaseWidget
                         ->url(fn (Buy $record): string => route('pdfbuy', ['id' => $record->id]))
                     ])
 
-              ->actions([
+              ->recordActions([
 
                 Action::make('عرض')
                   ->modalHeading(false)
                   ->action(fn (Buy $record) => $record->id())
                   ->modalSubmitAction(false)
-                  ->modalCancelAction(fn (StaticAction $action) => $action->label('عودة'))
+                  ->modalCancelAction(fn (Action $action) => $action->label('عودة'))
                   ->modalContent(fn (Buy $record): View => view(
                       'view-buy-tran-widget',
                       ['buy_id' => $record->id]  ,

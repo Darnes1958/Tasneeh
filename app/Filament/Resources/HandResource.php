@@ -2,6 +2,16 @@
 
 namespace App\Filament\Resources;
 
+use Filament\Schemas\Schema;
+use Filament\Schemas\Components\Section;
+use Filament\Schemas\Components\Utilities\Get;
+use Filament\Tables\Columns\Summarizers\Summarizer;
+use Filament\Support\Enums\Width;
+use Filament\Actions\EditAction;
+use Filament\Actions\DeleteAction;
+use App\Filament\Resources\HandResource\Pages\ListHands;
+use App\Filament\Resources\HandResource\Pages\CreateHand;
+use App\Filament\Resources\HandResource\Pages\EditHand;
 use App\Enums\PayType;
 use App\Enums\PayWho;
 use App\Filament\Resources\HandResource\Pages;
@@ -19,17 +29,13 @@ use Filament\Forms\Components\Checkbox;
 use Filament\Forms\Components\DatePicker;
 use Filament\Forms\Components\Hidden;
 use Filament\Forms\Components\Placeholder;
-use Filament\Forms\Components\Section;
 use Filament\Forms\Components\Select;
 use Filament\Forms\Components\Textarea;
 use Filament\Forms\Components\TextInput;
 use Filament\Forms\Components\Wizard;
-use Filament\Forms\Form;
-use Filament\Forms\Get;
 use Filament\Notifications\Notification;
 use Filament\Resources\Resource;
 use Filament\Support\Enums\FontWeight;
-use Filament\Support\Enums\MaxWidth;
 use Filament\Tables;
 use Filament\Tables\Columns\TextColumn;
 use Filament\Tables\Enums\FiltersLayout;
@@ -49,16 +55,16 @@ class HandResource extends Resource
 {
     protected static ?string $model = Hand::class;
 
-    protected static ?string $navigationIcon = 'heroicon-o-rectangle-stack';
+    protected static string | \BackedEnum | null $navigationIcon = 'heroicon-o-rectangle-stack';
     protected static ?string $navigationLabel='مدفوعات المشغلين';
 
-    protected static ?string $navigationGroup = 'ايصالات قبض ودفع';
+    protected static string | \UnitEnum | null $navigationGroup = 'ايصالات قبض ودفع';
     protected static ?int $navigationSort = 3;
 
-    public static function form(Form $form): Form
+    public static function form(Schema $schema): Schema
     {
-        return $form
-            ->schema([
+        return $schema
+            ->components([
                 Section::make()
                  ->schema([
                      Radio::make('pay_type')
@@ -191,7 +197,7 @@ class HandResource extends Resource
                             return $record->val;
                         } else return 0;
                     })
-                    ->summarize(Tables\Columns\Summarizers\Summarizer::make()
+                    ->summarize(Summarizer::make()
                         ->label('')
                         ->using(fn (Builder $query): string => $query->whereIn('pay_who',[1,2])->sum('val')))
                     ->searchable()
@@ -204,7 +210,7 @@ class HandResource extends Resource
                             return $record->val;
                         } else return 0;
                     })
-                ->summarize(Tables\Columns\Summarizers\Summarizer::make()
+                ->summarize(Summarizer::make()
                     ->label('')
                     ->using(fn (Builder $query): string => $query->whereIn('pay_who',[0,3])->sum('val')))
                     ->searchable()
@@ -233,7 +239,7 @@ class HandResource extends Resource
                     ->label('')
                     ->placeholder('بيان المبلغ'),
                 Filter::make('anyfilter')
-                    ->form([
+                    ->schema([
                         DatePicker::make('date1')
                             ->prefix('من تاريخ')
                             ->hiddenLabel(),
@@ -254,13 +260,13 @@ class HandResource extends Resource
                     ->columnSpan(2)
                     ->columns(2),
             ], layout: FiltersLayout::AboveContent)
-            ->filtersFormWidth(MaxWidth::SevenExtraLarge)
+            ->filtersFormWidth(Width::SevenExtraLarge)
             ->filtersFormColumns(6)
             ->striped()
-            ->actions([
-                Tables\Actions\EditAction::make()
+            ->recordActions([
+                EditAction::make()
                  ->hidden(fn($record) => $record->pay_who->value==0),
-                Tables\Actions\DeleteAction::make()
+                DeleteAction::make()
                  ->hidden(fn($record) => $record->pay_who->value==0)
                     ,
             ])
@@ -277,9 +283,9 @@ class HandResource extends Resource
     public static function getPages(): array
     {
         return [
-            'index' => Pages\ListHands::route('/'),
-            'create' => Pages\CreateHand::route('/create'),
-            'edit' => Pages\EditHand::route('/{record}/edit'),
+            'index' => ListHands::route('/'),
+            'create' => CreateHand::route('/create'),
+            'edit' => EditHand::route('/{record}/edit'),
         ];
     }
 }

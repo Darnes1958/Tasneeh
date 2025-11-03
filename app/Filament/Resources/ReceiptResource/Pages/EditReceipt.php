@@ -2,6 +2,7 @@
 
 namespace App\Filament\Resources\ReceiptResource\Pages;
 
+use Filament\Actions\DeleteAction;
 use App\Filament\Resources\ReceiptResource;
 use App\Models\Receipt;
 use App\Models\Sell;
@@ -46,7 +47,7 @@ class EditReceipt extends EditRecord
     protected function getHeaderActions(): array
     {
         return [
-            Actions\DeleteAction::make()->visible(Auth::user()->can('الغاء ايصالات زبائن'))
+            DeleteAction::make()->visible(Auth::user()->can('الغاء ايصالات زبائن'))
 
         ];
     }

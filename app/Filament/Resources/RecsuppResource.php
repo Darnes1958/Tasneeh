@@ -2,6 +2,15 @@
 
 namespace App\Filament\Resources;
 
+use Filament\Schemas\Schema;
+use Filament\Schemas\Components\Section;
+use Filament\Schemas\Components\Utilities\Get;
+use Filament\Tables\Filters\Filter;
+use Filament\Actions\EditAction;
+use Filament\Actions\DeleteAction;
+use App\Filament\Resources\RecsuppResource\Pages\ListRecsupps;
+use App\Filament\Resources\RecsuppResource\Pages\CreateRecsupp;
+use App\Filament\Resources\RecsuppResource\Pages\EditRecsupp;
 use App\Enums\AccRef;
 use App\Enums\PayType;
 use App\Enums\RecWho;
@@ -20,11 +29,8 @@ use Filament\Forms;
 use Filament\Forms\Components\DatePicker;
 use Filament\Forms\Components\Hidden;
 use Filament\Forms\Components\Radio;
-use Filament\Forms\Components\Section;
 use Filament\Forms\Components\Select;
 use Filament\Forms\Components\TextInput;
-use Filament\Forms\Form;
-use Filament\Forms\Get;
 use Filament\Resources\Resource;
 use Filament\Support\Enums\FontWeight;
 use Filament\Tables;
@@ -43,10 +49,10 @@ class RecsuppResource extends Resource
     use AccTrait;
     protected static ?string $model = Recsupp::class;
 
-    protected static ?string $navigationIcon = 'heroicon-o-rectangle-stack';
+    protected static string | \BackedEnum | null $navigationIcon = 'heroicon-o-rectangle-stack';
 
   protected static ?string $navigationLabel = 'ايصالات موردين';
-  protected static ?string $navigationGroup = 'ايصالات قبض ودفع';
+  protected static string | \UnitEnum | null $navigationGroup = 'ايصالات قبض ودفع';
   protected static ?int $navigationSort = 2;
 
     public static function shouldRegisterNavigation(): bool
@@ -54,10 +60,10 @@ class RecsuppResource extends Resource
         return Auth::user()->can('ادخال ايصالات موردين');
     }
 
-  public static function form(Form $form): Form
+  public static function form(Schema $schema): Schema
   {
-    return $form
-      ->schema([
+    return $schema
+      ->components([
         Radio::make('rec_who')
           ->inline()
           ->inlineLabel(false)
@@ -206,20 +212,20 @@ class RecsuppResource extends Resource
           ->options(Supplier::all()->pluck('name', 'id'))
           ->searchable()
           ->label('مورد معين'),
-        Tables\Filters\Filter::make('is_order')
+        Filter::make('is_order')
           ->label('ايصالات فاتورة')
           ->query(fn (Builder $query): Builder => $query->whereIn('rec_who', [3,4])),
-        Tables\Filters\Filter::make('is_imp')
+        Filter::make('is_imp')
           ->label('ايصالات قبض')
           ->query(fn (Builder $query): Builder => $query->where('rec_who', 1)),
-        Tables\Filters\Filter::make('is_exp')
+        Filter::make('is_exp')
           ->label('ايصالات دقع')
           ->query(fn (Builder $query): Builder => $query->where('rec_who', 2)),
-        Tables\Filters\Filter::make('created_at')
-          ->form([
-            Forms\Components\DatePicker::make('Date1')
+        Filter::make('created_at')
+          ->schema([
+            DatePicker::make('Date1')
               ->label('من تاريخ'),
-            Forms\Components\DatePicker::make('Date2')
+            DatePicker::make('Date2')
               ->label('إلي تاريخ'),
           ])
             ->indicateUsing(function (array $data): ?string {
@@ -245,13 +251,13 @@ class RecsuppResource extends Resource
               );
           })
       ])
-      ->actions([
-        Tables\Actions\EditAction::make()->iconButton()
+      ->recordActions([
+        EditAction::make()->iconButton()
             ->visible(fn(Recsupp $record): bool =>
                 $record->rec_who->value<7
                 || Auth::user()->can('الغاء ايصالات موردين')
             ),
-        Tables\Actions\DeleteAction::make()->iconButton()
+        DeleteAction::make()->iconButton()
             ->visible(fn(Recsupp $record): bool =>
             $record->rec_who->value<7
             || Auth::user()->can('الغاء ايصالات موردين')
@@ -270,7 +276,7 @@ class RecsuppResource extends Resource
 
           }),
       ])
-      ->bulkActions([
+      ->toolbarActions([
         //
       ]);
   }
@@ -278,9 +284,9 @@ class RecsuppResource extends Resource
     public static function getPages(): array
     {
         return [
-            'index' => Pages\ListRecsupps::route('/'),
-            'create' => Pages\CreateRecsupp::route('/create'),
-            'edit' => Pages\EditRecsupp::route('/{record}/edit'),
+            'index' => ListRecsupps::route('/'),
+            'create' => CreateRecsupp::route('/create'),
+            'edit' => EditRecsupp::route('/{record}/edit'),
         ];
     }
 }

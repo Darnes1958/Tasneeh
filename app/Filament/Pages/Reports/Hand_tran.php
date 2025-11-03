@@ -2,6 +2,12 @@
 
 namespace App\Filament\Pages\Reports;
 
+use Filament\Schemas\Components\Section;
+use Filament\Schemas\Components\Grid;
+use Filament\Schemas\Components\Utilities\Set;
+use Filament\Schemas\Components\Actions;
+use Filament\Actions\Action;
+use Filament\Schemas\Components\Utilities\Get;
 use App\Livewire\Traits\PublicTrait;
 
 
@@ -11,14 +17,10 @@ use Carbon\Carbon;
 use Carbon\Exceptions\InvalidFormatException;
 use Filament\Actions\StaticAction;
 use Filament\Forms\Components\DatePicker;
-use Filament\Forms\Components\Grid;
-use Filament\Forms\Components\Section;
 use Filament\Forms\Components\Select;
 use Filament\Forms\Components\TextInput;
 use Filament\Forms\Concerns\InteractsWithForms;
 use Filament\Forms\Contracts\HasForms;
-use Filament\Forms\Get;
-use Filament\Forms\Set;
 use Filament\Pages\Page;
 use Filament\Support\Enums\VerticalAlignment;
 use Filament\Tables\Columns\Summarizers\Summarizer;
@@ -35,11 +37,11 @@ class Hand_tran extends Page implements HasForms,HasTable
 {
     use InteractsWithTable,InteractsWithForms;
     use PublicTrait;
-    protected static ?string $navigationIcon = 'heroicon-o-document-text';
+    protected static string | \BackedEnum | null $navigationIcon = 'heroicon-o-document-text';
 
-    protected static string $view = 'filament.pages.reports.hand_tran';
+    protected string $view = 'filament.pages.reports.hand_tran';
     protected static ?string $navigationLabel='حركة مشغل';
-    protected static ?string $navigationGroup='زبائن وموردين ومشغلين';
+    protected static string | \UnitEnum | null $navigationGroup='زبائن وموردين ومشغلين';
     protected static ?int $navigationSort=7;
     protected ?string $heading="";
 
@@ -56,7 +58,7 @@ class Hand_tran extends Page implements HasForms,HasTable
     {
         return array_merge(parent::getForms(), [
             "myForm" => $this->makeForm()
-                ->schema($this->getMyFormSchema())
+                ->components($this->getMyFormSchema())
                 ->statePath('formData'),
 
         ]);
@@ -214,8 +216,8 @@ class Hand_tran extends Page implements HasForms,HasTable
                     TextInput::make('raseed')
                         ->readOnly()
                         ->label('الرصيد'),
-                    \Filament\Forms\Components\Actions::make([
-                        \Filament\Forms\Components\Actions\Action::make('printorder')
+                    Actions::make([
+                        Action::make('printorder')
                             ->label('طباعة')
                             ->visible(function (){
                                 return $this->chkDate($this->repDate) && $this->man_id;

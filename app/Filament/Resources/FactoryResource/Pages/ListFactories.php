@@ -2,6 +2,9 @@
 
 namespace App\Filament\Resources\FactoryResource\Pages;
 
+use Filament\Actions\CreateAction;
+use Filament\Actions\Action;
+use Spatie\LaravelPdf\Facades\Pdf;
 use App\Filament\Resources\FactoryResource;
 use App\Models\OurCompany;
 use App\Models\Setting;
@@ -21,9 +24,9 @@ class ListFactories extends ListRecords
     protected function getHeaderActions(): array
     {
         return [
-            Actions\CreateAction::make()
+            CreateAction::make()
             ->label('ادخال تصنيع'),
-            Actions\Action::make('prinitem')
+            Action::make('prinitem')
                 ->label('طباعة')
                 ->icon('heroicon-s-printer')
                 ->color('success')
@@ -37,7 +40,7 @@ class ListFactories extends ListRecords
                     $RepDate=date('Y-m-d');
                     $cus=OurCompany::where('Company',Auth::user()->company)->first();
 
-                    \Spatie\LaravelPdf\Facades\Pdf::view('PrnView.pdf-factories',
+                    Pdf::view('PrnView.pdf-factories',
                         ['res'=>$this->getTableQueryForExport()->get(),
                             'cus'=>$cus,'RepDate'=>$RepDate,'title'=>$title
                         ])

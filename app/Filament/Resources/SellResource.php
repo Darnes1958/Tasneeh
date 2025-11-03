@@ -2,6 +2,17 @@
 
 namespace App\Filament\Resources;
 
+use Filament\Schemas\Schema;
+use Filament\Schemas\Components\Section;
+use Filament\Forms\Components\Textarea;
+use Filament\Schemas\Components\Utilities\Get;
+use Filament\Tables\Columns\Summarizers\Summarizer;
+use Filament\Actions\EditAction;
+use Filament\Actions\Action;
+use Spatie\LaravelPdf\Facades\Pdf;
+use App\Filament\Resources\SellResource\Pages\ListSells;
+use App\Filament\Resources\SellResource\Pages\CreateSell;
+use App\Filament\Resources\SellResource\Pages\EditSell;
 use App\Enums\AccRef;
 use App\Enums\PlaceType;
 use App\Filament\Resources\SellResource\Pages;
@@ -22,21 +33,16 @@ use App\Models\Setting;
 use App\Models\Unit;
 use Awcodes\TableRepeater\Components\TableRepeater;
 use Awcodes\TableRepeater\Header;
-use Filament\Actions\StaticAction;
 use Filament\Forms;
 use Filament\Forms\Components\DatePicker;
 use Filament\Forms\Components\Hidden;
 use Filament\Forms\Components\Radio;
-use Filament\Forms\Components\Section;
 use Filament\Forms\Components\Select;
 use Filament\Forms\Components\TextInput;
-use Filament\Forms\Form;
-use Filament\Forms\Get;
 use Filament\Notifications\Notification;
 use Filament\Resources\Resource;
 use Filament\Support\Enums\IconSize;
 use Filament\Tables;
-use Filament\Tables\Actions\Action;
 use Filament\Tables\Columns\Summarizers\Sum;
 use Filament\Tables\Columns\TextColumn;
 use Filament\Tables\Table;
@@ -54,13 +60,13 @@ class SellResource extends Resource
     use AccTrait;
     protected static ?string $model = Sell::class;
 
-    protected static ?string $navigationIcon = 'heroicon-o-rectangle-stack';
+    protected static string | \BackedEnum | null $navigationIcon = 'heroicon-o-rectangle-stack';
     protected static ?string $navigationLabel='مبيعات';
 
-    public static function form(Form $form): Form
+    public static function form(Schema $schema): Schema
     {
-        return $form
-            ->schema([
+        return $schema
+            ->components([
                 Section::make()
                     ->schema([
                         Select::make('Customer_id')
@@ -152,7 +158,7 @@ class SellResource extends Resource
                             ->columnSpan(2)
                             ->default(0),
 
-                        Forms\Components\Textarea::make('notes')
+                        Textarea::make('notes')
                             ->live()
                             ->label('ملاحظات')
                             ->columnSpan('full'),
@@ -201,7 +207,7 @@ class SellResource extends Resource
                                             ->filter()
                                             ->contains($value);
                                     })
-                                   ->afterStateUpdated(function ($state,  Forms\Set $set,Get $get) {
+                                   ->afterStateUpdated(function ($state,  \Filament\Schemas\Components\Utilities\Set $set,Get $get) {
 
                                        $prod=Product::find($state);
                                        if ($prod)
@@ -221,7 +227,7 @@ class SellResource extends Resource
                                    }),
                                 TextInput::make('q')
                                     ->live(onBlur: true)
-                                    ->afterStateUpdated(function ($state,Forms\Set $set,Get $get,$operation,$record){
+                                    ->afterStateUpdated(function ($state,\Filament\Schemas\Components\Utilities\Set $set,Get $get,$operation,$record){
                                         if ($state) {
                                             if ($operation == 'create')
                                             {
@@ -269,7 +275,7 @@ class SellResource extends Resource
                                 Hidden::make('user_id')->default(Auth::id()),
                             ])
                             ->live()
-                            ->afterStateUpdated(function ($state,Forms\Set $set,Get $get){
+                            ->afterStateUpdated(function ($state,\Filament\Schemas\Components\Utilities\Set $set,Get $get){
                                 $total=0;
                                 foreach ($state as $item){
                                     if ($item['p'] && $item['q']) {
@@ -358,7 +364,7 @@ class SellResource extends Resource
                         decimalSeparator: '.',
                         thousandsSeparator: ',',
                     )
-                    ->summarize(Tables\Columns\Summarizers\Summarizer::make()
+                    ->summarize(Summarizer::make()
                         ->label('')
                         ->numeric(
                             decimalPlaces: 2,
@@ -377,9 +383,9 @@ class SellResource extends Resource
                 //
             ])
 
-            ->actions([
+            ->recordActions([
 
-                Tables\Actions\EditAction::make()
+                EditAction::make()
                     ->iconSize(IconSize::Small)
                     ->iconButton(),
                 Action::make('del')
@@ -410,7 +416,7 @@ class SellResource extends Resource
                     ->color('success')
                     ->modalHeading(false)
                     ->modalSubmitAction(false)
-                    ->modalCancelAction(fn (StaticAction $action) => $action->label('عودة'))
+                    ->modalCancelAction(fn (Action $action) => $action->label('عودة'))
                     ->modalContent(fn (Sell $record): View => view(
                         'view-sell-tran-widget',
                         ['sell_id' => $record->id],
@@ -423,7 +429,7 @@ class SellResource extends Resource
                         $RepDate=date('Y-m-d');
                         $cus=OurCompany::where('Company',Auth::user()->company)->first();
 
-                        \Spatie\LaravelPdf\Facades\Pdf::view('PrnView.pdf-sell-order',
+                        Pdf::view('PrnView.pdf-sell-order',
                             ['res'=>$record,
                                 'cus'=>$cus,'RepDate'=>$RepDate,
                             ])
@@ -458,9 +464,9 @@ class SellResource extends Resource
     public static function getPages(): array
     {
         return [
-            'index' => Pages\ListSells::route('/'),
-            'create' => Pages\CreateSell::route('/create'),
-            'edit' => Pages\EditSell::route('/{record}/edit'),
+            'index' => ListSells::route('/'),
+            'create' => CreateSell::route('/create'),
+            'edit' => EditSell::route('/{record}/edit'),
         ];
     }
 }

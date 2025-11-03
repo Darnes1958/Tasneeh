@@ -2,6 +2,10 @@
 
 namespace App\Filament\Resources\SalaryResource\Pages;
 
+use Filament\Actions\CreateAction;
+use Filament\Actions\Action;
+use Filament\Schemas\Components\Utilities\Get;
+use Filament\Schemas\Components\Utilities\Set;
 use App\Enums\AccRef;
 use App\Enums\PayType;
 use App\Filament\Resources\SalaryResource;
@@ -17,8 +21,6 @@ use Filament\Forms\Components\Radio;
 use Filament\Forms\Components\Select;
 use Filament\Forms\Components\TextInput;
 use Filament\Forms\Components\Toggle;
-use Filament\Forms\Get;
-use Filament\Forms\Set;
 use Filament\Resources\Pages\ListRecords;
 use Filament\Forms\Components\DatePicker;
 use Filament\Notifications\Notification;
@@ -34,12 +36,12 @@ class ListSalaries extends ListRecords
     {
         return [
 
-            Actions\CreateAction::make()
+            CreateAction::make()
             ->label('إضافة مرتب جديد'),
-            Actions\Action::make('إدارج_مرتبات')
+            Action::make('إدارج_مرتبات')
                 ->color('success')
                 ->modalSubmitActionLabel('إدراج')
-                ->form([
+                ->schema([
                     DatePicker::make('month')
                     ->label('عن شهر')
                     ->required()
@@ -89,10 +91,10 @@ class ListSalaries extends ListRecords
                           ->iconColor('danger')
                           ->send();
                 }),
-            Actions\Action::make('سحب')
+            Action::make('سحب')
              ->color('success')
               ->icon('heroicon-o-minus-circle')
-             ->form([
+             ->schema([
               Radio::make('pay_type')
                ->options(PayType::class)
                ->live()
@@ -161,10 +163,10 @@ class ListSalaries extends ListRecords
                   ->send();
 
             }),
-          Actions\Action::make('اضافة')
+          Action::make('اضافة')
             ->color('success')
             ->icon('heroicon-o-plus-circle')
-            ->form([
+            ->schema([
               Select::make('salary_id')
                 ->label('الاسم')
                 ->options(Salary::all()->pluck('name','id'))
@@ -201,9 +203,9 @@ class ListSalaries extends ListRecords
                 ->send();
 
             }),
-          Actions\Action::make('خصم')
+          Action::make('خصم')
             ->color('danger')
-            ->form([
+            ->schema([
 
 
               Select::make('salary_id')
@@ -240,10 +242,10 @@ class ListSalaries extends ListRecords
                 ->iconColor('success')
                 ->send();
             }),
-          Actions\Action::make('ايقاف')
+          Action::make('ايقاف')
 
             ->color('danger')
-            ->form([
+            ->schema([
               Select::make('id')
                 ->label('الاسم')
                 ->options(Salary::all()->pluck('name','id'))
@@ -273,10 +275,10 @@ class ListSalaries extends ListRecords
                 ->send();
             }),
 
-            Actions\Action::make('إلغاء_مرتب')
+            Action::make('إلغاء_مرتب')
                 ->color('danger')
                 ->requiresConfirmation()
-                ->form([
+                ->schema([
                     Select::make('month')
                     ->label('عن شهر')
                     ->options(Salarytran::where('month','!=','0')->distinct()->pluck('month', 'month'))

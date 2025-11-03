@@ -2,6 +2,7 @@
 
 namespace App\Filament\Resources\HallResource\Pages;
 
+use Filament\Actions\CreateAction;
 use App\Enums\AccRef;
 use App\Filament\Resources\HallResource;
 use App\Livewire\Traits\AccTrait;
@@ -20,7 +21,7 @@ class ListHalls extends ListRecords
     protected function getHeaderActions(): array
     {
         return [
-            Actions\CreateAction::make()->label('ادخال'),
+            CreateAction::make()->label('ادخال'),
 
 
         ];

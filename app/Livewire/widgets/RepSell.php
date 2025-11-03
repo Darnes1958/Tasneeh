@@ -3,14 +3,13 @@
 namespace App\Livewire\widgets;
 
 
+use Filament\Support\Enums\TextSize;
+use Filament\Actions\Action;
 use App\Livewire\Traits\PublicTrait;
 use App\Models\Buy;
 use App\Models\Sell;
-use Filament\Actions\StaticAction;
 use Filament\Tables;
-use Filament\Tables\Actions\Action;
 use Filament\Tables\Columns\TextColumn;
-use Filament\Tables\Columns\TextColumn\TextColumnSize;
 use Filament\Tables\Table;
 use Filament\Widgets\TableWidget as BaseWidget;
 use Illuminate\Contracts\View\View;
@@ -74,10 +73,10 @@ use PublicTrait;
             ->defaultSort('order_date','desc')
             ->striped()
             ->columns([
-                Tables\Columns\TextColumn::make('id')
+                TextColumn::make('id')
                     ->sortable()
                     ->label('رقم الفاتورة'),
-                Tables\Columns\TextColumn::make('Customer.name')
+                TextColumn::make('Customer.name')
                     ->limit(25)
                     ->tooltip(function (TextColumn $column): ?string {
                         $state = $column->getState();
@@ -86,24 +85,24 @@ use PublicTrait;
                         }
                         return $state;
                     })
-                    ->size(TextColumnSize::ExtraSmall)
+                    ->size(TextSize::ExtraSmall)
                     ->label('الزبون'),
-                Tables\Columns\TextColumn::make('total')
+                TextColumn::make('total')
                     ->label('الإجمالي'),
-                Tables\Columns\TextColumn::make('pay')
+                TextColumn::make('pay')
                     ->label('المدفوع'),
-                Tables\Columns\TextColumn::make('baky')
+                TextColumn::make('baky')
                     ->label('المتبقي'),
-                Tables\Columns\TextColumn::make('notes')
+                TextColumn::make('notes')
                     ->label('ملاحظات'),
 
             ])
-            ->actions([
+            ->recordActions([
                 Action::make('عرض')
                     ->modalHeading(false)
                     ->action(fn (Sell $record) => $record->id())
                     ->modalSubmitAction(false)
-                    ->modalCancelAction(fn (StaticAction $action) => $action->label('عودة'))
+                    ->modalCancelAction(fn (Action $action) => $action->label('عودة'))
                     ->modalContent(fn (Sell $record): View => view(
                         'view-sell-tran-widget',
                         ['sell_id' => $record->id]  ,

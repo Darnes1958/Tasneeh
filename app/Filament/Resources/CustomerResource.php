@@ -2,6 +2,13 @@
 
 namespace App\Filament\Resources;
 
+use Filament\Schemas\Schema;
+use Filament\Tables\Columns\Summarizers\Sum;
+use Filament\Actions\EditAction;
+use Filament\Actions\Action;
+use App\Filament\Resources\CustomerResource\Pages\ListCustomers;
+use App\Filament\Resources\CustomerResource\Pages\CreateCustomer;
+use App\Filament\Resources\CustomerResource\Pages\EditCustomer;
 use App\Filament\Resources\CustomerResource\Pages;
 use App\Filament\Resources\CustomerResource\RelationManagers;
 use App\Models\Customer;
@@ -10,7 +17,6 @@ use App\Models\Sell;
 use Filament\Forms;
 use Filament\Forms\Components\Hidden;
 use Filament\Forms\Components\TextInput;
-use Filament\Forms\Form;
 use Filament\Resources\Resource;
 use Filament\Tables;
 use Filament\Tables\Columns\TextColumn;
@@ -25,15 +31,15 @@ class CustomerResource extends Resource
     protected static ?string $model = Customer::class;
 
 
-    protected static ?string $navigationIcon = 'heroicon-o-rectangle-stack';
+    protected static string | \BackedEnum | null $navigationIcon = 'heroicon-o-rectangle-stack';
     protected static ?string $navigationLabel='زبائن';
-    protected static ?string $navigationGroup='زبائن وموردين ومشغلين';
+    protected static string | \UnitEnum | null $navigationGroup='زبائن وموردين ومشغلين';
     protected static ?int $navigationSort=1;
 
-    public static function form(Form $form): Form
+    public static function form(Schema $schema): Schema
     {
-        return $form
-            ->schema([
+        return $schema
+            ->components([
                 TextInput::make('name')
                     ->required()
                     ->label('الاسم'),
@@ -86,7 +92,7 @@ class CustomerResource extends Resource
                         decimalSeparator: '.',
                         thousandsSeparator: ',',
                     )
-                    ->summarize(Tables\Columns\Summarizers\Sum::make()->numeric(
+                    ->summarize(Sum::make()->numeric(
                         decimalPlaces: 2,
                         decimalSeparator: '.',
                         thousandsSeparator: ',',
@@ -97,11 +103,11 @@ class CustomerResource extends Resource
             ->filters([
                 //
             ])
-            ->actions([
-                Tables\Actions\EditAction::make()
+            ->recordActions([
+                EditAction::make()
                     ->iconButton()
                 ,
-                Tables\Actions\Action::make('del')
+                Action::make('del')
                     ->icon('heroicon-o-trash')
                     ->color('danger')
                     ->iconButton()
@@ -129,9 +135,9 @@ class CustomerResource extends Resource
     public static function getPages(): array
     {
         return [
-            'index' => Pages\ListCustomers::route('/'),
-            'create' => Pages\CreateCustomer::route('/create'),
-            'edit' => Pages\EditCustomer::route('/{record}/edit'),
+            'index' => ListCustomers::route('/'),
+            'create' => CreateCustomer::route('/create'),
+            'edit' => EditCustomer::route('/{record}/edit'),
         ];
     }
 }

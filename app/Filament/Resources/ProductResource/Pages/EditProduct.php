@@ -2,6 +2,7 @@
 
 namespace App\Filament\Resources\ProductResource\Pages;
 
+use Filament\Actions\DeleteAction;
 use App\Filament\Resources\ProductResource;
 use App\Models\Factory;
 use Filament\Actions;
@@ -19,7 +20,7 @@ class EditProduct extends EditRecord
     protected function getHeaderActions(): array
     {
         return [
-            Actions\DeleteAction::make()->hidden(fn(Model $record): bool => Factory::where('product_id',$record->id)->exists()),
+            DeleteAction::make()->hidden(fn(Model $record): bool => Factory::where('product_id',$record->id)->exists()),
         ];
     }
 }

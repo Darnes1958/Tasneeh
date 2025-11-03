@@ -23,11 +23,11 @@ class RepMakzoon extends Page implements HasTable
 
 {
     use InteractsWithTable;
-    protected static ?string $navigationIcon = 'heroicon-o-document-text';
+    protected static string | \BackedEnum | null $navigationIcon = 'heroicon-o-document-text';
 
-    protected static string $view = 'filament.pages.reports.rep-makzoon';
+    protected string $view = 'filament.pages.reports.rep-makzoon';
     protected static ?string $navigationLabel='تقرير عن مخزون الاصناف';
-    protected static ?string $navigationGroup='مخازن و أصناف';
+    protected static string | \UnitEnum | null $navigationGroup='مخازن و أصناف';
     protected static ?int $navigationSort=3;
     protected ?string $heading="";
 
@@ -35,7 +35,7 @@ class RepMakzoon extends Page implements HasTable
     {
         return Auth::user()->hasRole('admin');
     }
-    public function getTableRecordKey(Model $record): string
+    public function getTableRecordKey(Model|array $record): string
     {
         return Uuid::class;
     }

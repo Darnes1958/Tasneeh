@@ -4,6 +4,7 @@ namespace App\Filament\Pages\Reports;
 
 
 
+use Filament\Schemas\Schema;
 use App\Livewire\Traits\PublicTrait;
 use App\Livewire\widgets\KlasaBuy;
 use App\Livewire\widgets\KlasaCust;
@@ -22,7 +23,6 @@ use Filament\Actions\Contracts\HasActions;
 use Filament\Forms\Components\DatePicker;
 use Filament\Forms\Concerns\InteractsWithForms;
 use Filament\Forms\Contracts\HasForms;
-use Filament\Forms\Form;
 use Filament\Pages\Page;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Response;
@@ -32,9 +32,9 @@ class RepKlasa extends Page implements HasForms,HasActions
 {
     use InteractsWithForms,InteractsWithActions;
     use PublicTrait;
-    protected static ?string $navigationIcon = 'heroicon-o-document-text';
+    protected static string | \BackedEnum | null $navigationIcon = 'heroicon-o-document-text';
     protected static ?string $navigationLabel = 'خلاصة الحركة اليومية';
-    protected static ?string $navigationGroup = 'الحركة اليومية';
+    protected static string | \UnitEnum | null $navigationGroup = 'الحركة اليومية';
     protected static ?int $navigationSort=2;
 
     public function chkDate($repDate){
@@ -50,7 +50,7 @@ class RepKlasa extends Page implements HasForms,HasActions
         return Auth::user()->hasRole('admin');
     }
 
-    protected static string $view = 'filament.pages.reports.rep-klasa';
+    protected string $view = 'filament.pages.reports.rep-klasa';
     protected ?string $heading="";
     public $buy,$sell,$masr,$kaz,$cust,$supp;
     #[On('buyQuery')]
@@ -119,10 +119,10 @@ class RepKlasa extends Page implements HasForms,HasActions
         ];
     }
 
-    public function form(Form $form): Form
+    public function form(Schema $schema): Schema
     {
-        return $form
-            ->schema([
+        return $schema
+            ->components([
                 DatePicker::make('repDate1')
                  ->live()
                  ->afterStateUpdated(function ($state){

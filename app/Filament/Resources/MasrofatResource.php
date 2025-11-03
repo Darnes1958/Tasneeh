@@ -2,6 +2,21 @@
 
 namespace App\Filament\Resources;
 
+use Filament\Schemas\Schema;
+use Filament\Schemas\Components\Section;
+use Filament\Forms\Components\Radio;
+use Filament\Schemas\Components\Utilities\Get;
+use Filament\Forms\Components\DatePicker;
+use Filament\Tables\Columns\TextColumn;
+use Filament\Tables\Filters\Filter;
+use Filament\Tables\Enums\FiltersLayout;
+use Filament\Support\Enums\Width;
+use Filament\Actions\EditAction;
+use Filament\Actions\BulkActionGroup;
+use Filament\Actions\DeleteBulkAction;
+use App\Filament\Resources\MasrofatResource\Pages\ListMasrofats;
+use App\Filament\Resources\MasrofatResource\Pages\CreateMasrofat;
+use App\Filament\Resources\MasrofatResource\Pages\EditMasrofat;
 use App\Enums\AccRef;
 use App\Enums\PayType;
 use App\Filament\Resources\MasrofatResource\Pages;
@@ -14,12 +29,9 @@ use App\Models\Masrofat;
 use Carbon\Carbon;
 use Filament\Actions\DeleteAction;
 use Filament\Forms;
-use Filament\Forms\Components\Section;
 use Filament\Forms\Components\Select;
 use Filament\Forms\Components\TextInput;
-use Filament\Forms\Form;
 use Filament\Resources\Resource;
-use Filament\Support\Enums\MaxWidth;
 use Filament\Tables;
 use Filament\Tables\Columns\Summarizers\Sum;
 use Filament\Tables\Table;
@@ -34,20 +46,20 @@ class MasrofatResource extends Resource
     use AccTrait;
     protected static ?string $model = Masrofat::class;
 
-    protected static ?string $navigationIcon = 'heroicon-o-rectangle-stack';
+    protected static string | \BackedEnum | null $navigationIcon = 'heroicon-o-rectangle-stack';
     protected static ?string $pluralLabel='مصروفات';
-    protected static ?string $navigationGroup='مصروفات';
+    protected static string | \UnitEnum | null $navigationGroup='مصروفات';
 
     public static function shouldRegisterNavigation(): bool
     {
         return Auth::user()->can('ادخال مصروفات');
     }
 
-    public static function form(Form $form): Form
+    public static function form(Schema $schema): Schema
     {
-        return $form
-            ->schema([
-               Forms\Components\Select::make('masr_type_id')
+        return $schema
+            ->components([
+               Select::make('masr_type_id')
                 ->relationship('Masr_type','name')
                 ->searchable()
                 ->required()
@@ -72,7 +84,7 @@ class MasrofatResource extends Resource
                        return $thekey;
                    })
                 ->label('نوع المصروفات'),
-                Forms\Components\Radio::make('pay_type')
+                Radio::make('pay_type')
                     ->options(PayType::class)
                     ->default(1)
                     ->inline()
@@ -84,7 +96,7 @@ class MasrofatResource extends Resource
                     ->label('المصرف')
                     ->preload()
                     ->requiredIf('pay_type', 1)
-                    ->visible(function (Forms\Get $get){
+                    ->visible(function (Get $get){
                         return $get('pay_type')==1;
                     }),
                 Select::make('kazena_id')
@@ -92,10 +104,10 @@ class MasrofatResource extends Resource
                     ->label('الخزينة')
                     ->preload()
                     ->requiredIf('pay_type', 0)
-                    ->visible(function (Forms\Get $get){
+                    ->visible(function (Get $get){
                         return $get('pay_type')==0;
                     }),
-                Forms\Components\DatePicker::make('masr_date')
+                DatePicker::make('masr_date')
                  ->required()
                  ->default(now())
                 ->label('التاريخ'),
@@ -122,23 +134,23 @@ class MasrofatResource extends Resource
         return $table
             ->defaultSort('masr_date','desc')
             ->columns([
-                Tables\Columns\TextColumn::make('masr_date')
+                TextColumn::make('masr_date')
                  ->label('التاريخ')
                 ->searchable()
                 ->sortable(),
-                Tables\Columns\TextColumn::make('Masr_type.name')
+                TextColumn::make('Masr_type.name')
                     ->label('البيان')
                     ->searchable()
                     ->sortable(),
-                Tables\Columns\TextColumn::make('AccRef.name')
+                TextColumn::make('AccRef.name')
                     ->label('المصرف')
                     ->searchable()
                     ->sortable(),
-                Tables\Columns\TextColumn::make('Kazena.name')
+                TextColumn::make('Kazena.name')
                     ->label('الخزينة')
                     ->searchable()
                     ->sortable(),
-                Tables\Columns\TextColumn::make('val')
+                TextColumn::make('val')
                     ->label('المبلغ')
                     ->searchable()
                     ->summarize(Sum::make()->label('')->numeric(
@@ -152,18 +164,18 @@ class MasrofatResource extends Resource
                         thousandsSeparator: ',',
                     )
                     ->sortable(),
-                Tables\Columns\TextColumn::make('notes')
+                TextColumn::make('notes')
                     ->label('ملاحظات')
                     ->searchable()
                     ->sortable(),
 
             ])
             ->filters([
-                Tables\Filters\Filter::make('created_at')
-                    ->form([
-                        Forms\Components\DatePicker::make('Date1')
+                Filter::make('created_at')
+                    ->schema([
+                        DatePicker::make('Date1')
                             ->label('من تاريخ'),
-                        Forms\Components\DatePicker::make('Date2')
+                        DatePicker::make('Date2')
                             ->label('إلي تاريخ'),
                     ])
                     ->indicateUsing(function (array $data): ?string {
@@ -188,17 +200,17 @@ class MasrofatResource extends Resource
                                 fn (Builder $query, $date): Builder => $query->whereDate('masr_date', '<=', $date),
                             );
                     })
-            ], layout: Tables\Enums\FiltersLayout::Modal)
-            ->filtersFormWidth(MaxWidth::ExtraSmall)
-            ->actions([
-                Tables\Actions\EditAction::make(),
-                Tables\Actions\DeleteAction::make()
+            ], layout: FiltersLayout::Modal)
+            ->filtersFormWidth(Width::ExtraSmall)
+            ->recordActions([
+                EditAction::make(),
+                DeleteAction::make()
                     ->visible(Auth::user()->can('الغاء مصروفات'))
                     ,
             ])
-            ->bulkActions([
-                Tables\Actions\BulkActionGroup::make([
-                    Tables\Actions\DeleteBulkAction::make(),
+            ->toolbarActions([
+                BulkActionGroup::make([
+                    DeleteBulkAction::make(),
 
                 ]),
             ]);
@@ -214,9 +226,9 @@ class MasrofatResource extends Resource
     public static function getPages(): array
     {
         return [
-            'index' => Pages\ListMasrofats::route('/'),
-            'create' => Pages\CreateMasrofat::route('/create'),
-            'edit' => Pages\EditMasrofat::route('/{record}/edit'),
+            'index' => ListMasrofats::route('/'),
+            'create' => CreateMasrofat::route('/create'),
+            'edit' => EditMasrofat::route('/{record}/edit'),
         ];
     }
 }

@@ -2,6 +2,7 @@
 
 namespace App\Filament\Resources\HallTranResource\Pages;
 
+use Filament\Actions\CreateAction;
 use App\Filament\Resources\HallTranResource;
 use Filament\Actions;
 use Filament\Resources\Pages\ListRecords;
@@ -14,7 +15,7 @@ class ListHallTrans extends ListRecords
     protected function getHeaderActions(): array
     {
         return [
-            Actions\CreateAction::make()
+            CreateAction::make()
                 ->createAnother(false)
                 ->label('ادخال'),
         ];

@@ -2,6 +2,7 @@
 
 namespace App\Filament\Resources\HandResource\Pages;
 
+use Filament\Actions\CreateAction;
 use App\Enums\AccRef;
 use App\Filament\Resources\HandResource;
 use App\Livewire\Traits\AccTrait;
@@ -20,7 +21,7 @@ class ListHands extends ListRecords
     protected function getHeaderActions(): array
     {
         return [
-            Actions\CreateAction::make()
+            CreateAction::make()
              ->label('ادخال'),
 
         ];

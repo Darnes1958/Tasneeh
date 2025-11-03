@@ -2,6 +2,8 @@
 
 namespace App\Filament\Resources\ItemResource\Pages;
 
+use Filament\Actions\CreateAction;
+use Filament\Actions\Action;
 use App\Enums\AccRef;
 use App\Filament\Resources\ItemResource;
 use App\Livewire\Traits\AccTrait;
@@ -36,9 +38,9 @@ class ListItems extends ListRecords
     protected function getHeaderActions(): array
     {
         return [
-            Actions\CreateAction::make()
+            CreateAction::make()
              ->label('إضافة صنف جديد'),
-            Actions\Action::make('prinitem')
+            Action::make('prinitem')
              ->label('طباعة')
              ->icon('heroicon-s-printer')
              ->color('success')

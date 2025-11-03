@@ -2,6 +2,7 @@
 
 namespace App\Filament\Resources\SupplierResource\Pages;
 
+use Filament\Actions\CreateAction;
 use App\Enums\AccRef;
 use App\Filament\Resources\SupplierResource;
 use App\Livewire\Traits\AccTrait;
@@ -25,7 +26,7 @@ class ListSuppliers extends ListRecords
   protected function getHeaderActions(): array
   {
     return [
-      Actions\CreateAction::make()
+      CreateAction::make()
         ->label('إضافة مورد جديد'),
 
 

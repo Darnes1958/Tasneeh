@@ -3,6 +3,16 @@
 namespace App\Filament\Resources;
 
 
+use Filament\Schemas\Schema;
+use Filament\Schemas\Components\Section;
+use Filament\Schemas\Components\Fieldset;
+use Filament\Actions\Action;
+use Filament\Actions\EditAction;
+use Filament\Actions\BulkActionGroup;
+use Filament\Actions\DeleteBulkAction;
+use App\Filament\Resources\ItemResource\Pages\ListItems;
+use App\Filament\Resources\ItemResource\Pages\CreateItem;
+use App\Filament\Resources\ItemResource\Pages\EditItem;
 use App\Enums\AccRef;
 use App\Filament\Resources\ItemResource\Pages;
 use App\Filament\Resources\ItemResource\RelationManagers;
@@ -19,19 +29,15 @@ use App\Models\Sell_tran;
 
 use Barryvdh\DomPDF\Facade\Pdf;
 use Filament\Actions\DeleteAction;
-use Filament\Forms\Components\Fieldset;
 use Filament\Forms\Components\Hidden;
 use Filament\Forms\Components\Radio;
-use Filament\Forms\Components\Section;
 use Filament\Forms\Components\Select;
 use Filament\Forms\Components\TextInput;
-use Filament\Forms\Form;
 use Filament\Forms\Get;
 use Filament\Notifications\Notification;
 use Filament\Resources\Resource;
 use Filament\Support\RawJs;
 use Filament\Tables;
-use Filament\Tables\Actions\Action;
 use Filament\Tables\Columns\Summarizers\Summarizer;
 use Filament\Tables\Columns\TextColumn;
 use Filament\Tables\Filters\Filter;
@@ -48,9 +54,9 @@ class ItemResource extends Resource
 
     protected static ?string $pluralModelLabel='أصناف';
     protected static ?int $navigationSort=1;
-  protected static ?string $navigationGroup='مخازن و أصناف';
+  protected static string | \UnitEnum | null $navigationGroup='مخازن و أصناف';
 
-    protected static ?string $navigationIcon = 'heroicon-o-rectangle-stack';
+    protected static string | \BackedEnum | null $navigationIcon = 'heroicon-o-rectangle-stack';
 
 
     public static function shouldRegisterNavigation(): bool
@@ -58,10 +64,10 @@ class ItemResource extends Resource
         return Auth::user()->can('ادخال مشتريات');
     }
 
-    public static function form(Form $form): Form
+    public static function form(Schema $schema): Schema
     {
-        return $form
-            ->schema([
+        return $schema
+            ->components([
                 TextInput::make('id')
                  ->hidden(fn(string $operation)=>$operation=='create')
                  ->disabled()
@@ -207,14 +213,14 @@ class ItemResource extends Resource
                     )
                     ->label('رصيد سابق')
                     ->action(
-                        Tables\Actions\Action::make('updateBalance')
+                        Action::make('updateBalance')
                          ->fillForm(fn(Model $record): array=>[
                              'balance' => $record['balance'],
                              'price_buy'=> $record['price_buy'],
                              'price_cost'=> $record['price_cost'],
                              'place_id' => $record['place_id'],
                          ])
-                         ->form([
+                         ->schema([
                              TextInput::make('balance')
                                  ->label('رصيد سابق')
                                  ->default(0)
@@ -340,9 +346,9 @@ class ItemResource extends Resource
             ->checkIfRecordIsSelectableUsing(
                 fn (Model $record): bool => !$record->Buy_tran()->exists()
             )
-            ->actions([
-              Tables\Actions\EditAction::make()->iconButton(),
-              Tables\Actions\DeleteAction::make()
+            ->recordActions([
+              EditAction::make()->iconButton(),
+              DeleteAction::make()
 
                   ->hidden(fn ($record):bool =>
                   $record->Buy_tran()->exists() || $record->balance>0
@@ -350,9 +356,9 @@ class ItemResource extends Resource
                   )
                   ->iconButton(),
             ])
-            ->bulkActions([
-                Tables\Actions\BulkActionGroup::make([
-                    Tables\Actions\DeleteBulkAction::make(),
+            ->toolbarActions([
+                BulkActionGroup::make([
+                    DeleteBulkAction::make(),
                 ]),
             ]);
     }
@@ -367,9 +373,9 @@ class ItemResource extends Resource
     public static function getPages(): array
     {
         return [
-            'index' => Pages\ListItems::route('/'),
-            'create' => Pages\CreateItem::route('/create'),
-            'edit' => Pages\EditItem::route('/{record}/edit'),
+            'index' => ListItems::route('/'),
+            'create' => CreateItem::route('/create'),
+            'edit' => EditItem::route('/{record}/edit'),
         ];
     }
 }

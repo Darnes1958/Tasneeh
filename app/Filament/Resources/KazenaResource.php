@@ -2,6 +2,14 @@
 
 namespace App\Filament\Resources;
 
+use Filament\Schemas\Schema;
+use Filament\Forms\Components\Select;
+use Filament\Tables\Columns\TextColumn;
+use Filament\Actions\EditAction;
+use Filament\Actions\Action;
+use App\Filament\Resources\KazenaResource\Pages\ListKazenas;
+use App\Filament\Resources\KazenaResource\Pages\CreateKazena;
+use App\Filament\Resources\KazenaResource\Pages\EditKazena;
 use App\Filament\Resources\KazenaResource\Pages;
 use App\Filament\Resources\KazenaResource\RelationManagers;
 use App\Models\Kazena;
@@ -10,7 +18,6 @@ use App\Models\Recsupp;
 use App\Models\User;
 use Filament\Forms;
 use Filament\Forms\Components\TextInput;
-use Filament\Forms\Form;
 use Filament\Resources\Resource;
 use Filament\Tables;
 use Filament\Tables\Table;
@@ -23,19 +30,19 @@ class KazenaResource extends Resource
 {
     protected static ?string $model = Kazena::class;
 
-    protected static ?string $navigationIcon = 'heroicon-o-rectangle-stack';
+    protected static string | \BackedEnum | null $navigationIcon = 'heroicon-o-rectangle-stack';
     protected static ?string $navigationLabel='خزائن';
-    protected static ?string $navigationGroup='مصارف وخزائن';
+    protected static string | \UnitEnum | null $navigationGroup='مصارف وخزائن';
 
     public static function shouldRegisterNavigation(): bool
     {
         return Auth::user()->can('ادخال خزينة');
     }
 
-    public static function form(Form $form): Form
+    public static function form(Schema $schema): Schema
     {
-        return $form
-            ->schema([
+        return $schema
+            ->components([
                 TextInput::make('name')
                     ->label('اسم الخزينة')
                     ->required()
@@ -45,7 +52,7 @@ class KazenaResource extends Resource
                     ->validationMessages([
                         'unique' => ' :attribute مخزون مسبقا ',
                     ]) ,
-                Forms\Components\Select::make('user_id')
+                Select::make('user_id')
                  ->label('المستخدم')
                  ->searchable()
                  ->preload()
@@ -64,11 +71,11 @@ class KazenaResource extends Resource
     {
         return $table
             ->columns([
-                Tables\Columns\TextColumn::make('name')
+                TextColumn::make('name')
                  ->label('اسم الخزينة'),
-                Tables\Columns\TextColumn::make('balance')
+                TextColumn::make('balance')
                     ->label('رصيد بداية المدة'),
-                Tables\Columns\TextColumn::make('user_name')
+                TextColumn::make('user_name')
                     ->state(function (Kazena $record) {if ($record->user_id) {return User::find($record->user_id)->name;} else return null;} )
                     ->label('المستخدم'),
 
@@ -76,9 +83,9 @@ class KazenaResource extends Resource
             ->filters([
                 //
             ])
-            ->actions([
-                Tables\Actions\EditAction::make(),
-                Tables\Actions\Action::make('del')
+            ->recordActions([
+                EditAction::make(),
+                Action::make('del')
                     ->hidden(fn(Kazena $record)=>
                         Receipt::where('kazena_id',$record->id)->count()>0
                         || Recsupp::where('kazena_id',$record->id)->count()>0
@@ -94,7 +101,7 @@ class KazenaResource extends Resource
                     }),
 
             ])
-            ->bulkActions([
+            ->toolbarActions([
                    //
             ]);
     }
@@ -109,9 +116,9 @@ class KazenaResource extends Resource
     public static function getPages(): array
     {
         return [
-            'index' => Pages\ListKazenas::route('/'),
-            'create' => Pages\CreateKazena::route('/create'),
-            'edit' => Pages\EditKazena::route('/{record}/edit'),
+            'index' => ListKazenas::route('/'),
+            'create' => CreateKazena::route('/create'),
+            'edit' => EditKazena::route('/{record}/edit'),
         ];
     }
 }

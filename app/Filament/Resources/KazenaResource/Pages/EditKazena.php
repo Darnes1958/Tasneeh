@@ -2,6 +2,7 @@
 
 namespace App\Filament\Resources\KazenaResource\Pages;
 
+use Filament\Actions\DeleteAction;
 use App\Filament\Resources\KazenaResource;
 use App\Livewire\Traits\AccTrait;
 use App\Models\Item;
@@ -18,7 +19,7 @@ class EditKazena extends EditRecord
     protected function getHeaderActions(): array
     {
         return [
-            Actions\DeleteAction::make()->visible( Auth::user()->can('الغاء مصارف')),
+            DeleteAction::make()->visible( Auth::user()->can('الغاء مصارف')),
         ];
     }
 

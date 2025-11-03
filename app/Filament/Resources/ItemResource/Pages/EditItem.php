@@ -2,6 +2,7 @@
 
 namespace App\Filament\Resources\ItemResource\Pages;
 
+use Filament\Actions\DeleteAction;
 use App\Filament\Resources\ItemResource;
 use Filament\Actions;
 use Filament\Resources\Pages\EditRecord;
@@ -14,7 +15,7 @@ class EditItem extends EditRecord
     protected function getHeaderActions(): array
     {
         return [
-            Actions\DeleteAction::make()
+            DeleteAction::make()
             ->hidden(fn (Model $record): bool => $record->Buy_tran()->exists()),
         ];
     }

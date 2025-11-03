@@ -2,6 +2,7 @@
 
 namespace App\Filament\Resources\BuyResource\Pages;
 
+use Filament\Actions\CreateAction;
 use App\Filament\Resources\BuyResource;
 use App\Livewire\Traits\AccTrait;
 use App\Models\Buy;
@@ -19,7 +20,7 @@ class ListBuys extends ListRecords
     protected function getHeaderActions(): array
     {
         return [
-            Actions\CreateAction::make()
+            CreateAction::make()
              ->label('ادخال فاتورة جديدة'),
 
         ];

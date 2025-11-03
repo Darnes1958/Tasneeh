@@ -2,6 +2,18 @@
 
 namespace App\Filament\Resources;
 
+use Filament\Schemas\Schema;
+use Filament\Schemas\Components\Wizard;
+use Filament\Schemas\Components\Wizard\Step;
+use Filament\Schemas\Components\Utilities\Get;
+use Filament\Forms\Components\DatePicker;
+use Filament\Forms\Components\TextInput;
+use Filament\Forms\Components\Hidden;
+use Filament\Actions\Action;
+use Filament\Actions\BulkActionGroup;
+use Filament\Actions\DeleteBulkAction;
+use App\Filament\Resources\HallTranResource\Pages\ListHallTrans;
+use App\Filament\Resources\HallTranResource\Pages\CreateHallTran;
 use App\Filament\Resources\HallTranResource\Pages;
 use App\Filament\Resources\HallTranResource\RelationManagers;
 use App\Models\Hall_stock;
@@ -9,7 +21,6 @@ use App\Models\Hall_tran;
 use App\Models\HallTran;
 use App\Models\Place_stock;
 use Filament\Forms;
-use Filament\Forms\Form;
 use Filament\Notifications\Notification;
 use Filament\Resources\Resource;
 use Filament\Tables;
@@ -20,7 +31,6 @@ use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\SoftDeletingScope;
 use Filament\Forms\Components\Select;
 use Filament\Forms\Components\Placeholder;
-use Filament\Forms\Components\Wizard;
 use Filament\Tables\Columns\TextColumn;
 use Illuminate\Support\Facades\Blade;
 use Illuminate\Support\HtmlString;
@@ -29,17 +39,17 @@ class HallTranResource extends Resource
 {
     protected static ?string $model = Hall_tran::class;
 
-    protected static ?string $navigationIcon = 'heroicon-o-rectangle-stack';
+    protected static string | \BackedEnum | null $navigationIcon = 'heroicon-o-rectangle-stack';
     protected static ?string $navigationLabel='نقل انتاج من مكان الي اخر';
-    protected static ?string $navigationGroup='مخازن و أصناف';
+    protected static string | \UnitEnum | null $navigationGroup='مخازن و أصناف';
     protected static ?int $navigationSort=5;
 
-    public static function form(Form $form): Form
+    public static function form(Schema $schema): Schema
     {
-        return $form
-            ->schema([
+        return $schema
+            ->components([
                 Wizard::make([
-                    Wizard\Step::make('prod')
+                    Step::make('prod')
                         ->label('المنتج')
                         ->schema([
                             Select::make('product_id')
@@ -53,13 +63,13 @@ class HallTranResource extends Resource
                                 ->preload()
                                 ->live(),
                         ]),
-                    Wizard\Step::make('hall1')
+                    Step::make('hall1')
                         ->label('مــن')
                         ->schema([
                             Select::make('hall_id1')
                                 ->label('مــــن')
                                 ->relationship('Hall1', 'name',
-                                    modifyQueryUsing: fn (Builder $query,Forms\Get $get) =>
+                                    modifyQueryUsing: fn (Builder $query,Get $get) =>
                                     $query->whereIn('id',Hall_stock::
                                        where('product_id', $get('product_id'))
                                        ->where('stock','>',0) ->pluck('hall_id')),)
@@ -74,20 +84,20 @@ class HallTranResource extends Resource
                             Placeholder::make('raseed1')
                                 ->label('الرصيد')
                                 ->inlineLabel()
-                                ->content(function (Forms\Get $get): string {
+                                ->content(function (Get $get): string {
                                     if ($get('hall_id1') && $get('product_id'))
                                         return Hall_stock::where('hall_id', $get('hall_id1'))
                                             ->where('product_id',$get('product_id'))->first()->stock;
                                     return 0;
                                 }),
                         ]),
-                    Wizard\Step::make('hall2')
+                    Step::make('hall2')
                         ->label('إلــي')
                         ->schema([
                             Select::make('hall_id2')
                                 ->label('إلـــــي')
                                 ->relationship('Hall1', 'name',
-                                    modifyQueryUsing: fn (Builder $query,Forms\Get $get) =>
+                                    modifyQueryUsing: fn (Builder $query,Get $get) =>
                                     $query->where('id','!=',$get('hall_id1'))
                                 )
                                 ->searchable()
@@ -101,7 +111,7 @@ class HallTranResource extends Resource
                             Placeholder::make('raseed2')
                                 ->label('الرصيد')
                                 ->inlineLabel()
-                                ->content(function (Forms\Get $get): string {
+                                ->content(function (Get $get): string {
                                     if ($get('hall_id2') && $get('product_id'))
                                     {
                                        $stock= Hall_stock::where('hall_id', $get('hall_id2'))
@@ -115,17 +125,17 @@ class HallTranResource extends Resource
                                 }),
 
                         ]),
-                    Wizard\Step::make('quantity')
+                    Step::make('quantity')
                        ->label('الكمية')
                        ->schema([
-                           Forms\Components\DatePicker::make('tran_date')
+                           DatePicker::make('tran_date')
                            ->label('التاريخ')
                            ->required()
                            ->default(now()),
-                           Forms\Components\TextInput::make('quant')
+                           TextInput::make('quant')
                                ->label('الكمية')
                                ->live(onBlur: true)
-                               ->afterStateUpdated(function (Forms\Get $get,$state,Forms\Set $set){
+                               ->afterStateUpdated(function (Get $get,$state,\Filament\Schemas\Components\Utilities\Set $set){
                                    if ($state> Hall_stock::where('hall_id', $get('hall_id1'))
                                        ->where('product_id',$get('product_id'))->first()->stock){
                                        Notification::make()
@@ -136,7 +146,7 @@ class HallTranResource extends Resource
                                    };
                                })
                                ->required(),
-                           Forms\Components\Hidden::make('user_id')->default(auth()->id()),
+                           Hidden::make('user_id')->default(auth()->id()),
 
                        ])
                 ])
@@ -179,8 +189,8 @@ class HallTranResource extends Resource
             ->filters([
                 //
             ])
-            ->actions([
-                Tables\Actions\Action::make('del')
+            ->recordActions([
+                Action::make('del')
                  ->icon('heroicon-o-trash')
                  ->iconButton()
                  ->hidden(function (Model $record){
@@ -203,9 +213,9 @@ class HallTranResource extends Resource
                 }
                 )
             ])
-            ->bulkActions([
-                Tables\Actions\BulkActionGroup::make([
-                    Tables\Actions\DeleteBulkAction::make(),
+            ->toolbarActions([
+                BulkActionGroup::make([
+                    DeleteBulkAction::make(),
                 ]),
             ])
             ->checkIfRecordIsSelectableUsing(
@@ -224,8 +234,8 @@ class HallTranResource extends Resource
     public static function getPages(): array
     {
         return [
-            'index' => Pages\ListHallTrans::route('/'),
-            'create' => Pages\CreateHallTran::route('/create'),
+            'index' => ListHallTrans::route('/'),
+            'create' => CreateHallTran::route('/create'),
          //   'edit' => Pages\EditHallTran::route('/{record}/edit'),
         ];
     }

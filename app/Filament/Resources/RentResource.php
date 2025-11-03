@@ -2,6 +2,12 @@
 
 namespace App\Filament\Resources;
 
+use Filament\Schemas\Schema;
+use Filament\Actions\EditAction;
+use Filament\Actions\DeleteAction;
+use App\Filament\Resources\RentResource\Pages\ListRents;
+use App\Filament\Resources\RentResource\Pages\CreateRent;
+use App\Filament\Resources\RentResource\Pages\EditRent;
 use App\Filament\Resources\RentResource\Pages;
 use App\Filament\Resources\RentResource\RelationManagers;
 use App\Models\Hall;
@@ -10,7 +16,6 @@ use App\Models\Renttran;
 use Filament\Forms;
 use Filament\Forms\Components\Select;
 use Filament\Forms\Components\TextInput;
-use Filament\Forms\Form;
 use Filament\Resources\Resource;
 use Filament\Tables;
 use Filament\Tables\Columns\IconColumn;
@@ -24,9 +29,9 @@ class RentResource extends Resource
 {
     protected static ?string $model = Rent::class;
 
-    protected static ?string $navigationIcon = 'heroicon-o-rectangle-stack';
+    protected static string | \BackedEnum | null $navigationIcon = 'heroicon-o-rectangle-stack';
     protected static ?string $pluralModelLabel=' إيجارات';
-    protected static ?string $navigationGroup='إيجارات';
+    protected static string | \UnitEnum | null $navigationGroup='إيجارات';
     protected static ?int $navigationSort=1;
 
     public static function shouldRegisterNavigation(): bool
@@ -34,10 +39,10 @@ class RentResource extends Resource
         return Auth::user()->can('إيجارات');
     }
 
-    public static function form(Form $form): Form
+    public static function form(Schema $schema): Schema
     {
-        return $form
-            ->schema([
+        return $schema
+            ->components([
                 TextInput::make('name')
                     ->label('الاسم'),
                 TextInput::make('amount')
@@ -78,13 +83,13 @@ class RentResource extends Resource
             ->filters([
                 //
             ])
-            ->actions([
-                Tables\Actions\EditAction::make(),
-                Tables\Actions\DeleteAction::make()
+            ->recordActions([
+                EditAction::make(),
+                DeleteAction::make()
                     ->hidden(fn(Rent $record)=>
                         Renttran::where('rent_id',$record->id)->count()>0)  ,
             ])
-            ->bulkActions([
+            ->toolbarActions([
                 //
             ]);
     }
@@ -99,9 +104,9 @@ class RentResource extends Resource
     public static function getPages(): array
     {
         return [
-            'index' => Pages\ListRents::route('/'),
-            'create' => Pages\CreateRent::route('/create'),
-            'edit' => Pages\EditRent::route('/{record}/edit'),
+            'index' => ListRents::route('/'),
+            'create' => CreateRent::route('/create'),
+            'edit' => EditRent::route('/{record}/edit'),
         ];
     }
 }

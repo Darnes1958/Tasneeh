@@ -3,10 +3,10 @@
 namespace App\Livewire\widgets;
 
 
+use Filament\Support\Enums\TextSize;
 use App\Models\Receipt;
 use Filament\Tables;
 use Filament\Tables\Columns\TextColumn;
-use Filament\Tables\Columns\TextColumn\TextColumnSize;
 use Filament\Tables\Table;
 use Filament\Widgets\TableWidget as BaseWidget;
 use Illuminate\Support\HtmlString;
@@ -71,9 +71,9 @@ class RepReceipt extends BaseWidget
 
             ->striped()
             ->columns([
-                Tables\Columns\TextColumn::make('id')
+                TextColumn::make('id')
                     ->label('الرقم الألي'),
-                Tables\Columns\TextColumn::make('Customer.name')
+                TextColumn::make('Customer.name')
                     ->limit(25)
                     ->tooltip(function (TextColumn $column): ?string {
                         $state = $column->getState();
@@ -82,16 +82,16 @@ class RepReceipt extends BaseWidget
                         }
                         return $state;
                     })
-                    ->size(TextColumnSize::ExtraSmall)
+                    ->size(TextSize::ExtraSmall)
                     ->label('المورد'),
-                Tables\Columns\TextColumn::make('val')
+                TextColumn::make('val')
                     ->label('المبلغ'),
-                Tables\Columns\TextColumn::make('Kazena.name')
+                TextColumn::make('Kazena.name')
                     ->label('الخزينة'),
-                Tables\Columns\TextColumn::make('rec_who')
+                TextColumn::make('rec_who')
                     ->label('البيان')
                     ->badge(),
-                Tables\Columns\TextColumn::make('notes')
+                TextColumn::make('notes')
                     ->label('ملاحظات'),
 
             ])

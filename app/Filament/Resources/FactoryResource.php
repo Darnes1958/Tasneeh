@@ -2,6 +2,21 @@
 
 namespace App\Filament\Resources;
 
+use Filament\Schemas\Schema;
+use Filament\Schemas\Components\Section;
+use Filament\Schemas\Components\Utilities\Set;
+use Filament\Schemas\Components\Utilities\Get;
+use Filament\Actions\Action;
+use Filament\Support\Enums\Width;
+use Filament\Support\Enums\TextSize;
+use Filament\Tables\Columns\ImageColumn;
+use Filament\Tables\Filters\Filter;
+use Filament\Forms\Components\Checkbox;
+use Filament\Actions\EditAction;
+use Spatie\LaravelPdf\Facades\Pdf;
+use App\Filament\Resources\FactoryResource\Pages\ListFactories;
+use App\Filament\Resources\FactoryResource\Pages\CreateFactory;
+use App\Filament\Resources\FactoryResource\Pages\EditFactory;
 use App\Enums\AccRef;
 use App\Enums\PlaceType;
 use App\Enums\Status;
@@ -25,21 +40,15 @@ use App\Models\Setting;
 use App\Models\Tran;
 use Awcodes\TableRepeater\Header;
 use Carbon\Carbon;
-use Filament\Actions\StaticAction;
 use Filament\Forms;
 use Filament\Forms\Components\FileUpload;
 use Filament\Forms\Components\Hidden;
 use Filament\Forms\Components\Textarea;
-use Filament\Forms\Form;
-use Filament\Forms\Get;
 use Filament\Notifications\Notification;
 use Filament\Resources\Resource;
 use Filament\Support\Enums\IconSize;
-use Filament\Support\Enums\MaxWidth;
 use Filament\Tables;
-use Filament\Tables\Actions\Action;
 use Filament\Tables\Columns\Summarizers\Summarizer;
-use Filament\Tables\Columns\TextColumn\TextColumnSize;
 use Filament\Tables\Enums\FiltersLayout;
 use Filament\Tables\Filters\SelectFilter;
 use Filament\Tables\Table;
@@ -50,7 +59,6 @@ use Illuminate\Contracts\View\View;
 use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\SoftDeletingScope;
-use Filament\Forms\Components\Section;
 use Awcodes\TableRepeater\Components\TableRepeater;
 use Illuminate\Support\Facades\Auth;
 use Filament\Tables\Columns\TextColumn;
@@ -66,14 +74,14 @@ class FactoryResource extends Resource
     use AccTrait;
     protected static ?string $model = Factory::class;
 
-    protected static ?string $navigationIcon = 'heroicon-o-wrench-screwdriver';
+    protected static string | \BackedEnum | null $navigationIcon = 'heroicon-o-wrench-screwdriver';
     protected static ?string $navigationLabel='تصنيع وانتاج';
 
 
-    public static function form(Form $form): Form
+    public static function form(Schema $schema): Schema
     {
-        return $form
-            ->schema([
+        return $schema
+            ->components([
                 Section::make()
                     ->schema([
                     Hidden::make('id')
@@ -118,7 +126,7 @@ class FactoryResource extends Resource
                             FileUpload::make('image')
                                 ->directory('productImages')
                                 ->label('صورة'),
-                            Forms\Components\Hidden::make('user_id')
+                            Hidden::make('user_id')
                                 ->default(auth()->id()),
                         ])
                         ->editOptionForm([
@@ -158,7 +166,7 @@ class FactoryResource extends Resource
                             FileUpload::make('image')
                                 ->directory('productImages')
                                 ->label('صورة'),
-                            Forms\Components\Hidden::make('user_id')
+                            Hidden::make('user_id')
                                 ->default(auth()->id()),
                         ])
                         ->searchable()
@@ -231,7 +239,7 @@ class FactoryResource extends Resource
                                    ->width('20%'),
                            ])
                            ->live()
-                           ->afterStateUpdated(function ($state,Forms\Set $set,Get $get){
+                           ->afterStateUpdated(function ($state,Set $set,Get $get){
                                $total=0;
                                foreach ($state as $item){
                                    if ($item['quant'] && $item['price']) {
@@ -263,7 +271,7 @@ class FactoryResource extends Resource
                                    }
                                        )
                                    ->live()
-                                   ->afterStateUpdated(function ($state,Forms\Set $set,Get $get){
+                                   ->afterStateUpdated(function ($state,Set $set,Get $get){
                                        if ($state){
                                            $set('price',Item::find($state)->price_cost);
                                            $set('stock',Place_stock::where('place_id',$get('../../place_id'))
@@ -282,7 +290,7 @@ class FactoryResource extends Resource
                                    ->numeric()
                                    ->minValue(.1)
                                    ->extraInputAttributes(['tabindex' => 1])
-                                   ->afterStateUpdated(function ($state,Forms\Set $set,Get $get,$old,$operation){
+                                   ->afterStateUpdated(function ($state,Set $set,Get $get,$old,$operation){
                                        if ($state <=0) {
                                            $set('quant',$old);
                                            Notification::make()
@@ -351,7 +359,7 @@ class FactoryResource extends Resource
 
                           ])
                           ->live()
-                          ->afterStateUpdated(function ($state,Forms\Set $set,Get $get){
+                          ->afterStateUpdated(function ($state,Set $set,Get $get){
                               $total=0;
                               foreach ($state as $item){
                                   if ($item['man_id'] && $item['val']) {
@@ -437,7 +445,7 @@ class FactoryResource extends Resource
                          ->fillForm(fn(Factory $record): array => [
                              'ready_date' => now(),
                          ])
-                         ->form([
+                         ->schema([
                              DatePicker::make('ready_date')
                                  ->label('تاريخ انتهاء العمل')
                                  ->hidden(fn(Factory $record): bool =>  $record->status->value=='ready')
@@ -477,7 +485,7 @@ class FactoryResource extends Resource
                     //     ->visible(fn(Model $record): bool =>$record->status->value=='manufacturing')
                          ->modalCancelActionLabel('عودة')
                          ->modalSubmitActionLabel('تحزين')
-                         ->modalWidth(MaxWidth::Medium)
+                         ->modalWidth(Width::Medium)
                          ->modalHeading('تغيير الحالة')
                          ->action(function (Factory $record,array $data){
                              if ($record->status->value==='ready'){
@@ -548,13 +556,13 @@ class FactoryResource extends Resource
                         }
                         return $state;
                     })
-                    ->size(TextColumnSize::ExtraSmall)
+                    ->size(TextSize::ExtraSmall)
                     ->sortable()
                     ->label('اسم المنتج'),
                 TextColumn::make('Product.stock')
                  ->color(function (Model $record) {if ($record->Product->stock==0) return 'danger' ;})
                  ->label('رصيد المنتج'),
-                Tables\Columns\ImageColumn::make('Product.image')
+                ImageColumn::make('Product.image')
                  ->circular()
                  ->label(''),
                 TextColumn::make('process_date')
@@ -618,9 +626,9 @@ class FactoryResource extends Resource
                     ->label('اجمالي السعر'),
             ])
             ->filters([
-                Tables\Filters\Filter::make('raseed')
-                    ->form([
-                        Forms\Components\Checkbox::make('showZero')
+                Filter::make('raseed')
+                    ->schema([
+                        Checkbox::make('showZero')
                             ->label('عرض الارصدة الصفرية'),
                     ])
 
@@ -636,11 +644,11 @@ class FactoryResource extends Resource
                     ->options(Status::class)
                     ->searchable()
                     ->label('جاهز او تحت التصنيع'),
-                Tables\Filters\Filter::make('created_at')
-                    ->form([
-                        Forms\Components\DatePicker::make('Date1')
+                Filter::make('created_at')
+                    ->schema([
+                        DatePicker::make('Date1')
                             ->label('من تاريخ'),
-                        Forms\Components\DatePicker::make('Date2')
+                        DatePicker::make('Date2')
                             ->label('إلي تاريخ'),
                     ])
                     ->columns(2)
@@ -670,8 +678,8 @@ class FactoryResource extends Resource
                     })
             ], layout: FiltersLayout::AboveContent)
             ->filtersFormColumns(6)
-            ->actions([
-                Tables\Actions\EditAction::make()
+            ->recordActions([
+                EditAction::make()
                     ->visible(function (Model $record) {return $record->status->value=='manufacturing';})
                 ->iconButton(),
                 Action::make('del')
@@ -707,7 +715,7 @@ class FactoryResource extends Resource
                     ->color('success')
                     ->modalHeading(false)
                     ->modalSubmitAction(false)
-                    ->modalCancelAction(fn (StaticAction $action) => $action->label('عودة'))
+                    ->modalCancelAction(fn (Action $action) => $action->label('عودة'))
                     ->modalContent(fn (Factory $record): View => view(
                         'view-tran-widget',
                         ['factory_id' => $record->id],
@@ -719,7 +727,7 @@ class FactoryResource extends Resource
                     ->color('info')
                     ->modalHeading(false)
                     ->modalSubmitAction(false)
-                    ->modalCancelAction(fn (StaticAction $action) => $action->label('عودة'))
+                    ->modalCancelAction(fn (Action $action) => $action->label('عودة'))
                     ->modalContent(fn (Factory $record): View => view(
                         'view-hand-widget',
                         ['factory_id' => $record->id],
@@ -733,7 +741,7 @@ class FactoryResource extends Resource
                     $RepDate=date('Y-m-d');
                     $cus=OurCompany::where('Company',Auth::user()->company)->first();
 
-                    \Spatie\LaravelPdf\Facades\Pdf::view('PrnView.pdf-fac-items',
+                    Pdf::view('PrnView.pdf-fac-items',
                         ['res'=>$record,
                             'cus'=>$cus,'RepDate'=>$RepDate,
                         ])
@@ -766,9 +774,9 @@ class FactoryResource extends Resource
     public static function getPages(): array
     {
         return [
-            'index' => Pages\ListFactories::route('/'),
-            'create' => Pages\CreateFactory::route('/create'),
-            'edit' => Pages\EditFactory::route('/{record}/edit'),
+            'index' => ListFactories::route('/'),
+            'create' => CreateFactory::route('/create'),
+            'edit' => EditFactory::route('/{record}/edit'),
         ];
     }
 }

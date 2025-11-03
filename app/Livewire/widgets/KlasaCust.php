@@ -3,6 +3,7 @@
 namespace App\Livewire\widgets;
 
 
+use Filament\Tables\Columns\TextColumn;
 use App\Models\Receipt;
 use Filament\Tables;
 use Filament\Tables\Table;
@@ -41,7 +42,7 @@ class KlasaCust extends BaseWidget
             'exp',
         ],
     ];
-    public function getTableRecordKey(Model $record): string
+    public function getTableRecordKey(Model|array $record): string
     {
         return uniqid();
     }
@@ -85,17 +86,17 @@ class KlasaCust extends BaseWidget
           ->defaultPaginationPageOption(5)
             ->defaultSort('val')
             ->columns([
-                Tables\Columns\TextColumn::make('rec_who')
+                TextColumn::make('rec_who')
                     ->label('البيان'),
-                Tables\Columns\TextColumn::make('pay_type')
+                TextColumn::make('pay_type')
                     ->label('طريقة الدفع'),
-                Tables\Columns\TextColumn::make('accName')
+                TextColumn::make('accName')
                   ->state(function (Model $record) {
                       if ($record->accName) return $record->accName; else return $record->kazName;
                   })
                   ->label('بواسطة'),
 
-                Tables\Columns\TextColumn::make('val')
+                TextColumn::make('val')
                     ->numeric(decimalPlaces: 2,
                         decimalSeparator: '.',
                         thousandsSeparator: ',')
@@ -104,7 +105,7 @@ class KlasaCust extends BaseWidget
                         return ''; else return $record->val;
                     })
                     ->label('قبض'),
-                Tables\Columns\TextColumn::make('exp')
+                TextColumn::make('exp')
                     ->numeric(decimalPlaces: 2,
                         decimalSeparator: '.',
                         thousandsSeparator: ',')

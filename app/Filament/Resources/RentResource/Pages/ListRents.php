@@ -2,6 +2,9 @@
 
 namespace App\Filament\Resources\RentResource\Pages;
 
+use Filament\Actions\CreateAction;
+use Filament\Actions\Action;
+use Filament\Schemas\Components\Utilities\Get;
 use App\Enums\PayType;
 use App\Filament\Resources\RentResource;
 use App\Livewire\Traits\AccTrait;
@@ -15,7 +18,6 @@ use Filament\Forms\Components\DatePicker;
 use Filament\Forms\Components\Radio;
 use Filament\Forms\Components\Select;
 use Filament\Forms\Components\TextInput;
-use Filament\Forms\Get;
 use Filament\Notifications\Notification;
 use Filament\Resources\Pages\ListRecords;
 use Illuminate\Support\Facades\Auth;
@@ -29,12 +31,12 @@ class ListRents extends ListRecords
     protected function getHeaderActions(): array
     {
         return [
-            Actions\CreateAction::make()->label('إضافة'),
-            Actions\Action::make('إدارج_إيجار')
+            CreateAction::make()->label('إضافة'),
+            Action::make('إدارج_إيجار')
                 ->color('success')
                 ->modalSubmitActionLabel('إدراج')
 
-                ->form([
+                ->schema([
                     DatePicker::make('month')
                         ->label('عن شهر')
                         ->required()
@@ -83,10 +85,10 @@ class ListRents extends ListRecords
                             ->iconColor('danger')
                             ->send();
                 }),
-            Actions\Action::make('سحب')
+            Action::make('سحب')
                 ->color('success')
                 ->icon('heroicon-o-minus-circle')
-                ->form([
+                ->schema([
                     Radio::make('pay_type')
                         ->options(PayType::class)
                         ->live()

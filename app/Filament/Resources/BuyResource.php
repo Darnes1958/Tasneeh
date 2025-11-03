@@ -2,6 +2,16 @@
 
 namespace App\Filament\Resources;
 
+use Filament\Schemas\Schema;
+use Filament\Schemas\Components\Section;
+use Filament\Schemas\Components\Utilities\Get;
+use Filament\Schemas\Components\Utilities\Set;
+use Filament\Actions\EditAction;
+use Filament\Actions\Action;
+use Spatie\LaravelPdf\Facades\Pdf;
+use App\Filament\Resources\BuyResource\Pages\ListBuys;
+use App\Filament\Resources\BuyResource\Pages\CreateBuy;
+use App\Filament\Resources\BuyResource\Pages\EditBuy;
 use App\Enums\AccRef;
 use App\Enums\PayType;
 use App\Enums\PlaceType;
@@ -27,23 +37,17 @@ use App\Models\Supplier;
 use App\Models\Unit;
 use Awcodes\TableRepeater\Components\TableRepeater;
 use Awcodes\TableRepeater\Header;
-
-use Filament\Actions\StaticAction;
 use Filament\Forms;
 use Filament\Forms\Components\DatePicker;
 use Filament\Forms\Components\Hidden;
 use Filament\Forms\Components\Radio;
-use Filament\Forms\Components\Section;
 use Filament\Forms\Components\Select;
 use Filament\Forms\Components\TextInput;
 use Filament\Forms\Components\Wizard;
-use Filament\Forms\Form;
-use Filament\Forms\Get;
 use Filament\Notifications\Notification;
 use Filament\Resources\Resource;
 use Filament\Support\Enums\IconSize;
 use Filament\Tables;
-use Filament\Tables\Actions\Action;
 use Filament\Tables\Columns\Summarizers\Sum;
 use Filament\Tables\Columns\Summarizers\Summarizer;
 use Filament\Tables\Columns\TextColumn;
@@ -64,13 +68,13 @@ class BuyResource extends Resource
     use AccTrait;
     protected static ?string $model = Buy::class;
 
-    protected static ?string $navigationIcon = 'heroicon-o-rectangle-stack';
+    protected static string | \BackedEnum | null $navigationIcon = 'heroicon-o-rectangle-stack';
 
     protected static ?string $navigationLabel='فاتورة مشتريات';
-    public static function form(Form $form): Form
+    public static function form(Schema $schema): Schema
     {
-        return $form
-            ->schema([
+        return $schema
+            ->components([
                 Section::make()
                     ->schema([
 
@@ -356,7 +360,7 @@ class BuyResource extends Resource
                              TextInput::make('quant')
                                  ->live(onBlur: true)
                                  ->extraInputAttributes(['tabindex' => 1])
-                                 ->afterStateUpdated(function (Get $get,Forms\Set $set,$state){
+                                 ->afterStateUpdated(function (Get $get,Set $set,$state){
                                      if ($get('sub_sub')!=null){
                                          $set('price_input',round($get('sub_sub')/$state,3));
                                          $set('price_cost',round($get('sub_sub')/$state,3));
@@ -367,7 +371,7 @@ class BuyResource extends Resource
                              TextInput::make('sub_sub')
                                  ->live(onBlur: true)
                                  ->extraInputAttributes(['tabindex' => 2])
-                                 ->afterStateUpdated(function ($state,Forms\Set $set,Get $get){
+                                 ->afterStateUpdated(function ($state,Set $set,Get $get){
                                      $set('price_input',round($state/$get('quant'),3));
                                      $set('price_cost',round($state/$get('quant'),3));
                                  })
@@ -381,7 +385,7 @@ class BuyResource extends Resource
                              Hidden::make('price_cost'),
                          ])
                          ->live()
-                         ->afterStateUpdated(function ($state,Forms\Set $set,Get $get){
+                         ->afterStateUpdated(function ($state,Set $set,Get $get){
                              $total=0;
                              foreach ($state as $item){
                                  if ($item['sub_sub'] && $item['quant']) {
@@ -510,7 +514,7 @@ class BuyResource extends Resource
 
                              ])
                              ->live(onBlur: true)
-                             ->afterStateUpdated(function ($state,Forms\Set $set,Get $get){
+                             ->afterStateUpdated(function ($state,Set $set,Get $get){
                                  $cost=0;
                                  foreach ($state as $item){
                                      if ($item['val'] )
@@ -639,8 +643,8 @@ class BuyResource extends Resource
             ->filters([
                 //
             ])
-            ->actions([
-                Tables\Actions\EditAction::make()
+            ->recordActions([
+                EditAction::make()
                 ->iconSize(IconSize::Small)
                 ->iconButton(),
                 Action::make('del')
@@ -684,7 +688,7 @@ class BuyResource extends Resource
                     ->color('success')
                     ->modalHeading(false)
                     ->modalSubmitAction(false)
-                    ->modalCancelAction(fn (StaticAction $action) => $action->label('عودة'))
+                    ->modalCancelAction(fn (Action $action) => $action->label('عودة'))
                     ->modalContent(fn (Buy $record): View => view(
                         'view-buy-tran-widget',
                         ['buy_id' => $record->id],
@@ -697,7 +701,7 @@ class BuyResource extends Resource
                     ->visible(fn ($record): bool => $record->cost>0)
                     ->modalHeading(false)
                     ->modalSubmitAction(false)
-                    ->modalCancelAction(fn (StaticAction $action) => $action->label('عودة'))
+                    ->modalCancelAction(fn (Action $action) => $action->label('عودة'))
                     ->modalContent(fn (Buy $record): View => view(
                         'view-cost-widget',
                         ['buy_id' => $record->id],
@@ -711,7 +715,7 @@ class BuyResource extends Resource
                         $RepDate=date('Y-m-d');
                         $cus=OurCompany::where('Company',Auth::user()->company)->first();
 
-                        \Spatie\LaravelPdf\Facades\Pdf::view('PrnView.pdf-buy-order',
+                        Pdf::view('PrnView.pdf-buy-order',
                             ['res'=>$record,
                                 'cus'=>$cus,'RepDate'=>$RepDate,
                             ])
@@ -748,9 +752,9 @@ class BuyResource extends Resource
     public static function getPages(): array
     {
         return [
-            'index' => Pages\ListBuys::route('/'),
-            'create' => Pages\CreateBuy::route('/create'),
-            'edit' => Pages\EditBuy::route('/{record}/edit'),
+            'index' => ListBuys::route('/'),
+            'create' => CreateBuy::route('/create'),
+            'edit' => EditBuy::route('/{record}/edit'),
         ];
     }
 }

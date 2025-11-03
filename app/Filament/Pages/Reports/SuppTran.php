@@ -2,6 +2,12 @@
 
 namespace App\Filament\Pages\Reports;
 
+use Filament\Actions\Action;
+use Filament\Schemas\Components\Section;
+use Filament\Schemas\Components\Grid;
+use Filament\Schemas\Components\Utilities\Set;
+use Filament\Schemas\Components\Actions;
+use Filament\Schemas\Components\Utilities\Get;
 use App\Livewire\Traits\PublicTrait;
 use App\Models\Buy;
 use App\Models\Cust_tran2;
@@ -12,16 +18,11 @@ use App\Models\Supp_tran2;
 use App\Models\Supplier;
 use Carbon\Carbon;
 use Carbon\Exceptions\InvalidFormatException;
-use Filament\Actions\StaticAction;
 use Filament\Forms\Components\DatePicker;
-use Filament\Forms\Components\Grid;
-use Filament\Forms\Components\Section;
 use Filament\Forms\Components\Select;
 use Filament\Forms\Components\TextInput;
 use Filament\Forms\Concerns\InteractsWithForms;
 use Filament\Forms\Contracts\HasForms;
-use Filament\Forms\Get;
-use Filament\Forms\Set;
 use Filament\Pages\Page;
 use Filament\Support\Enums\VerticalAlignment;
 use Filament\Tables\Columns\Summarizers\Sum;
@@ -38,12 +39,12 @@ class SuppTran extends Page implements HasForms,HasTable
 {
     use InteractsWithTable,InteractsWithForms;
     use PublicTrait;
-    protected static ?string $navigationIcon = 'heroicon-o-document-text';
+    protected static string | \BackedEnum | null $navigationIcon = 'heroicon-o-document-text';
     protected static ?string $navigationLabel='حركة مورد';
-    protected static ?string $navigationGroup='زبائن وموردين ومشغلين';
+    protected static string | \UnitEnum | null $navigationGroup='زبائن وموردين ومشغلين';
   protected static ?int $navigationSort=6;
     protected ?string $heading="";
-    protected static string $view = 'filament.pages.reports.supp-tran';
+    protected string $view = 'filament.pages.reports.supp-tran';
 
   public static function shouldRegisterNavigation(): bool
   {
@@ -65,13 +66,13 @@ class SuppTran extends Page implements HasForms,HasTable
     {
         return array_merge(parent::getForms(), [
             "myForm" => $this->makeForm()
-                ->schema($this->getMyFormSchema())
+                ->components($this->getMyFormSchema())
                 ->statePath('formData'),
 
         ]);
     }
 
-    public function getTableRecordKey(Model $record): string
+    public function getTableRecordKey(Model|array $record): string
     {
         return $record->idd;
     }
@@ -87,14 +88,14 @@ class SuppTran extends Page implements HasForms,HasTable
                 return $report;
             })
             ->emptyStateHeading('لا توجد بيانات')
-            ->actions([
-                \Filament\Tables\Actions\Action::make('عرض')
+            ->recordActions([
+                Action::make('عرض')
                     ->visible(function (Model $record) {return $record->rec_who->value==8;})
                     ->modalHeading(false)
 
                     ->modalSubmitActionLabel('طباعة')
                     ->modalSubmitAction(
-                        fn (\Filament\Actions\StaticAction $action,Supp_tran2 $record) =>
+                        fn (Action $action,Supp_tran2 $record) =>
                         $action->color('blue')
                             ->icon('heroicon-o-printer')
                             ->url(function () use($record){
@@ -104,7 +105,7 @@ class SuppTran extends Page implements HasForms,HasTable
 
 
                     )
-                    ->modalCancelAction(fn (StaticAction $action) => $action->label('عودة'))
+                    ->modalCancelAction(fn (Action $action) => $action->label('عودة'))
                     ->modalContent(fn (Supp_tran2 $record): View => view(
 
                         'view-buy-tran-widget',
@@ -239,8 +240,8 @@ class SuppTran extends Page implements HasForms,HasTable
                         ->prefixIconColor('success')
                         ->readOnly()
                         ->label('الرصيد'),
-                  \Filament\Forms\Components\Actions::make([
-                    \Filament\Forms\Components\Actions\Action::make('printorder')
+                  Actions::make([
+                    Action::make('printorder')
                       ->label('طباعة')
                       ->visible(function (){
                         return $this->chkDate($this->repDate) && $this->cust_id;

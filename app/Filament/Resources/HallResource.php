@@ -2,6 +2,14 @@
 
 namespace App\Filament\Resources;
 
+use Filament\Schemas\Schema;
+use Filament\Forms\Components\Select;
+use Filament\Tables\Columns\TextColumn;
+use Filament\Actions\EditAction;
+use Filament\Actions\Action;
+use App\Filament\Resources\HallResource\Pages\ListHalls;
+use App\Filament\Resources\HallResource\Pages\CreateHall;
+use App\Filament\Resources\HallResource\Pages\EditHall;
 use App\Enums\PlaceType;
 use App\Filament\Resources\HallResource\Pages;
 use App\Filament\Resources\HallResource\RelationManagers;
@@ -12,7 +20,6 @@ use App\Models\Sell;
 use Filament\Forms;
 use Filament\Forms\Components\Hidden;
 use Filament\Forms\Components\TextInput;
-use Filament\Forms\Form;
 use Filament\Resources\Resource;
 use Filament\Tables;
 use Filament\Tables\Table;
@@ -24,21 +31,21 @@ class HallResource extends Resource
 {
     protected static ?string $model = Hall::class;
 
-    protected static ?string $navigationIcon = 'heroicon-o-rectangle-stack';
+    protected static string | \BackedEnum | null $navigationIcon = 'heroicon-o-rectangle-stack';
     protected static ?string $navigationLabel='ادخال مخازن وصالات منتجات';
-    protected static ?string $navigationGroup='مخازن و أصناف';
+    protected static string | \UnitEnum | null $navigationGroup='مخازن و أصناف';
     protected static ?int $navigationSort=7;
 
-    public static function form(Form $form): Form
+    public static function form(Schema $schema): Schema
     {
-        return $form
+        return $schema
 
-            ->schema([
+            ->components([
                 TextInput::make('name')
                     ->required()
                     ->unique(ignoreRecord: true)
                     ->label('الاسم'),
-                Forms\Components\Select::make('hall_type')
+                Select::make('hall_type')
                     ->label('النوع')
                     ->required()
                     ->options(PlaceType::class)
@@ -51,18 +58,18 @@ class HallResource extends Resource
     {
         return $table
             ->columns([
-                Tables\Columns\TextColumn::make('name')
+                TextColumn::make('name')
                     ->label('الاسم'),
-                Tables\Columns\TextColumn::make('hall_type')
+                TextColumn::make('hall_type')
                     ->badge()
                     ->label('البيان')
             ])
             ->filters([
                 //
             ])
-            ->actions([
-                Tables\Actions\EditAction::make(),
-                Tables\Actions\Action::make('del')
+            ->recordActions([
+                EditAction::make(),
+                Action::make('del')
                  ->icon('heroicon-o-trash')
                  ->color('danger')
                  ->iconButton()
@@ -74,7 +81,7 @@ class HallResource extends Resource
                     $record->delete();
                 }),
             ])
-            ->bulkActions([
+            ->toolbarActions([
                 //
             ]);
     }
@@ -89,9 +96,9 @@ class HallResource extends Resource
     public static function getPages(): array
     {
         return [
-            'index' => Pages\ListHalls::route('/'),
-            'create' => Pages\CreateHall::route('/create'),
-            'edit' => Pages\EditHall::route('/{record}/edit'),
+            'index' => ListHalls::route('/'),
+            'create' => CreateHall::route('/create'),
+            'edit' => EditHall::route('/{record}/edit'),
         ];
     }
 }

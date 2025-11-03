@@ -2,6 +2,7 @@
 
 namespace App\Filament\Resources\KazenaResource\Pages;
 
+use Filament\Actions\CreateAction;
 use App\Enums\AccRef;
 use App\Filament\Resources\KazenaResource;
 use App\Livewire\Traits\AccTrait;
@@ -18,7 +19,7 @@ class ListKazenas extends ListRecords
     protected function getHeaderActions(): array
     {
         return [
-            Actions\CreateAction::make()
+            CreateAction::make()
             ->label('إضافة'),
 
         ];

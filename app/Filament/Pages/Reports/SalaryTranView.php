@@ -2,6 +2,9 @@
 
 namespace App\Filament\Pages\Reports;
 
+use Filament\Schemas\Schema;
+use Filament\Schemas\Components\Utilities\Get;
+use Filament\Actions\Action;
 use App\Livewire\Traits\AksatTrait;
 use App\Livewire\Traits\PublicTrait;
 use App\Models\Salary;
@@ -12,11 +15,7 @@ use Filament\Forms\Components\Select;
 use Filament\Forms\Components\TextInput;
 use Filament\Forms\Concerns\InteractsWithForms;
 use Filament\Forms\Contracts\HasForms;
-use Filament\Forms\Form;
-
-use Filament\Forms\Get;
 use Filament\Pages\Page;
-use Filament\Tables\Actions\Action;
 use Filament\Tables\Concerns\InteractsWithTable;
 use Filament\Tables\Contracts\HasTable;
 use Filament\Tables\Table;
@@ -30,11 +29,11 @@ class SalaryTranView extends Page implements HasTable, HasForms
   use InteractsWithTable,InteractsWithForms;
   use PublicTrait;
   protected static ?string $navigationLabel='حركة مرتب';
-  protected static ?string $navigationGroup='مرتبات';
+  protected static string | \UnitEnum | null $navigationGroup='مرتبات';
   protected static ?int $navigationSort=7;
   protected ?string $heading = '';
-    protected static ?string $navigationIcon = 'heroicon-o-document-text';
-    protected static string $view = 'filament.pages.reports.salary-tran-view';
+    protected static string | \BackedEnum | null $navigationIcon = 'heroicon-o-document-text';
+    protected string $view = 'filament.pages.reports.salary-tran-view';
 
     public static function shouldRegisterNavigation(): bool
     {
@@ -47,10 +46,10 @@ class SalaryTranView extends Page implements HasTable, HasForms
       $this->form->fill([]);
     }
 
-    public function form(Form $form): Form
+    public function form(Schema $schema): Schema
     {
-        return $form
-            ->schema([
+        return $schema
+            ->components([
                 Select::make('salary_id')
                     ->options(Salary::all()->pluck('name', 'id')->toArray())
                     ->searchable()
@@ -108,7 +107,7 @@ class SalaryTranView extends Page implements HasTable, HasForms
                 TextColumn::make('notes')
                     ->label('ملاحظات'),
             ])
-          ->actions([
+          ->recordActions([
             Action::make('delete')
              ->requiresConfirmation()
              ->color('danger')

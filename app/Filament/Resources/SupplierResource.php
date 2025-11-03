@@ -2,6 +2,13 @@
 
 namespace App\Filament\Resources;
 
+use Filament\Schemas\Schema;
+use Filament\Tables\Columns\Summarizers\Sum;
+use Filament\Actions\EditAction;
+use Filament\Actions\Action;
+use App\Filament\Resources\SupplierResource\Pages\ListSuppliers;
+use App\Filament\Resources\SupplierResource\Pages\CreateSupplier;
+use App\Filament\Resources\SupplierResource\Pages\EditSupplier;
 use App\Filament\Resources\SupplierResource\Pages;
 use App\Filament\Resources\SupplierResource\RelationManagers;
 use App\Livewire\Traits\AccTrait;
@@ -14,7 +21,6 @@ use App\Models\Supplier;
 use Filament\Forms;
 use Filament\Forms\Components\Hidden;
 use Filament\Forms\Components\TextInput;
-use Filament\Forms\Form;
 use Filament\Resources\Resource;
 use Filament\Tables;
 use Filament\Tables\Columns\TextColumn;
@@ -29,8 +35,8 @@ class SupplierResource extends Resource
     use AccTrait;
     protected static ?string $model = Supplier::class;
   protected static ?string $navigationLabel='موردين';
-    protected static ?string $navigationGroup='زبائن وموردين ومشغلين';
-    protected static ?string $navigationIcon = 'heroicon-o-rectangle-stack';
+    protected static string | \UnitEnum | null $navigationGroup='زبائن وموردين ومشغلين';
+    protected static string | \BackedEnum | null $navigationIcon = 'heroicon-o-rectangle-stack';
     protected static ?int $navigationSort=2;
 
     public static function shouldRegisterNavigation(): bool
@@ -38,10 +44,10 @@ class SupplierResource extends Resource
         return Auth::user()->can('ادخال موردين');
     }
 
-  public static function form(Form $form): Form
+  public static function form(Schema $schema): Schema
   {
-    return $form
-      ->schema([
+    return $schema
+      ->components([
         TextInput::make('name')
           ->required()
           ->label('الاسم'),
@@ -95,7 +101,7 @@ class SupplierResource extends Resource
                 decimalSeparator: '.',
                 thousandsSeparator: ',',
             )
-              ->summarize(Tables\Columns\Summarizers\Sum::make()->numeric(
+              ->summarize(Sum::make()->numeric(
                   decimalPlaces: 2,
                   decimalSeparator: '.',
                   thousandsSeparator: ',',
@@ -106,11 +112,11 @@ class SupplierResource extends Resource
       ->filters([
         //
       ])
-      ->actions([
-        Tables\Actions\EditAction::make()
+      ->recordActions([
+        EditAction::make()
           ->iconButton()
           ,
-        Tables\Actions\Action::make('del')
+        Action::make('del')
           ->icon('heroicon-o-trash')
             ->color('danger')
           ->iconButton()
@@ -138,9 +144,9 @@ class SupplierResource extends Resource
     public static function getPages(): array
     {
         return [
-            'index' => Pages\ListSuppliers::route('/'),
-            'create' => Pages\CreateSupplier::route('/create'),
-            'edit' => Pages\EditSupplier::route('/{record}/edit'),
+            'index' => ListSuppliers::route('/'),
+            'create' => CreateSupplier::route('/create'),
+            'edit' => EditSupplier::route('/{record}/edit'),
         ];
     }
 }

@@ -2,6 +2,7 @@
 
 namespace App\Filament\Pages\Reports;
 
+use Filament\Support\Enums\Width;
 use App\Models\Customer;
 use App\Models\Hall;
 use App\Models\Hall_stock;
@@ -11,7 +12,6 @@ use Faker\Core\Uuid;
 use Filament\Forms\Components\Checkbox;
 use Filament\Forms\Components\Select;
 use Filament\Pages\Page;
-use Filament\Support\Enums\MaxWidth;
 use Filament\Tables\Columns\ImageColumn;
 use Filament\Tables\Columns\Summarizers\Sum;
 use Filament\Tables\Columns\TextColumn;
@@ -29,11 +29,11 @@ class RepProduct extends Page implements HasTable
 
 {
     use InteractsWithTable;
-    protected static ?string $navigationIcon = 'heroicon-o-document-text';
+    protected static string | \BackedEnum | null $navigationIcon = 'heroicon-o-document-text';
 
-    protected static string $view = 'filament.pages.reports.rep-product';
+    protected string $view = 'filament.pages.reports.rep-product';
     protected static ?string $navigationLabel='تقرير عن مخزون المنتجات';
-    protected static ?string $navigationGroup='مخازن و أصناف';
+    protected static string | \UnitEnum | null $navigationGroup='مخازن و أصناف';
     protected static ?int $navigationSort=4;
     protected ?string $heading="";
 
@@ -41,7 +41,7 @@ class RepProduct extends Page implements HasTable
     {
         return Auth::user()->hasRole('admin');
     }
-    public function getTableRecordKey(Model $record): string
+    public function getTableRecordKey(Model|array $record): string
     {
         return Uuid::class;
     }
@@ -109,7 +109,7 @@ class RepProduct extends Page implements HasTable
                     ->options(Product::all()->pluck('name','id'))
                     ->preload(),
                 Filter::make('anyfilter')
-                    ->form([
+                    ->schema([
                         Checkbox::make('showZero')
                             ->label('اطهار الاصفار'),
                     ])
@@ -124,7 +124,7 @@ class RepProduct extends Page implements HasTable
 
 
             ], layout: FiltersLayout::AboveContent)
-            ->filtersFormWidth(MaxWidth::SevenExtraLarge)
+            ->filtersFormWidth(Width::SevenExtraLarge)
             ->filtersFormColumns(4)
             ->striped();
     }
