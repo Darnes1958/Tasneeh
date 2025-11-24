@@ -261,10 +261,15 @@ class FactoryResource extends Resource
                                Select::make('item_id')
                                    ->required()
                                    ->searchable()
-                                   ->options(function (Get $get){
+                                   ->options(function (Get $get,$operation){
                                        return Item::
                                        whereIn('id',Place_stock::
-                                           where('place_id',$get('../../place_id'))->where('stock','>',0)->pluck('item_id'))
+                                           where('place_id',$get('../../place_id'))
+                                           ->when($operation=='create',function ($q){
+                                               $q->where('stock','>',0);
+                                           }
+                                           )
+                                           ->pluck('item_id'))
                                            ->pluck('name','id');
                                    })
                                    ->live()
@@ -377,7 +382,10 @@ class FactoryResource extends Resource
                                   ->required()
                                   ->preload()
                                   ->searchable()
-                                  ->relationship('Man','name',modifyQueryUsing:fn (Builder $query) => $query->where('visible',1), )
+                                  ->relationship('Man','name',
+                                      modifyQueryUsing:fn (Builder $query,$operation) => $query->when($operation=='create',function ($q){
+                                          $q->where('visible',1);
+                                      }) )
 
                                   ->disableOptionWhen(function ($value, $state, Get $get) {
                                       return collect($get('../*.man_id'))
