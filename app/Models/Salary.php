@@ -11,6 +11,7 @@ class Salary extends Model
     protected $connection = 'other';
   protected $casts = [
     'status' => 'boolean',
+    'visible' => 'boolean',
   ];
 
     public function Hall(){

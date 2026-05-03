@@ -51,7 +51,7 @@ class SalaryTranView extends Page implements HasTable, HasForms
         return $schema
             ->components([
                 Select::make('salary_id')
-                    ->options(Salary::all()->pluck('name', 'id')->toArray())
+                    ->options(Salary::where('visible',1)->pluck('name', 'id')->toArray())
                     ->searchable()
                     ->preload()
                     ->live()

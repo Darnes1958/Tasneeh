@@ -2,6 +2,8 @@
 
 namespace App\Filament\Resources;
 
+use App\Models\Visibility;
+use Filament\Actions\Action;
 use Filament\Schemas\Schema;
 use Filament\Actions\EditAction;
 use Filament\Actions\BulkActionGroup;
@@ -21,6 +23,7 @@ use Filament\Tables\Table;
 use Filament\Forms\Components\TextInput;
 use Filament\Tables\Columns\TextColumn;
 use Filament\Tables\Columns\IconColumn;
+use Illuminate\Database\Eloquent\Model;
 use Illuminate\Support\Facades\Auth;
 
 class SalaryResource extends Resource
@@ -58,11 +61,18 @@ class SalaryResource extends Resource
                     ->placeholder('قم باختيار مكان العمل .. او اتركه كما هو اذا كان العمل بالادارة')
                     ->live()
                     ->preload(),
+                Forms\Components\Checkbox::make('visible')
+                 ->default(1)
+                 ->visible(fn($operation)=>$operation=='edit')
+                 ->label('مرئي'),
             ]);
     }
     public static function table(Table $table): Table
     {
         return $table
+            ->recordUrl(false)
+
+            ->modifyQueryUsing(fn($query)=> Visibility::where('company',Auth::user()->company)->first()->salary==0 ? $query->where('visible',1) : $query->where('id','!=',null))
             ->columns([
               TextColumn::make('name')
                 ->label('الاسم')
@@ -79,6 +89,14 @@ class SalaryResource extends Resource
               TextColumn::make('raseed')
                   ->label('الرصيد')
                   ->searchable(),
+              IconColumn::make('visible')
+                  ->label('مرئي')
+                  ->action(function (Model $record){
+
+                      $record->visible=!$record->visible;
+                      $record->save();
+                  })
+                  ->boolean(),
 
             ])
             ->filters([
@@ -89,6 +107,18 @@ class SalaryResource extends Resource
 
             ])
             ->toolbarActions([
+                Action::make('show')
+                    ->label(fn()=>Visibility::where('company',Auth::user()->company)->first()->salary==0 ? 'إظهار المخفي' : 'إخفاء')
+                    ->color(fn()=>Visibility::where('company',Auth::user()->company)->first()->salary==0 ? 'success' : 'danger')
+                    ->action(function (){
+                        $res=Visibility::where('company',Auth::user()->company)->first();
+                        $res->salary=!Visibility::where('company',Auth::user()->company)->first()->salary;
+                        $res->save();
+                        // Visibility::where('company',Auth::user()->company)->first()->modify([
+                        //     'salary'=>Visibility::where('company',Auth::user()->company)->first()->salary
+                        // ]) ;
+                    }),
+
                 BulkActionGroup::make([
                     DeleteBulkAction::make(),
                 ]),
